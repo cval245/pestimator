@@ -86,8 +86,6 @@ class BaseApplication(models.Model):
 
     def _generate_publication(self, publication_diff_from_filing):
         # lookup the publication time_diff
-        print('self.date_filing ', self.date_filing)
-        print('date_publication', self.date_filing + publication_diff_from_filing)
         publ = Publication.objects.create(
             application=self,
             date_publication=self.date_filing + publication_diff_from_filing)
@@ -117,7 +115,7 @@ class BaseApplication(models.Model):
                 application=self,
                 date=e.date_diff + self.date_filing,
                 official_cost=e.official_cost,
-                law_firm_est=lawFirmEst
+                law_firm_est=lawFirmEst,
             )
             ests.append(est)
 
@@ -205,7 +203,6 @@ class BaseUtilityApplication(BaseApplication):
 
     def _generate_publication(self, publication_diff_from_filing):
         # lookup the publication time_diff
-        print('$$$Utility date_publication', self.date_filing + publication_diff_from_filing)
         publ = Publication.objects.create(
             application=self,
             date_publication=self.date_filing + publication_diff_from_filing)
@@ -368,7 +365,8 @@ class BaseOfficeAction(models.Model):
                 office_action=self,
                 date=e.date_diff + self.date_office_action,
                 official_cost=e.official_cost,
-                law_firm_est=lawFirmEst
+                law_firm_est=lawFirmEst,
+                application=self.application               
             )
             ests.append(est)
 
@@ -393,7 +391,7 @@ class USOfficeAction(BaseOfficeAction):
         abstract = False
 
     def generate_ests(self):
-        from estimation.models import USOAEstimateTemplate, OAEstimate
+        from estimation.models import USOAEstimateTemplate, USOAEstimate
         oa_templates = USOAEstimateTemplate.objects.all()
         templates = utils.filter_conditions(oa_templates, self.application.details)
 
@@ -407,11 +405,12 @@ class USOfficeAction(BaseOfficeAction):
                     law_firm_cost=e.law_firm_template.law_firm_cost
                 )
 
-            est = OAEstimate.objects.create(
+            est = USOAEstimate.objects.create(
                 office_action=self,
                 date=e.date_diff + self.date_office_action,
                 official_cost=e.official_cost,
-                law_firm_est=lawFirmEst
+                law_firm_est=lawFirmEst,
+                application=self.application                
             )
             ests.append(est)
 
@@ -447,7 +446,8 @@ class Publication(models.Model):
                 publication=self,
                 date=e.date_diff + self.date_publication,
                 official_cost=e.official_cost,
-                law_firm_est=lawFirmEst
+                law_firm_est=lawFirmEst,
+                application=self.application                
             )
             ests.append(est)
 
@@ -490,7 +490,8 @@ class BaseAllowance(models.Model):
                 allowance=self,
                 date=e.date_diff + self.date_allowance,
                 official_cost=e.official_cost,
-                law_firm_est=lawFirmEst
+                law_firm_est=lawFirmEst,
+                application=self.application
             )
             ests.append(est)
 
@@ -531,7 +532,8 @@ class BaseIssue(models.Model):
                 issue=self,
                 date=e.date_diff + self.date_issuance,
                 official_cost=e.official_cost,
-                law_firm_est=lawFirmEst
+                law_firm_est=lawFirmEst,
+                application=self.application
             )
             ests.append(est)
 

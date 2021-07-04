@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'transform.apps.TransformConfig',
     'lawfirm.apps.LawfirmConfig',
     'user.apps.UserConfig',
+    'countryform.apps.CountryformConfig',
 ]
 
 MIDDLEWARE = [

@@ -22,6 +22,8 @@ urlpatterns = [
     path('', include('estimation.urls')),
     path('', include('family.urls')),
     path('', include('famform.urls')),
+    path('', include('countryform.urls')),
+    path('', include('transform.urls')),
     path('admin/', admin.site.urls),
     #path('silk/', include('silk.urls', namespace='silk')),
     path('auth/', include('djoser.urls')),

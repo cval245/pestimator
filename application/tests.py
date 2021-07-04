@@ -1,7 +1,8 @@
 from django.test import TestCase
 from datetime import date
 from djmoney.money import Money
-from .models import UtilityApplication, Publication, Allowance, OfficeAction, Issue, ApplDetails
+from .models import UtilityApplication, Publication, Allowance,\
+ USOfficeAction, OfficeAction, Issue, ApplDetails
 from django.contrib.auth import get_user_model
 from dateutil.relativedelta import relativedelta
 from django.db.models import Sum
@@ -9,7 +10,8 @@ from characteristics.models import EntitySize, Country, ApplType
 from estimation.models import LineEstimationTemplateConditions, FilingEstimateTemplate,\
     OAEstimate, OAEstimateTemplate,\
     PublicationEstTemplate, AllowanceEstTemplate, IssueEstTemplate,\
-    PublicationEst, AllowanceEst, IssueEst
+    PublicationEst, AllowanceEst, IssueEst, USOAEstimateTemplate,\
+    USOAEstimate
 from famform.models import FamOptions, ApplOptions, AllowOptions, PublOptions,\
     OAOptions, IssueOptions
 from family.models import Family
@@ -33,7 +35,7 @@ class UtilityApplicationTest(TestCase):
             entity_size=self.entitySize)
         self.filing_date = date(2020, 1, 1)
         self.country = Country.objects.create(country='US',currency_name= 'USD')
-        self.applType = ApplType.objects.create(application_type='test')
+        self.applType = ApplType.objects.create(application_type='utility')
         self.options = FamOptions.objects.create(
             family=self.family
         )
@@ -56,6 +58,10 @@ class UtilityApplicationTest(TestCase):
         self.oAOption_three = OAOptions.objects.create(appl=self.applOption,
                                                        date_diff=relativedelta(years=1),
                                                        oa_prev=self.oAOption_two)
+        # self.uSOAOption_one = OAOptions.objects.create(appl=self.applOption,
+        #     date_diff=relativedelta(years=1),
+        #     oa_prev=None
+        #     )
 
 
         self.allowOption = AllowOptions.objects.create(appl=self.applOption,
@@ -73,7 +79,8 @@ class UtilityApplicationTest(TestCase):
         self.utilityApplication = UtilityApplication.objects.create(
             user=self.user, title='title',
             date_filing=date(2020, 1, 1),
-            details=self.utilityApplDetails
+            details=self.utilityApplDetails,
+            family=self.family            
         )
         self.conditions = LineEstimationTemplateConditions.objects.create(
             condition_claims_min=0,
@@ -102,6 +109,22 @@ class UtilityApplicationTest(TestCase):
             country=self.country,
             conditions=self.conditions,
         )
+        self.oa_template_one = USOAEstimateTemplate.objects.create(
+            date_diff=relativedelta(years=1),
+            official_cost=Money(3, 'USD'),
+            country=self.country,
+            conditions=self.conditions,
+            oa_type='NFOA'
+        )
+        self.oa_template_two = USOAEstimateTemplate.objects.create(
+            date_diff=relativedelta(years=1),
+            official_cost=Money(3, 'USD'),
+            country=self.country,
+            conditions=self.conditions,
+            oa_type='FOA'
+        )
+
+
         self.allowance_template = AllowanceEstTemplate.objects.create(
             date_diff=relativedelta(years=1),
             official_cost=Money(4, 'USD'),
@@ -117,20 +140,23 @@ class UtilityApplicationTest(TestCase):
 
     def test_create_full_creates_Publication(self):
         selectedApplOption = ApplOptions.objects.get(id=self.applOption.id)
-        UtilityApplication.objects.create_full(options=selectedApplOption, user=self.user)
+        UtilityApplication.objects.create_full(options=selectedApplOption, 
+            user=self.user, family_id=self.family.id)
         date_publication = self.filing_date + relativedelta(years=1)
         self.assertEquals(date_publication, Publication.objects.first().date_publication)
 
     def test_create_full_creates_oa(self):
         selectedApplOption = ApplOptions.objects.get(id=self.applOption.id)
-        UtilityApplication.objects.create_full(options=selectedApplOption, user=self.user)
+        UtilityApplication.objects.create_full(options=selectedApplOption, 
+            user=self.user, family_id=self.family.id)
         # relativedelta is calced by combining options in Setup
         date_allowance = self.filing_date + relativedelta(years=1)
-        self.assertEquals(date_allowance, OfficeAction.objects.first().date_office_action)
+        self.assertEquals(date_allowance, USOfficeAction.objects.first().date_office_action)
 
     def test_create_full_creates_allowance(self):
         selectedApplOption = ApplOptions.objects.get(id=self.applOption.id)
-        UtilityApplication.objects.create_full(options=selectedApplOption, user=self.user)
+        UtilityApplication.objects.create_full(options=selectedApplOption, 
+            user=self.user, family_id=self.family.id)
         # relativedelta is calced by combining options in Setup
         oa_agg = selectedApplOption.oaoptions_set.all().aggregate(date_diff=Sum('date_diff'))
         allow_diff = selectedApplOption.allowoptions.date_diff
@@ -140,7 +166,8 @@ class UtilityApplicationTest(TestCase):
     def test_create_full_creates_issue(self):
         selectedApplOption = ApplOptions.objects.get(id=self.applOption.id)
         UtilityApplication.objects.create_full(options=selectedApplOption,
-                                               user=self.user)
+                                               user=self.user, 
+                                               family_id=self.family.id)
         oa_agg = selectedApplOption.oaoptions_set.all().aggregate(date_diff=Sum('date_diff'))
         allow_diff = selectedApplOption.allowoptions.date_diff
         issue_diff = selectedApplOption.issueoptions.date_diff
@@ -153,21 +180,24 @@ class UtilityApplicationTest(TestCase):
 
     def test_create_full_publication_est(self):
         selectedApplOption = ApplOptions.objects.get(id=self.applOption.id)
-        UtilityApplication.objects.create_full(options=selectedApplOption, user=self.user)
+        UtilityApplication.objects.create_full(options=selectedApplOption, 
+            user=self.user, family_id=self.family.id)
         self.assertEquals(self.publication_template.official_cost,
                           PublicationEst.objects.all().first().official_cost
         )
 
     def test_create_full_oa_est(self):
         selectedApplOption = ApplOptions.objects.get(id=self.applOption.id)
-        UtilityApplication.objects.create_full(options=selectedApplOption, user=self.user)
+        UtilityApplication.objects.create_full(options=selectedApplOption, 
+            user=self.user, family_id=self.family.id)
         self.assertEquals(self.oa_template.official_cost,
-                          OAEstimate.objects.all().first().official_cost
+                          USOAEstimate.objects.all().first().official_cost
         )
 
     def test_create_full_allowance_est(self):
         selectedApplOption = ApplOptions.objects.select_related().get(id=self.applOption.id)
-        UtilityApplication.objects.create_full(options=selectedApplOption, user=self.user)
+        UtilityApplication.objects.create_full(options=selectedApplOption, 
+            user=self.user, family_id=self.family.id)
         self.assertEquals(self.allowance_template.official_cost,
                           AllowanceEst.objects.all().first().official_cost
         )
@@ -175,7 +205,8 @@ class UtilityApplicationTest(TestCase):
     def test_create_full_issue_est(self):
         selectedApplOption = ApplOptions.objects.get(id=self.applOption.id)
         selectedApplOption = ApplOptions.objects.select_related('publoptions').get(id=self.applOption.id)
-        UtilityApplication.objects.create_full(options=selectedApplOption, user=self.user)
+        UtilityApplication.objects.create_full(options=selectedApplOption, 
+            user=self.user, family_id=self.family.id)
         self.assertEquals(self.issue_template.official_cost,
                           IssueEst.objects.all().first().official_cost
 

@@ -135,12 +135,7 @@ class FamFormApplicationTest(TestCase):
         self.assertEquals(self.publication_template.official_cost,
                           PublicationEst.objects.all().first().official_cost)
 
-    def test_select_all_ests(self):
-        self.famFormData.generate_family_options()
-        bob = self.famFormData.family.select_all_fam_ests()
-        print('slsss ', bob)
-
-        print(Family.objects.select_all_fam_ests(user=self.user))
+   
 
 
 class FamOptionsTest(TestCase):
