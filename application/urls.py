@@ -7,7 +7,7 @@ from rest_framework import routers
 
 router = routers.SimpleRouter()
 router.register(r'applications', views.ApplicationViewSet, basename='application')
-# router.register(r'specs', views.ApplicationSpecsViewSet, basename='appl-specs')
+router.register(r'specs', views.ApplDetailViewSet, basename='appldetail')
 
 urlpatterns = router.urls
 urlpatterns = format_suffix_patterns(urlpatterns)

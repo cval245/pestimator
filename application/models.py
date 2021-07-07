@@ -3,7 +3,7 @@ from django.db import models
 from datetime import date
 from dateutil.relativedelta import relativedelta
 from estimation import utils
-from characteristics.models import EntitySize, ApplType
+from characteristics.models import EntitySize, ApplType, Country
 from family.models import Family
 
 class ApplManager(models.Manager):
@@ -19,6 +19,7 @@ class ApplManager(models.Manager):
         appl = self.create(user=user, title=options.title,
                            date_filing=options.date_filing,
                            family_id=family_id,
+                           country=options.country,
                            details=applDetails)
         appl.generate_dates(options)
         return appl
@@ -58,25 +59,17 @@ class BaseApplication(models.Model):
     date_filing = models.DateField()
     details = models.OneToOneField(ApplDetails, on_delete=models.CASCADE)
     prior_appl = models.ForeignKey("self", models.SET_NULL, null=True)
+    country=models.ForeignKey(Country, on_delete=models.CASCADE)
 
     objects = ApplManager()
 
     class Meta:
         abstract = False
 
-    # def select_ests(self):
-    #     # select filing ests
-    #     filing_est = self.filingestimate_set.all()\
-    #         .values('application_id','official_cost', 'date', 'law_firm_est')
-    #     publ_est = self.publication.publicationest_set.all()\
-    #         .values('publication_id','official_cost', 'date', 'law_firm_est')
-
-    #     total_est = filing_est.union(publ_est)
-    #     return total_est
-
 
     def generate_dates(self, options):
         # generate filing estimates
+        print('generate_dates')
         self._generate_filing_est()
 
         # generate publication date and estimates
@@ -135,20 +128,6 @@ class PCTApplication(BaseApplication):
 class EPApplication(BaseApplication):
 
 
-    # def select_ests(self):
-    #     # select filing ests
-    #     filing_est = self.filingestimate_set.all()\
-    #         .values('application_id','official_cost', 'date', 'law_firm_est')
-    #     publ_est = self.publication.publicationest_set.all()\
-    #         .values('publication_id','official_cost', 'date', 'law_firm_est')
-    #     oa_est = OAEstimate.objects.filter(office_action__application=self.id)\
-    #         .values('officeaction_id','official_cost', 'date', 'law_firm_est')
-    #     allow_est = self.allowance.allowancest_set.all()\
-    #         .values('allowance_id','official_cost', 'date', 'law_firm_est')
-
-    #     total_est = filing_est.union(publ_est, oa_est, allow_est)
-    #     return total_est
-
 
     class Meta:
         abstract = False
@@ -158,23 +137,6 @@ class BaseUtilityApplication(BaseApplication):
 
     class Meta:
         abstract = False
-
-
-    # def select_ests(self):
-    #     # select filing ests
-    #     filing_est = self.filingestimate_set.all()\
-    #         .values('application_id','official_cost', 'date', 'law_firm_est')
-    #     publ_est = self.publication.publicationest_set.all()\
-    #         .values('publication_id','official_cost', 'date', 'law_firm_est')
-    #     oa_est = OAEstimate.objects.filter(office_action__application=self.id)\
-    #         .values('officeaction_id','official_cost', 'date', 'law_firm_est')
-    #     allow_est = self.allowance.allowancest_set.all()\
-    #         .values('allowance_id','official_cost', 'date', 'law_firm_est')
-    #     issue_est = self.issue.issueest_set.all()\
-    #         .values('issue_id','official_cost', 'date', 'law_firm_est')
-
-    #     total_est = filing_est.union(publ_est, oa_est, allow_est, issue_est)
-    #     return total_est
 
 
 
@@ -282,23 +244,6 @@ class USUtilityApplication(BaseUtilityApplication):
     class Meta:
         abstract = False
 
-
-    # def select_ests(self):
-    #     from estimation.models import USOAEstimate
-    #     # select filing ests
-    #     filing_est = self.filingestimate_set.all()\
-    #         .values('application_id','official_cost', 'date', 'law_firm_est')
-    #     publ_est = self.publication.publicationest_set.all()\
-    #         .values('publication_id','official_cost', 'date', 'law_firm_est')
-    #     oa_est = USOAEstimate.objects.filter(office_action__application=self.id)\
-    #         .values('usofficeaction','official_cost', 'date', 'law_firm_est')
-    #     allow_est = self.allowance.allowanceest_set.all()\
-    #         .values('allowance_id','official_cost', 'date', 'law_firm_est')
-    #     issue_est = self.issue.issueest_set.all()\
-    #         .values('issue_id','official_cost', 'date', 'law_firm_est')
-
-    #     total_est = filing_est.union(publ_est, oa_est, allow_est, issue_est)
-    #     return total_est
 
 
     def _generate_oa(self, args):

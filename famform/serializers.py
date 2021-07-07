@@ -44,4 +44,6 @@ class FamEstFormDataNetSerializer(serializers.Serializer):
         )
         famEstData.save()
         famEstData.countries.set(validated_data['countries'])
+        # famEstDataCreateOptions
+        famEstData.generate_family_options()
         return famEstData

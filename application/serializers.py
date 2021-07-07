@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import BaseApplication
+from .models import BaseApplication, ApplDetails
 
 
 class ApplicationSerializer(serializers.ModelSerializer):
@@ -12,8 +12,10 @@ class ApplicationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BaseApplication
-        fields = ('id', 'title', 'appl_no', 'country', 'user',
-                  'application_type','law_firm','family',
+        fields = ('id', 'title', 'country', 'user',
+                  #'application_type',
+                  #'law_firm',
+                  #'family',
                   'date_filing')
 
     # def create(self, validated_data):
@@ -31,3 +33,9 @@ class ApplicationSerializer(serializers.ModelSerializer):
     #     )
     #     newAppl.save()
     #     return newAppl
+class ApplDetailSerializer(serializers.ModelSerializer):
+    
+    class Meta: 
+        model = ApplDetails
+        fields = ('id', 'num_indep_claims', 'num_pages', 'num_claims', 
+            'num_drawings', 'entity_size')

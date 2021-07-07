@@ -2,8 +2,8 @@ from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
-from application.models import BaseApplication
-from application.serializers import ApplicationSerializer
+from application.models import BaseApplication, ApplDetails
+from application.serializers import ApplicationSerializer, ApplDetailSerializer
 
 # Create your views here.
 class ApplicationViewSet(viewsets.ModelViewSet):
@@ -28,3 +28,9 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         applications=BaseApplication.objects.filter(family=family)
         serializer = self.get_serializer(applications, many=True)
         return Response(serializer.data)
+
+class ApplDetailViewSet(viewsets.ModelViewSet):
+    serializer_class = ApplDetailSerializer
+
+    def get_queryset(self):
+        queryset = ApplDetails.objects.filter(baseapplication__user=self.request.user)
