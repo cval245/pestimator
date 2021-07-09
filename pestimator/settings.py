@@ -111,7 +111,7 @@ WSGI_APPLICATION = 'pestimator.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgresql-fluffy-90149',
+        'NAME': 'de9ftmo4vm9jj1',
         'USER': 'mzabyikihumhgg',
         'HOST': 'ec2-23-20-124-77.compute-1.amazonaws.com',
         'PASSWORD': '4419a81170245ee8749644f3e5f230f236013784424104661b9e79594569be68',
