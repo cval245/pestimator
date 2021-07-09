@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from datetime import timedelta
 from pathlib import Path
 import os
-import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -106,19 +105,19 @@ WSGI_APPLICATION = 'pestimator.wsgi.application'
 #         'PORT': '5432',
 #     }
 # }
-DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=False)
-DATABASES['default'] = dj_database_url.config(default = 'postgres://localhost/pestimator')
-DATABASES['default'] = dj_database_url.parse('postgres://mzabyikihumhgg:4419a81170245ee8749644f3e5f230f236013784424104661b9e79594569be68@ec2-23-20-124-77.compute-1.amazonaws.com:5432/de9ftmo4vm9jj1')
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'pestimator',
-#         'USER': 'djangoconnect',
-#         'HOST': 'localhost',
-#         'PASSWORD': 'Belgrade2010',
-#         'PORT': '5432',
-#     }
-# }
+# DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=False)
+# DATABASES['default'] = dj_database_url.config(default = 'postgres://localhost/pestimator')
+# DATABASES['default'] = dj_database_url.parse('postgres://mzabyikihumhgg:4419a81170245ee8749644f3e5f230f236013784424104661b9e79594569be68@ec2-23-20-124-77.compute-1.amazonaws.com:5432/de9ftmo4vm9jj1')
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgresql-fluffy-90149',
+        'USER': 'djangoconnect',
+        'HOST': 'postgres://mzabyikihumhgg:4419a81170245ee8749644f3e5f230f236013784424104661b9e79594569be68@ec2-23-20-124-77.compute-1.amazonaws.com:5432/de9ftmo4vm9jj1',
+        'PASSWORD': 'Belgrade2010',
+        'PORT': '5432',
+    }
+}
 
 
 AUTH_USER_MODEL = 'user.User'
