@@ -1,38 +1,37 @@
-# import os
+import os
 
-# from celery import Celery
+from celery import Celery
 
-# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pestimator.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pestimator.settings')
 
-# app = Celery('pestimator')
+app = Celery('pestimator')
 
-# app.config_from_object('django.conf:settings', namespace='CELERY')
+app.config_from_object('django.conf:settings', namespace='CELERY')
 
-# app.autodiscover_tasks()
-# app.conf.update(BROKER_URL=os.environ['amqps://yivfkhqd:WrcWUxS7CP45fshvaNkIhEzEGLJyP6_2@fish.rmq.cloudamqp.com/yivfkhqd'])
+app.autodiscover_tasks()
 
-# @app.task(bind=True)
-# def debug_task(self):
-#     print(f'Request: {self.request!r}')
-
+@app.task(bind=True)
+def debug_task(self):
+    print(f'Request: {self.request!r}')
 
 
-import pika, os, signal, sys
 
-def signal_handler(signal, frame):
-    sys.exit(0)
+# import pika, os, signal, sys
 
-signal.signal(signal.SIGINT, signal_handler)
+# def signal_handler(signal, frame):
+#     sys.exit(0)
 
-# Access the CLODUAMQP_URL environment variable and parse it (fallback to localhost)
-url = os.environ.get('CLOUDAMQP_URL', 'amqps://yivfkhqd:WrcWUxS7CP45fshvaNkIhEzEGLJyP6_2@fish.rmq.cloudamqp.com/yivfkhqd')
-params = pika.URLParameters(url)
-connection = pika.BlockingConnection(params)
-channel = connection.channel() # start a channel
-channel.queue_declare(queue='hello') # Declare a queue
-channel.basic_publish(exchange='',
-                  routing_key='hello',
-                  body='Hello CloudAMQP!')
+# signal.signal(signal.SIGINT, signal_handler)
+
+# # Access the CLODUAMQP_URL environment variable and parse it (fallback to localhost)
+# url = os.environ.get('CLOUDAMQP_URL', 'amqps://yivfkhqd:WrcWUxS7CP45fshvaNkIhEzEGLJyP6_2@fish.rmq.cloudamqp.com/yivfkhqd')
+# params = pika.URLParameters(url)
+# connection = pika.BlockingConnection(params)
+# channel = connection.channel() # start a channel
+# channel.queue_declare(queue='hello') # Declare a queue
+# channel.basic_publish(exchange='',
+#                   routing_key='hello',
+#                   body='Hello CloudAMQP!')
 
 # print(" [x] Sent 'Hello World!'")
 
@@ -45,4 +44,4 @@ channel.basic_publish(exchange='',
 
 # print(' [*] Waiting for messages:')
 # channel.start_consuming()
-connection.close()
+#connection.close()
