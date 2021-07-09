@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-fvr3+$jwp+bv-!nbx(*ld5mv)i5&xbf9=yj9d-61^*7j@&#d@)'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["localhost", "pestimator.herokuapp.com"]
 
@@ -203,7 +203,9 @@ EMAIL_USE_SSL = True
 
 DEFAULT_FROM_EMAIL = 'cval.me@patport.cc'
 
-DOMAIN = 'localhost:4200'
+#DOMAIN = 'localhost:4200'
+
+DOMAIN = 'patport.cc'
 SITE_NAME = 'PatPort'
 DJOSER = {
     'SEND_ACTIVATION_EMAIL': True,
