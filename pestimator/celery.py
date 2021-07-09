@@ -34,15 +34,15 @@ channel.basic_publish(exchange='',
                   routing_key='hello',
                   body='Hello CloudAMQP!')
 
-print(" [x] Sent 'Hello World!'")
+# print(" [x] Sent 'Hello World!'")
 
-def callback(ch, method, properties, body):
-  print(" [x] Received " + str(body))
+# def callback(ch, method, properties, body):
+#   print(" [x] Received " + str(body))
 
-channel.basic_consume('hello',
-                      callback,
-                      auto_ack=True)
+# channel.basic_consume('hello',
+#                       callback,
+#                       auto_ack=True)
 
-print(' [*] Waiting for messages:')
-channel.start_consuming()
+# print(' [*] Waiting for messages:')
+# channel.start_consuming()
 connection.close()
