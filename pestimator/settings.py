@@ -217,6 +217,13 @@ OPEN_EXCHANGE_RATES_APP_ID = 'f8873179704e447fb5e75f4543dd98b5'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
+BROKER_URL = os.environ.get("amqps://yivfkhqd:WrcWUxS7CP45fshvaNkIhEzEGLJyP6_2@fish.rmq.cloudamqp.com/yivfkhqd", "django://")
+BROKER_POOL_LIMIT = 1
+BROKER_CONNECTION_MAX_RETRIES = 100
+
+CELERY_TASK_SERIALIZER = "json"
+CELERY_ACCEPT_CONTENT = ["json", "msgpack"]
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 
 
 
