@@ -130,6 +130,11 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
     "https://localhost:4200",
+    "https://cval.me",
+    "https://www.cval.me",
+    "https://cval.me",
+    "https://www.cval.me",
+
 ]
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
