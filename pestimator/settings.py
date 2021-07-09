@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-fvr3+$jwp+bv-!nbx(*ld5mv)i5&xbf9=yj9d-61^*7j@&#d@)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost"]
+ALLOWED_HOSTS = ["localhost", "pestimator.herokuapp.com"]
 
 
 # Application definition
