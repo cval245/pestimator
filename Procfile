@@ -1,2 +1,2 @@
 web: gunicorn pestimator.wsgi
-worker: celery --app=tasks.app worker
+worker: celery --app=tasks.pestimator worker
