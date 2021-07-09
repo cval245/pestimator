@@ -197,7 +197,7 @@ EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
 EMAIL_HOST = 'mail.privateemail.com'
 EMAIL_PORT = 465
 EMAIL_HOST_USER = 'cval.me@patport.cc'
-EMAIL_HOST_PASSWORD = '4o8XGOCv$Xg78%k#1uTy'
+EMAIL_HOST_PASSWORD = 'xZmLvUYiKlR51j7yu9N2'
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
 
