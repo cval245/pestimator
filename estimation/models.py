@@ -3,7 +3,7 @@ from application.models import UtilityApplication, BaseApplication,\
     OfficeAction, USOfficeAction, Publication, Allowance, Issue
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
-from characteristics.models import Country, EntitySize
+from characteristics.models import Country, EntitySize, ApplType
 from relativedeltafield import RelativeDeltaField
 
 # Create your models here.
@@ -35,6 +35,7 @@ class BaseEstTemplate(models.Model):
                                default_currency='USD')
     date_diff = RelativeDeltaField()
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
+    appl_type = models.ForeignKey(ApplType, on_delete=models.CASCADE)
     conditions = models.ForeignKey(LineEstimationTemplateConditions, on_delete=models.CASCADE)
     law_firm_template = models.OneToOneField(LawFirmEstTemplate, on_delete=models.CASCADE, null=True)
 

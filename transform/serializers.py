@@ -5,7 +5,8 @@ from .models import CustomFilingTransform, PublicationTransform, OATransform,\
 class CustomFilingTransformSerializer(serializers.ModelSerializer):
  	class Meta:
  		model = CustomFilingTransform
- 		fields = ('id', 'date_diff', 'country')
+ 		fields = ('id', 'date_diff', 'country', 'appl_type', 'prev_appl_type')
+
 
 
 class PublicationTransformSerializer(serializers.ModelSerializer):

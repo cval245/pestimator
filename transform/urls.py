@@ -4,7 +4,12 @@ from . import views
 
 from rest_framework import routers
 
-router = routers.SimpleRouter()
+class OptionalSlashRouter(routers.SimpleRouter):
+	def __init__(self):
+		super().__init__()
+		self.trailing_slash = '/?'
+
+router = OptionalSlashRouter()
 router.register(r'custom-filing-transform', 
 	views.CustomFilingTransformViewSet, basename='customfilingtransform')
 

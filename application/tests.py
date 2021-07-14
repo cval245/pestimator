@@ -78,6 +78,7 @@ class UtilityApplicationTest(TestCase):
         )
         self.utilityApplication = UtilityApplication.objects.create(
             user=self.user, title='title',
+            country=self.country,
             date_filing=date(2020, 1, 1),
             details=self.utilityApplDetails,
             family=self.family            
@@ -96,32 +97,37 @@ class UtilityApplicationTest(TestCase):
             official_cost=Money(1, 'USD'),
             country=self.country,
             conditions=self.conditions,
+            appl_type=self.applType,
         )
         self.publication_template = PublicationEstTemplate.objects.create(
             date_diff=relativedelta(years=1),
             official_cost=Money(2, 'USD'),
             country=self.country,
             conditions=self.conditions,
+            appl_type=self.applType,
         )
         self.oa_template = OAEstimateTemplate.objects.create(
             date_diff=relativedelta(years=1),
             official_cost=Money(3, 'USD'),
             country=self.country,
             conditions=self.conditions,
+            appl_type=self.applType,
         )
         self.oa_template_one = USOAEstimateTemplate.objects.create(
             date_diff=relativedelta(years=1),
             official_cost=Money(3, 'USD'),
             country=self.country,
             conditions=self.conditions,
-            oa_type='NFOA'
+            oa_type='NFOA',
+            appl_type=self.applType,
         )
         self.oa_template_two = USOAEstimateTemplate.objects.create(
             date_diff=relativedelta(years=1),
             official_cost=Money(3, 'USD'),
             country=self.country,
             conditions=self.conditions,
-            oa_type='FOA'
+            oa_type='FOA',
+            appl_type=self.applType,
         )
 
 
@@ -130,12 +136,14 @@ class UtilityApplicationTest(TestCase):
             official_cost=Money(4, 'USD'),
             country=self.country,
             conditions=self.conditions,
+            appl_type=self.applType,
         )
         self.issue_template = IssueEstTemplate.objects.create(
             date_diff=relativedelta(years=1),
             official_cost=Money(5, 'USD'),
             country=self.country,
             conditions=self.conditions,
+            appl_type=self.applType,
         )
 
     def test_create_full_creates_Publication(self):

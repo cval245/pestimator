@@ -3,6 +3,7 @@ from django.db import models
 from datetime import date
 from dateutil.relativedelta import relativedelta
 from estimation import utils
+from application.utils import convert_class_applType
 from characteristics.models import EntitySize, ApplType, Country
 from family.models import Family
 
@@ -40,7 +41,7 @@ class ApplManager(models.Manager):
                 USUtilityApplication.objects.generate_appl(options=options,user=user, family_id=family_id)
             else:
                 # Generic Utility Application
-                UtilityApplication.objects.generate_appl(options=options, user=user, family_id=family_id)
+                BaseUtilityApplication.objects.generate_appl(options=options, user=user, family_id=family_id)
 
     
 class ApplDetails(models.Model):
@@ -91,7 +92,10 @@ class BaseApplication(models.Model):
 
         from estimation.models import FilingEstimateTemplate, FilingEstimate,\
             LawFirmEst
-        filing_templates = FilingEstimateTemplate.objects.all()
+        filing_templates = FilingEstimateTemplate.objects.filter(
+            country=self.country,
+            appl_type=convert_class_applType(self)
+        )
         templates = utils.filter_conditions(filing_templates, self.details)
 
         templates = templates.select_related('law_firm_template')
@@ -220,7 +224,10 @@ class BaseUtilityApplication(BaseApplication):
     def _generate_filing_est(self):
 
         from estimation.models import FilingEstimateTemplate, FilingEstimate
-        filing_templates = FilingEstimateTemplate.objects.all()
+        filing_templates = FilingEstimateTemplate.objects.filter(
+            country=self.country,
+            appl_type=convert_class_applType(self)
+        )
         templates = utils.filter_conditions(filing_templates, self.details)
         ests = [
             FilingEstimate.objects.create(
@@ -293,7 +300,10 @@ class BaseOfficeAction(models.Model):
 
     def generate_ests(self):
         from estimation.models import OAEstimateTemplate, OAEstimate
-        oa_templates = OAEstimateTemplate.objects.all()
+        oa_templates = OAEstimateTemplate.objects.filter(
+            country=self.country,
+            appl_type=convert_class_applType(self)
+        )
         templates = utils.filter_conditions(oa_templates, self.application.details)
 
         templates = templates.select_related('law_firm_template')
@@ -337,7 +347,10 @@ class USOfficeAction(BaseOfficeAction):
 
     def generate_ests(self):
         from estimation.models import USOAEstimateTemplate, USOAEstimate
-        oa_templates = USOAEstimateTemplate.objects.all()
+        oa_templates = USOAEstimateTemplate.objects.filter(
+            country=self.country,
+            appl_type=convert_class_applType(self)
+        )
         templates = utils.filter_conditions(oa_templates, self.application.details)
 
         templates = templates.select_related('law_firm_template')
@@ -372,10 +385,16 @@ class Publication(models.Model):
     class Meta:
         abstract = False
 
+
     def generate_ests(self):
         from estimation.models import PublicationEstTemplate, PublicationEst
-        publ_templates = PublicationEstTemplate.objects.all()
+        publ_templates = PublicationEstTemplate.objects.filter(
+            country=self.application.country,
+            appl_type=convert_class_applType(self.application)
+            )
         templates = utils.filter_conditions(publ_templates, self.application.details)
+        print(hasattr(self.application, 'country'))
+        print(self.application.__dict__)
 
         templates = templates.select_related('law_firm_template')
         ests = []
@@ -419,7 +438,11 @@ class BaseAllowance(models.Model):
 
     def generate_ests(self):
         from estimation.models import AllowanceEstTemplate, AllowanceEst
-        allow_templates = AllowanceEstTemplate.objects.all()
+        allow_templates = AllowanceEstTemplate.objects.filter(
+            country=self.application.country,
+            appl_type=convert_class_applType(self.application)
+        )
+
         templates = utils.filter_conditions(allow_templates, self.application.details)
         templates = templates.select_related('law_firm_template')
         ests = []
@@ -461,7 +484,10 @@ class BaseIssue(models.Model):
 
     def generate_ests(self):
         from estimation.models import IssueEstTemplate, IssueEst
-        issue_templates = IssueEstTemplate.objects.all()
+        issue_templates = IssueEstTemplate.objects.filter(
+            country=self.application.country,
+            appl_type=convert_class_applType(self.application)
+        )
         templates = utils.filter_conditions(issue_templates, self.application.details)
         templates = templates.select_related('law_firm_template')
         ests = []

@@ -11,8 +11,11 @@ class ApplTypeViewSet(viewsets.ModelViewSet):
     serializer_class = ApplTypeSerializer
 
 class CountryViewSet(viewsets.ModelViewSet):
-    queryset = Country.objects.all()
+    #queryset = Country.objects.all()
     serializer_class = CountrySerializer
+    def get_queryset(self):
+        print('country=', Country.objects.all())
+        return Country.objects.all()
 
 @api_view(['GET'])
 def getEntitySize(request):

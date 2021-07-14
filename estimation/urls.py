@@ -4,7 +4,12 @@ from . import views
 
 from rest_framework import routers
 
-router = routers.SimpleRouter()
+class OptionalSlashRouter(routers.SimpleRouter):
+	def __init__(self):
+		super().__init__()
+		self.trailing_slash = '/?'
+
+router = OptionalSlashRouter()
 router.register(r'base-est-template', views.BaseEstTemplateViewSet, 
 	basename='baseesttemplate')
 router.register(r'filing-est-template', 
@@ -17,6 +22,9 @@ router.register(r'allowance-est-template',
 	views.AllowanceEstTemplateViewSet, basename='allowanceestimatetemplate')
 router.register(r'issue-est-template',
 	views.IssueEstTemplateViewSet, basename='issueestimatetemplate')
+router.register(r'lawfirm-est-template',
+	views.LawFirmEstTemplateViewSet, basename='lawfirmestimatetemplate')
+
 
 urlpatterns = router.urls
 urlpatterns = format_suffix_patterns(urlpatterns)

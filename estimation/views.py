@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets
 
-from .models import BaseEstTemplate, FilingEstimateTemplate, PublicationEstTemplate,\
+from .models import BaseEstTemplate, FilingEstimateTemplate, LawFirmEstTemplate, PublicationEstTemplate,\
 	OAEstimateTemplate, AllowanceEstTemplate, IssueEstTemplate
 
 from .serializers import BaseEstTemplateSerializer, FilingEstimateTemplateSerializer, \
@@ -42,3 +42,7 @@ class IssueEstTemplateViewSet(viewsets.ModelViewSet):
 	def get_queryset(self):
 		return IssueEstTemplate.objects.all()
 
+class LawFirmEstTemplateViewSet(viewsets.ModelViewSet):
+
+	def get_queryset(self):
+		return LawFirmEstTemplate.objects.all()
