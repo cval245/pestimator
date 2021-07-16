@@ -8,7 +8,6 @@ class CustomFilingTransformSerializer(serializers.ModelSerializer):
  		fields = ('id', 'date_diff', 'country', 'appl_type', 'prev_appl_type')
 
 
-
 class PublicationTransformSerializer(serializers.ModelSerializer):
  	class Meta:
  		model = PublicationTransform

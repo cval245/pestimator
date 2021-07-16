@@ -24,6 +24,8 @@ router.register(r'issue-est-template',
 	views.IssueEstTemplateViewSet, basename='issueestimatetemplate')
 router.register(r'lawfirm-est-template',
 	views.LawFirmEstTemplateViewSet, basename='lawfirmestimatetemplate')
+router.register(r'conditions',
+	views.ConditionsViewSet, basename='conditionsviewset')
 
 
 urlpatterns = router.urls

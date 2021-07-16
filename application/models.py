@@ -375,7 +375,6 @@ class USOfficeAction(BaseOfficeAction):
         return ests
 
 
-
 class Publication(models.Model):
     date_publication = models.DateField()
     application = models.OneToOneField(

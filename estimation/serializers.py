@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import BaseEstTemplate, FilingEstimateTemplate, LawFirmEstTemplate, PublicationEstTemplate,\
+from .models import BaseEstTemplate, FilingEstimateTemplate, LawFirmEstTemplate, LineEstimationTemplateConditions, PublicationEstTemplate,\
 	OAEstimateTemplate, AllowanceEstTemplate, IssueEstTemplate
 
 
@@ -46,3 +46,10 @@ class LawFirmEstTemplateSerializer(serializers.ModelSerializer):
 		model = LawFirmEstTemplate
 		fields = ('id', 'law_firm_cost', 'date_diff')
     
+class ConditionsSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = LineEstimationTemplateConditions
+		fields = ('id', 'condition_claims_min','condition_claims_max', 
+		'condition_pages_min', 'condition_pages_max',
+		'condition_drawings_min', 'condition_drawings_max',
+		'condition_entity_size')

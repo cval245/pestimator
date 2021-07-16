@@ -14,7 +14,9 @@ class LineEstimationTemplateConditions(models.Model):
     condition_pages_max = models.IntegerField(blank=True, null=True)
     condition_drawings_min = models.IntegerField(blank=True, null=True)
     condition_drawings_max = models.IntegerField(blank=True, null=True)
-    condition_entity_size = models.ForeignKey(EntitySize, on_delete=models.CASCADE)
+    condition_entity_size = models.ForeignKey(EntitySize, 
+                             on_delete=models.CASCADE,
+                             null=True)
 
 class LawFirmEstTemplate(models.Model):
     law_firm_cost = MoneyField(max_digits=19,
@@ -36,8 +38,8 @@ class BaseEstTemplate(models.Model):
     date_diff = RelativeDeltaField()
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
     appl_type = models.ForeignKey(ApplType, on_delete=models.CASCADE)
-    conditions = models.ForeignKey(LineEstimationTemplateConditions, on_delete=models.CASCADE)
-    law_firm_template = models.OneToOneField(LawFirmEstTemplate, on_delete=models.CASCADE, null=True)
+    conditions = models.OneToOneField(LineEstimationTemplateConditions, on_delete=models.CASCADE)
+    law_firm_template = models.OneToOneField(LawFirmEstTemplate, on_delete=models.CASCADE)
 
     class Meta:
         abstract = True
