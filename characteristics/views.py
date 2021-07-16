@@ -3,7 +3,8 @@ from rest_framework import viewsets
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from .models import ApplType, Country, EntitySize
-from .serializers import ApplTypeSerializer, CountrySerializer, EntitySerializer
+from .serializers import ApplTypeSerializer, CountrySerializer, EntitySerializer,\
+    CountryAllSerializer
 
 # Create your views here.
 class ApplTypeViewSet(viewsets.ModelViewSet):
@@ -14,8 +15,14 @@ class CountryViewSet(viewsets.ModelViewSet):
     #queryset = Country.objects.all()
     serializer_class = CountrySerializer
     def get_queryset(self):
-        print('country=', Country.objects.all())
+        return Country.objects.filter(active_bool=True)
+
+class CountryAllViewSet(viewsets.ModelViewSet):
+    #queryset = Country.objects.all()
+    serializer_class = CountryAllSerializer
+    def get_queryset(self):
         return Country.objects.all()
+
 
 @api_view(['GET'])
 def getEntitySize(request):

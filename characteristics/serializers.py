@@ -13,7 +13,13 @@ class CountrySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Country
-        fields = '__all__'
+        fields = ('id', 'country', 'currency_name')
+
+class CountryAllSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Country
+        fields = ('id', 'country', 'active_bool', 'currency_name')
 
 
 class EntitySerializer(serializers.ModelSerializer):

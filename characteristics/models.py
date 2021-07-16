@@ -7,6 +7,7 @@ class ApplType(models.Model):
 
 class Country(models.Model):
     country = models.CharField(default='', max_length=100)
+    active_bool = models.BooleanField(default=False)
     # currency_name is needed for lookup when setting currency in country
     currency_name = models.CharField(default='', max_length=5)
 
