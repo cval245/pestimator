@@ -136,8 +136,8 @@ AUTHENTICATION_BACKENDS = [
 
 SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer'),
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
-    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=360),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=10),
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=600),
 }
 
 CORS_ALLOWED_ORIGINS = [
