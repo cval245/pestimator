@@ -63,16 +63,21 @@ def fam_est_detail(request):
 
 def createFamEstDetails(id):
     print('sdfsdf', BaseEst.objects.all().values_list('law_firm_est'))
+    # bob = BaseEst.objects.annotate(
+    #     total_cost=Case(
+    #         When(law_firm_est=None, 
+    #             then=F('official_cost')),
+    #         When(law_firm_est !=None, 
+    #             then=(F('law_firm_est__law_firm_cost')+ F('official_cost')))
+            
+    #         )
+            
+    #     ).filter(application__family=id)
     bob = BaseEst.objects.annotate(
-        total_cost=Case(
-            When(law_firm_est=None, 
-                then=F('official_cost')),
-            When(law_firm_est=None, 
-                then=(F('law_firm_est__law_firm_cost')+ F('official_cost')))
-            
-            )
-            
-        ).filter(application__family=id)
+        total_cost=F('law_firm_est__law_firm_cost') + F('official_cost')
+    ).filter(application__family=id)
+
+    print('\n\nbob', bob.values('official_cost'), '\n\n')
 
     bill = bob.values('id', country=F('application__country'), 
         year=F('date__year'))\
@@ -80,5 +85,5 @@ def createFamEstDetails(id):
                         law_firm_cost_sum=Sum('law_firm_est__law_firm_cost'),
                         total_cost_sum=Sum('total_cost'),
               )
-
+    
     return bill

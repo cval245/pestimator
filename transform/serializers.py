@@ -31,4 +31,4 @@ class IssueTransformSerializer(serializers.ModelSerializer):
 class CountryOANumSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = CountryOANum
-		fields = ('id', 'date_diff', 'country', 'oa_total')
+		fields = ('id', 'country', 'oa_total')

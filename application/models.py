@@ -291,7 +291,7 @@ class USUtilityApplication(BaseUtilityApplication):
 class BaseOfficeAction(models.Model):
     date_office_action = models.DateField()
     application = models.ForeignKey(
-        UtilityApplication, on_delete=models.CASCADE,
+        BaseUtilityApplication, on_delete=models.CASCADE,
     )
     oa_prev = models.ForeignKey('self', models.SET_NULL, null=True)
 
@@ -301,7 +301,7 @@ class BaseOfficeAction(models.Model):
     def generate_ests(self):
         from estimation.models import OAEstimateTemplate, OAEstimate
         oa_templates = OAEstimateTemplate.objects.filter(
-            country=self.country,
+            country=self.application.country,
             appl_type=convert_class_applType(self)
         )
         templates = utils.filter_conditions(oa_templates, self.application.details)
@@ -387,6 +387,7 @@ class Publication(models.Model):
 
     def generate_ests(self):
         from estimation.models import PublicationEstTemplate, PublicationEst
+        from estimation.models import LawFirmEst
         publ_templates = PublicationEstTemplate.objects.filter(
             country=self.application.country,
             appl_type=convert_class_applType(self.application)
@@ -401,7 +402,7 @@ class Publication(models.Model):
             lawFirmEst = None
             if e.law_firm_template is not None:
                 lawFirmEst = LawFirmEst.objects.create(
-                    date=e.law_firm_template.date_diff+self.date_filing,
+                    date=e.law_firm_template.date_diff+self.date_publication,
                     law_firm_cost=e.law_firm_template.law_firm_cost
                 )
 
@@ -437,6 +438,7 @@ class BaseAllowance(models.Model):
 
     def generate_ests(self):
         from estimation.models import AllowanceEstTemplate, AllowanceEst
+        from estimation.models import LawFirmEst
         allow_templates = AllowanceEstTemplate.objects.filter(
             country=self.application.country,
             appl_type=convert_class_applType(self.application)
@@ -449,7 +451,7 @@ class BaseAllowance(models.Model):
             lawFirmEst = None
             if e.law_firm_template is not None:
                 lawFirmEst = LawFirmEst.objects.create(
-                    date=e.law_firm_template.date_diff+self.date_filing,
+                    date=e.law_firm_template.date_diff+self.date_allowance,
                     law_firm_cost=e.law_firm_template.law_firm_cost
                 )
 
@@ -483,6 +485,7 @@ class BaseIssue(models.Model):
 
     def generate_ests(self):
         from estimation.models import IssueEstTemplate, IssueEst
+        from estimation.models import LawFirmEst
         issue_templates = IssueEstTemplate.objects.filter(
             country=self.application.country,
             appl_type=convert_class_applType(self.application)
@@ -494,7 +497,7 @@ class BaseIssue(models.Model):
             lawFirmEst = None
             if e.law_firm_template is not None:
                 lawFirmEst = LawFirmEst.objects.create(
-                    date=e.law_firm_template.date_diff+self.date_filing,
+                    date=e.law_firm_template.date_diff+self.date_issuance,
                     law_firm_cost=e.law_firm_template.law_firm_cost
                 )
 
