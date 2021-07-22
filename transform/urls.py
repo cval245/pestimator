@@ -19,6 +19,9 @@ router.register(r'publication-transform',
 router.register(r'oa-transform', 
 	views.OATransformViewSet, basename='oatransform')
 
+router.register(r'us-oa-transform',
+	views.USOATransformViewSet, basename='usoatransform')
+
 router.register(r'allowance-transform', 
 	views.AllowanceTransformViewSet, basename='allowancetransform')
 

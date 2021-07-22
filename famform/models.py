@@ -172,6 +172,8 @@ class ApplOptions(models.Model):
         if PublicationTransform.objects.filter(country=self.country).exists():
             trans = PublicationTransform.objects.get(country=self.country)
         else:
+            print(vars(self.appl_type), vars(self.country))
+            print(DefaultPublTransform.objects.all().values('appl_type'))
             trans = DefaultPublTransform.objects.get(appl_type=self.appl_type)
 
         return PublOptions.objects.create(date_diff=trans.date_diff,
@@ -225,7 +227,8 @@ class PublOptions(BaseOptions):
     class Meta:
         abstract = False
 
-class OAOptions(BaseOptions):
+class OAOptions(models.Model):
+    date_diff = RelativeDeltaField()
     appl = models.ForeignKey(ApplOptions, on_delete=models.CASCADE)
     oa_prev = models.ForeignKey('self', models.SET_NULL, null=True)
 

@@ -2,12 +2,22 @@ from django.test import TestCase
 from datetime import date
 from djmoney.money import Money
 from django.contrib.auth import get_user_model
+
+from characteristics.factories import ApplTypeFactory, CountryFactory, EntitySizeFactory
+from estimation.factories import FilingEstimateTemplateFactory, PublicationEstTemplateFactory, \
+    OAEstimateTemplateFactory, AllowanceEstTemplateFactory, IssueEstTemplateFactory
+from transform.factories import DefaultFilingTransformFactory, CustomFilingTransformFactory, IssueTransformFactory, \
+    AllowanceTransformFactory, OATransformFactory, PublicationTransformFactory, CountryOANumFactory, \
+    DefaultCountryOANumFactory, DefaultPublTransformFactory, DefaultOATransformFactory, \
+    DefaultAllowanceTransformFactory, DefaultIssueTransformFactory
 from transform.models import DefaultFilingTransform, CustomFilingTransform,\
     IssueTransform, AllowanceTransform, OATransform, PublicationTransform,\
     CountryOANum, DefaultCountryOANum, DefaultPublTransform,\
     DefaultOATransform, DefaultAllowanceTransform, DefaultIssueTransform
 from characteristics.models import ApplType, Country, EntitySize
 from dateutil.relativedelta import relativedelta
+
+from .factories import FamEstFormDataFactory
 from .models import FamOptions, ApplOptions, PublOptions, OAOptions,\
     FamEstFormData, AllowOptions, IssueOptions
 from estimation.models import LineEstimationTemplateConditions, FilingEstimateTemplate,\
@@ -16,124 +26,78 @@ from estimation.models import LineEstimationTemplateConditions, FilingEstimateTe
     PublicationEst, AllowanceEst, IssueEst
 
 from family.models import Family
-from application.models import ApplDetails, BaseApplication, ProvApplication
+from application.models import ApplDetails, BaseApplication, ProvApplication, Publication, USUtilityApplication
+
 
 # Create your tests here.
 
 class FamFormApplicationTest(TestCase):
 
     def setUp(self):
-        self.user = get_user_model().objects.create_user(username='test',
-                                                         password='Belgrade2010',
-                                                         email='c.val@tutanota.com')
-        self.applType = ApplType.objects.create(application_type='prov')
-        self.applType_pct = ApplType.objects.create(application_type='pct')
-        self.applType_utility = ApplType.objects.create(application_type='utility')
-        self.country = Country.objects.create(country='US', currency_name='USD')
-        self.country_CN = Country.objects.create(country='CN', currency_name='CNY')
-        self.countries = [self.country]
-        self.family = Family.objects.create(user=self.user, family_name='family_name',
-                                            family_no='family_no')
-        self.entitySize = EntitySize.objects.create(entity_size='test')
 
-        self.applDetails = ApplDetails.objects.create(
-            num_indep_claims=1,
-            num_pages=1,
-            num_claims=1,
-            num_drawings=1,
-            entity_size=self.entitySize)
+        self.applType_prov = ApplTypeFactory(prov=True)
+        self.applType_pct = ApplTypeFactory(pct=True)
+        self.applType_utility = ApplTypeFactory(utility=True)
+        self.country_US = CountryFactory(US=True)
+        self.country_CN = CountryFactory(CN=True)
+        self.countries = [self.country_US, self.country_CN]
+        self.entitySize = EntitySizeFactory()
 
-        self.filing_date = date(2020, 1, 1)
+        self.dfltFilTrans_prov = DefaultFilingTransformFactory(appl_type=self.applType_prov)
+        self.dfltFilTrans_pct = DefaultFilingTransformFactory(appl_type=self.applType_pct)
+        self.dfltFilTrans_utility = DefaultFilingTransformFactory(appl_type=self.applType_utility)
+        self.defaultCountryOANum = DefaultCountryOANumFactory()
+        self.dfltPublTrans_pct = DefaultPublTransformFactory(appl_type=self.applType_pct)
+        self.dfltPublTrans_utility = DefaultPublTransformFactory(appl_type=self.applType_utility)
+        self.dfltOATrans = DefaultOATransformFactory(appl_type=self.applType_utility)
+        self.allowTrans = DefaultAllowanceTransformFactory(appl_type=self.applType_utility)
+        self.IssueTrans = DefaultIssueTransformFactory(appl_type=self.applType_utility)
 
-        self.dfltFilTrans = DefaultFilingTransform.objects.create(appl_type=self.applType,
-                                                                  date_diff=relativedelta(years=2))
-        self.dfltFilTrans_pct = DefaultFilingTransform.objects.create(appl_type=self.applType_pct,
-                                                                  date_diff=relativedelta(years=2))
-        self.dfltFilTrans_pct = DefaultFilingTransform.objects.create(
-            appl_type=self.applType_utility,
-            date_diff=relativedelta(years=2))
+        self.customFilTrans = CustomFilingTransformFactory(appl_type=self.applType_prov,
+                                                           prev_appl_type=None,
+                                                           country=self.country_US)
+        self.issTrans = IssueTransformFactory(country=self.country_US)
+        self.allowTrans = AllowanceTransformFactory(country=self.country_US)
+        self.oaTrans = OATransformFactory(country=self.country_US)
+        self.publTrans = PublicationTransformFactory(country=self.country_US)
+        self.countryOANum = CountryOANumFactory(country=self.country_US)
 
-        self.customFilTrans = CustomFilingTransform.objects.create(appl_type=self.applType,
-                                                                   prev_appl_type=None,
-                                                                   country=self.country,
-                                                                   date_diff=relativedelta(years=3))
-        self.issTrans = IssueTransform.objects.create(country=self.country,
-                                                      date_diff=relativedelta(years=4))
-        self.allowTran = AllowanceTransform.objects.create(country=self.country,
-                                                           date_diff=relativedelta(years=5))
-        self.OATrans = OATransform.objects.create(country=self.country,
-                                                  date_diff=relativedelta(years=6))
-        self.publTrans = PublicationTransform.objects.create(country=self.country,
-                                                             date_diff=relativedelta(years=7))
-        self.countryOANum = CountryOANum.objects.create(country=self.country, oa_total=3)
-        self.defaultCountryOANum = DefaultCountryOANum.objects.create(oa_total=2)
 
-        self.famOpt = FamOptions.objects.create(family=self.family)
+        self.famFormData = FamEstFormDataFactory(init_appl_country=self.country_US,
+                                                 init_appl_type=self.applType_prov,
+                                                 meth_country=self.country_US,
+                                                 countries=self.countries)
 
-        self.famFormData = FamEstFormData.objects.create(
-            user=self.user,
-            family=self.family,
-            init_appl_filing_date=date(2020, 1, 1),
-            init_appl_country=self.country,
-            init_appl_type=self.applType,
-            init_appl_indep_claims=1,
-            init_appl_claims=10,
-            init_appl_drawings=3,
-            init_appl_pages=12,
-            method=True,
-            meth_country=self.country,
-            entity_size=self.entitySize,
-        )
-        self.famFormData.countries.set(self.countries)
-        self.conditions = LineEstimationTemplateConditions.objects.create(
-            condition_claims_min=0,
-            #condition_claims_max=Null,
-            condition_drawings_min=0,
-            #condition_drawings_max=0,
-            condition_pages_min=0,
-            #condition_pages_max=0,
-            condition_entity_size=self.entitySize,
-        )
-        self.filing_template = FilingEstimateTemplate.objects.create(
-            date_diff=relativedelta(years=1),
-            official_cost=Money(1, 'USD'),
-            country=self.country,
-            conditions=self.conditions,
-        )
-        self.publication_template = PublicationEstTemplate.objects.create(
-            date_diff=relativedelta(years=1),
-            official_cost=Money(2, 'USD'),
-            country=self.country,
-            conditions=self.conditions,
-        )
-        self.oa_template = OAEstimateTemplate.objects.create(
-            date_diff=relativedelta(years=1),
-            official_cost=Money(3, 'USD'),
-            country=self.country,
-            conditions=self.conditions,
-        )
-        self.allowance_template = AllowanceEstTemplate.objects.create(
-            date_diff=relativedelta(years=1),
-            official_cost=Money(4, 'USD'),
-            country=self.country,
-            conditions=self.conditions,
-        )
-        self.issue_template = IssueEstTemplate.objects.create(
-            date_diff=relativedelta(years=1),
-            official_cost=Money(5, 'USD'),
-            country=self.country,
-            conditions=self.conditions,
-        )
+        self.filing_template_us = FilingEstimateTemplateFactory(country=self.country_US,
+                                                                appl_type=self.applType_utility)
+        self.publication_template = PublicationEstTemplateFactory(country=self.country_US)
+        self.oa_template = OAEstimateTemplateFactory(country=self.country_US)
+        self.allowance_template = AllowanceEstTemplateFactory(country=self.country_US)
+        self.issue_template = IssueEstTemplateFactory(country=self.country_US)
+
 
     def test_generate_family_options_creates_first_appl(self):
-        self.famFormData.generate_family_options()
+        famFormData = FamEstFormDataFactory(init_appl_country=self.country_US,
+                                            init_appl_type=self.applType_prov,
+                                            entity_size=self.entitySize,
+                                            meth_country=self.country_US)
+        famFormData.generate_family_options()
         applOptCount = ApplOptions.objects.all().count()
-        self.assertEquals(3, applOptCount)
+        applCount = BaseApplication.objects.all().count()
+        self.assertEquals(applCount, applOptCount)
 
     def test_generate_family_options_creates_publ_est(self):
-        self.famFormData.generate_family_options()
+        famFormData = FamEstFormDataFactory(init_appl_country=self.country_US,
+                                            init_appl_type=self.applType_prov,
+                                            entity_size=self.entitySize,
+                                            meth_country=self.country_US,
+                                            countries=self.countries)
+        famFormData.generate_family_options()
+        self.assertEquals(BaseApplication.objects.all().count(),
+                          Publication.objects.all().count())
+
         self.assertEquals(self.publication_template.official_cost,
-                          PublicationEst.objects.all().first().official_cost)
+                          PublicationEst.objects.all().count())
 
    
 

@@ -4,6 +4,7 @@ from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from application.models import BaseApplication, ApplDetails
 from application.serializers import ApplicationSerializer, ApplDetailSerializer
+from family.models import Family
 
 # Create your views here.
 class ApplicationViewSet(viewsets.ModelViewSet):
@@ -17,10 +18,10 @@ class ApplicationViewSet(viewsets.ModelViewSet):
                 queryset = queryset.filter(family=family)
         return queryset
 
-    def get_serializer_class(self):
-        if self.request.method in ['GET']:
-            return ApplicationSerializer
-        return ApplicationPostSerializer
+    # def get_serializer_class(self):
+    #     if self.request.method in ['GET']:
+    #         return ApplicationSerializer
+    #     return ApplicationPostSerializer
 
     @action(detail=False,url_path='filter/family=(?P<family_id>\d+)')
     def filter(self, request, family_id):

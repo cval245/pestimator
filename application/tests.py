@@ -1,221 +1,154 @@
 from django.test import TestCase
-from datetime import date
-from djmoney.money import Money
-from .models import UtilityApplication, Publication, Allowance,\
- USOfficeAction, OfficeAction, Issue, ApplDetails
-from django.contrib.auth import get_user_model
+from characteristics.factories import ApplTypeFactory, CountryFactory, EntitySizeFactory
+from estimation.factories import FilingEstimateTemplateFactory, PublicationEstTemplateFactory, \
+    OAEstimateTemplateFactory, AllowanceEstTemplateFactory, IssueEstTemplateFactory, USOAEstimateTemplateFactory
+from famform.factories import ApplOptionsFactory, PublOptionFactory, AllowOptionsFactory, OAOptionsFactory, \
+    IssueOptionsFactory
+from family.factories import FamilyFactory
+from transform.factories import DefaultFilingTransformFactory, CustomFilingTransformFactory, IssueTransformFactory, \
+    AllowanceTransformFactory, OATransformFactory, PublicationTransformFactory, CountryOANumFactory, \
+    DefaultCountryOANumFactory, DefaultPublTransformFactory, DefaultOATransformFactory, \
+    DefaultAllowanceTransformFactory, DefaultIssueTransformFactory
+from user.factories import UserFactory
+from .models import BaseApplication
+from .models.issue import Issue
+from .models.allowance import Allowance
+from .models.publication import Publication
+from .models.usOfficeAction import USOfficeAction
+from .models.utilityApplication import UtilityApplication
 from dateutil.relativedelta import relativedelta
 from django.db.models import Sum
-from characteristics.models import EntitySize, Country, ApplType
-from estimation.models import LineEstimationTemplateConditions, FilingEstimateTemplate,\
-    OAEstimate, OAEstimateTemplate,\
-    PublicationEstTemplate, AllowanceEstTemplate, IssueEstTemplate,\
-    PublicationEst, AllowanceEst, IssueEst, USOAEstimateTemplate,\
-    USOAEstimate
-from famform.models import FamOptions, ApplOptions, AllowOptions, PublOptions,\
-    OAOptions, IssueOptions
-from family.models import Family
+from estimation.models import \
+    OAEstimate, OAEstimateTemplate, \
+    PublicationEstTemplate, \
+    PublicationEst, AllowanceEst, IssueEst, USOAEstimateTemplate, \
+    USOAEstimate, FilingEstimate
 
 # Create your tests here.
+
 class UtilityApplicationTest(TestCase):
 
     def setUp(self):
-        self.user = get_user_model().objects.create_user(username='test',
-                                                         password='Belgrade2010',
-                                                         email='c.val@tutanota.com')
-        self.entitySize = EntitySize.objects.create(entity_size='test')
-        self.family = Family.objects.create(user=self.user,
-                                            family_name='title of family',
-                                            family_no='no of family')
-        self.applDetails = ApplDetails.objects.create(
-            num_indep_claims=1,
-            num_pages=10,
-            num_claims=10,
-            num_drawings=5,
-            entity_size=self.entitySize)
-        self.filing_date = date(2020, 1, 1)
-        self.country = Country.objects.create(country='US',currency_name= 'USD')
-        self.applType = ApplType.objects.create(application_type='utility')
-        self.options = FamOptions.objects.create(
-            family=self.family
-        )
-        self.applOption = ApplOptions.objects.create(details=self.applDetails,
-                                                     country=self.country,
-                                                     appl_type=self.applType,
-                                                     date_filing=date(2020,1,1),
-                                                     title='title',
-                                                     fam_options=self.options,
-                                                     prev_appl_options=None
-        )
-        self.publOption = PublOptions.objects.create(appl=self.applOption,
-                                                     date_diff=relativedelta(years=1))
-        self.oAOption = OAOptions.objects.create(appl=self.applOption,
-                                                 date_diff=relativedelta(years=1),
-                                                 oa_prev=None)
-        self.oAOption_two = OAOptions.objects.create(appl=self.applOption,
-                                                     date_diff=relativedelta(years=1),
-                                                     oa_prev=self.oAOption)
-        self.oAOption_three = OAOptions.objects.create(appl=self.applOption,
-                                                       date_diff=relativedelta(years=1),
-                                                       oa_prev=self.oAOption_two)
-        # self.uSOAOption_one = OAOptions.objects.create(appl=self.applOption,
-        #     date_diff=relativedelta(years=1),
-        #     oa_prev=None
-        #     )
+        self.user = UserFactory()
+        self.applType_prov = ApplTypeFactory(prov=True)
+        self.applType_pct = ApplTypeFactory(pct=True)
+        self.applType_utility = ApplTypeFactory(utility=True)
+        self.country_US = CountryFactory(US=True)
+        self.country_CN = CountryFactory(CN=True)
+        self.countries = [self.country_US, self.country_CN]
+        self.entitySize = EntitySizeFactory()
+        self.family = FamilyFactory(user=self.user)
 
+        self.dfltFilTrans_prov = DefaultFilingTransformFactory(appl_type=self.applType_prov)
+        self.dfltFilTrans_pct = DefaultFilingTransformFactory(appl_type=self.applType_pct)
+        self.dfltFilTrans_utility = DefaultFilingTransformFactory(appl_type=self.applType_utility)
+        self.defaultCountryOANum = DefaultCountryOANumFactory()
+        self.dfltPublTrans_pct = DefaultPublTransformFactory(appl_type=self.applType_pct)
+        self.dfltPublTrans_utility = DefaultPublTransformFactory(appl_type=self.applType_utility)
+        self.dfltOATrans = DefaultOATransformFactory(appl_type=self.applType_utility)
+        self.allowTrans = DefaultAllowanceTransformFactory(appl_type=self.applType_utility)
+        self.IssueTrans = DefaultIssueTransformFactory(appl_type=self.applType_utility)
 
-        self.allowOption = AllowOptions.objects.create(appl=self.applOption,
-                                                       date_diff=relativedelta(years=1))
-        self.issueOption = IssueOptions.objects.create(appl=self.applOption,
-                                                       date_diff=relativedelta(years=1))
+        self.customFilTrans = CustomFilingTransformFactory(appl_type=self.applType_prov,
+                                                           prev_appl_type=None,
+                                                           country=self.country_US)
+        self.issTrans = IssueTransformFactory(country=self.country_US)
+        self.allowTrans = AllowanceTransformFactory(country=self.country_US)
+        self.oaTrans = OATransformFactory(country=self.country_US)
+        self.publTrans = PublicationTransformFactory(country=self.country_US)
+        self.countryOANum = CountryOANumFactory(country=self.country_US)
 
-        self.utilityApplDetails = ApplDetails.objects.create(
-            num_indep_claims=1,
-            num_pages=1,
-            num_claims=1,
-            num_drawings=1,
-            entity_size=self.entitySize,
-        )
-        self.utilityApplication = UtilityApplication.objects.create(
-            user=self.user, title='title',
-            country=self.country,
-            date_filing=date(2020, 1, 1),
-            details=self.utilityApplDetails,
-            family=self.family            
-        )
-        self.conditions = LineEstimationTemplateConditions.objects.create(
-            condition_claims_min=0,
-            #condition_claims_max=Null,
-            condition_drawings_min=0,
-            #condition_drawings_max=0,
-            condition_pages_min=0,
-            #condition_pages_max=0,
-            condition_entity_size=self.entitySize,
-        )
-        self.filing_template = FilingEstimateTemplate.objects.create(
-            date_diff=relativedelta(years=1),
-            official_cost=Money(1, 'USD'),
-            country=self.country,
-            conditions=self.conditions,
-            appl_type=self.applType,
-        )
-        self.publication_template = PublicationEstTemplate.objects.create(
-            date_diff=relativedelta(years=1),
-            official_cost=Money(2, 'USD'),
-            country=self.country,
-            conditions=self.conditions,
-            appl_type=self.applType,
-        )
-        self.oa_template = OAEstimateTemplate.objects.create(
-            date_diff=relativedelta(years=1),
-            official_cost=Money(3, 'USD'),
-            country=self.country,
-            conditions=self.conditions,
-            appl_type=self.applType,
-        )
-        self.oa_template_one = USOAEstimateTemplate.objects.create(
-            date_diff=relativedelta(years=1),
-            official_cost=Money(3, 'USD'),
-            country=self.country,
-            conditions=self.conditions,
-            oa_type='NFOA',
-            appl_type=self.applType,
-        )
-        self.oa_template_two = USOAEstimateTemplate.objects.create(
-            date_diff=relativedelta(years=1),
-            official_cost=Money(3, 'USD'),
-            country=self.country,
-            conditions=self.conditions,
-            oa_type='FOA',
-            appl_type=self.applType,
-        )
+        self.filing_template_us = FilingEstimateTemplateFactory(country=self.country_US,
+                                                                appl_type=self.applType_utility)
+        self.publication_template = PublicationEstTemplateFactory(country=self.country_US)
+        self.oa_template = OAEstimateTemplateFactory(country=self.country_CN)
+        self.oa_template = USOAEstimateTemplateFactory()
+        self.allowance_template = AllowanceEstTemplateFactory(country=self.country_US)
+        self.issue_template = IssueEstTemplateFactory(country=self.country_US)
 
-
-        self.allowance_template = AllowanceEstTemplate.objects.create(
-            date_diff=relativedelta(years=1),
-            official_cost=Money(4, 'USD'),
-            country=self.country,
-            conditions=self.conditions,
-            appl_type=self.applType,
-        )
-        self.issue_template = IssueEstTemplate.objects.create(
-            date_diff=relativedelta(years=1),
-            official_cost=Money(5, 'USD'),
-            country=self.country,
-            conditions=self.conditions,
-            appl_type=self.applType,
-        )
+        self.applOption = ApplOptionsFactory(country=self.country_US, appl_type=self.applType_utility)
+        self.publOption = PublOptionFactory(appl=self.applOption)
+        self.oaOption = OAOptionsFactory(appl=self.applOption)
+        self.allowOption = AllowOptionsFactory(appl=self.applOption)
+        self.issueOption = IssueOptionsFactory(appl=self.applOption)
 
     def test_create_full_creates_Publication(self):
-        selectedApplOption = ApplOptions.objects.get(id=self.applOption.id)
-        UtilityApplication.objects.create_full(options=selectedApplOption, 
-            user=self.user, family_id=self.family.id)
-        date_publication = self.filing_date + relativedelta(years=1)
+        UtilityApplication.objects.create_full(options=self.applOption,
+                                               user=self.user, family_id=self.family.id)
+
+        uAppl = BaseApplication.objects.get(user=self.user)
+        date_publication = uAppl.date_filing + self.publOption.date_diff
         self.assertEquals(date_publication, Publication.objects.first().date_publication)
 
     def test_create_full_creates_oa(self):
-        selectedApplOption = ApplOptions.objects.get(id=self.applOption.id)
-        UtilityApplication.objects.create_full(options=selectedApplOption, 
-            user=self.user, family_id=self.family.id)
+        UtilityApplication.objects.create_full(options=self.applOption,
+                                               user=self.user, family_id=self.family.id)
+
+        uAppl = BaseApplication.objects.get(user=self.user)
         # relativedelta is calced by combining options in Setup
-        date_allowance = self.filing_date + relativedelta(years=1)
+        date_allowance = uAppl.date_filing + relativedelta(years=1)
         self.assertEquals(date_allowance, USOfficeAction.objects.first().date_office_action)
 
     def test_create_full_creates_allowance(self):
-        selectedApplOption = ApplOptions.objects.get(id=self.applOption.id)
-        UtilityApplication.objects.create_full(options=selectedApplOption, 
-            user=self.user, family_id=self.family.id)
+        UtilityApplication.objects.create_full(options=self.applOption,
+                                               user=self.user, family_id=self.family.id)
+        uAppl = BaseApplication.objects.get(user=self.user)
         # relativedelta is calced by combining options in Setup
-        oa_agg = selectedApplOption.oaoptions_set.all().aggregate(date_diff=Sum('date_diff'))
-        allow_diff = selectedApplOption.allowoptions.date_diff
-        date_allowance = self.filing_date + oa_agg['date_diff'] + allow_diff
+        oa_agg = self.applOption.oaoptions_set.all().aggregate(date_diff=Sum('date_diff'))
+        allow_diff = self.applOption.allowoptions.date_diff
+        date_allowance = uAppl.date_filing + oa_agg['date_diff'] + allow_diff
         self.assertEquals(date_allowance, Allowance.objects.first().date_allowance)
 
     def test_create_full_creates_issue(self):
-        selectedApplOption = ApplOptions.objects.get(id=self.applOption.id)
-        UtilityApplication.objects.create_full(options=selectedApplOption,
-                                               user=self.user, 
+        UtilityApplication.objects.create_full(options=self.applOption,
+                                               user=self.user,
                                                family_id=self.family.id)
-        oa_agg = selectedApplOption.oaoptions_set.all().aggregate(date_diff=Sum('date_diff'))
-        allow_diff = selectedApplOption.allowoptions.date_diff
-        issue_diff = selectedApplOption.issueoptions.date_diff
-        date_issuance = self.filing_date + oa_agg['date_diff'] + allow_diff + issue_diff
+        uAppl = BaseApplication.objects.get(user=self.user)
+        oa_agg = self.applOption.oaoptions_set.all().aggregate(date_diff=Sum('date_diff'))
+        allow_diff = self.applOption.allowoptions.date_diff
+        issue_diff = self.applOption.issueoptions.date_diff
+        date_issuance = uAppl.date_filing + oa_agg['date_diff'] + allow_diff + issue_diff
         self.assertEquals(date_issuance, Issue.objects.first().date_issuance)
 
     def test_generate_filing_est(self):
-        ests = self.utilityApplication._generate_filing_est()
-        self.assertEquals(ests[0].official_cost, self.filing_template.official_cost)
+        UtilityApplication.objects.create_full(options=self.applOption,
+                                               user=self.user,
+                                               family_id=self.family.id)
+        uAppl = BaseApplication.objects.get(user=self.user)
+        self.assertEquals(FilingEstimate.objects.get(application=uAppl).official_cost,
+                          self.filing_template_us.official_cost)
 
     def test_create_full_publication_est(self):
-        selectedApplOption = ApplOptions.objects.get(id=self.applOption.id)
-        UtilityApplication.objects.create_full(options=selectedApplOption, 
-            user=self.user, family_id=self.family.id)
+
+        UtilityApplication.objects.create_full(options=self.applOption,
+                                               user=self.user, family_id=self.family.id)
+        publEstTemp = PublicationEstTemplate.objects.all()
         self.assertEquals(self.publication_template.official_cost,
                           PublicationEst.objects.all().first().official_cost
-        )
+                          )
 
     def test_create_full_oa_est(self):
-        selectedApplOption = ApplOptions.objects.get(id=self.applOption.id)
-        UtilityApplication.objects.create_full(options=selectedApplOption, 
-            user=self.user, family_id=self.family.id)
+        UtilityApplication.objects.create_full(options=self.applOption,
+                                               user=self.user, family_id=self.family.id)
+        a = OAEstimateTemplate.objects.all()
+        b = OAEstimate.objects.all()
+        c = vars(USOAEstimateTemplate.objects.all().first())
+        d = vars(USOAEstimateTemplate.objects.all().first().conditions)
         self.assertEquals(self.oa_template.official_cost,
                           USOAEstimate.objects.all().first().official_cost
-        )
+                          )
 
     def test_create_full_allowance_est(self):
-        selectedApplOption = ApplOptions.objects.select_related().get(id=self.applOption.id)
-        UtilityApplication.objects.create_full(options=selectedApplOption, 
-            user=self.user, family_id=self.family.id)
+        UtilityApplication.objects.create_full(options=self.applOption,
+                                               user=self.user, family_id=self.family.id)
         self.assertEquals(self.allowance_template.official_cost,
                           AllowanceEst.objects.all().first().official_cost
-        )
+                          )
 
     def test_create_full_issue_est(self):
-        selectedApplOption = ApplOptions.objects.get(id=self.applOption.id)
-        selectedApplOption = ApplOptions.objects.select_related('publoptions').get(id=self.applOption.id)
-        UtilityApplication.objects.create_full(options=selectedApplOption, 
-            user=self.user, family_id=self.family.id)
+        UtilityApplication.objects.create_full(options=self.applOption,
+                                               user=self.user, family_id=self.family.id)
         self.assertEquals(self.issue_template.official_cost,
                           IssueEst.objects.all().first().official_cost
 
-        )
+                          )

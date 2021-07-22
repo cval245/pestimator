@@ -1,6 +1,11 @@
 from django.db import models
-from application.models import UtilityApplication, BaseApplication,\
-    OfficeAction, USOfficeAction, Publication, Allowance, Issue
+from application.models import BaseApplication
+from application.models.issue import Issue
+from application.models.allowance import Allowance
+from application.models.publication import Publication
+from application.models.officeAction import OfficeAction
+from application.models.usOfficeAction import USOfficeAction
+from application.models.utilityApplication import UtilityApplication
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 from characteristics.models import Country, EntitySize, ApplType
