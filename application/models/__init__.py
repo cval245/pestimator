@@ -10,6 +10,7 @@ from application.models.provApplication import ProvApplication
 from application.models.usUtilityApplication import USUtilityApplication
 from application.models.publication import Publication
 from application.models.officeAction import OfficeAction
+from application.models.usOfficeAction import USOfficeAction
 from application.models.allowance import Allowance
 from application.models.issue import Issue
 from characteristics.models import EntitySize, ApplType, Country

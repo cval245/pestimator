@@ -17,12 +17,9 @@ class BaseUtilityApplication(BaseApplication):
 
         # generate publication date and estimates
         publ = self._generate_publication(options.publoptions.date_diff)
-        print('publ', publ)
         oas_in = options.oaoptions_set.all()
 
         oas_out = self._generate_oa(oas_in)
-        print('$$$$$$$$$$$$$$$$$$$$$')
-        print(oas_out)
         # calc last oa
         last_date = self.date_filing
         for oa in oas_out:

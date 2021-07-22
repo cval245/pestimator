@@ -96,7 +96,7 @@ class FamFormApplicationTest(TestCase):
         self.assertEquals(BaseApplication.objects.all().count(),
                           Publication.objects.all().count())
 
-        self.assertEquals(self.publication_template.official_cost,
+        self.assertEquals(PublicationEstTemplate.objects.all().count(),
                           PublicationEst.objects.all().count())
 
    

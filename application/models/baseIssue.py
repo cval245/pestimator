@@ -14,6 +14,7 @@ class BaseIssue(models.Model):
     class Meta:
         abstract = True
 
+
     def generate_ests(self):
         from estimation.models import IssueEstTemplate
         issue_templates = IssueEstTemplate.objects.filter(

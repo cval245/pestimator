@@ -31,7 +31,7 @@ class USOfficeAction(BaseOfficeAction):
             if e.law_firm_template is not None:
                 from estimation.models import LawFirmEst
                 lawFirmEst = LawFirmEst.objects.create(
-                    date=e.law_firm_template.date_diff+self.application.date_filing,
+                    date=e.law_firm_template.date_diff+self.date_office_action,
                     law_firm_cost=e.law_firm_template.law_firm_cost
                 )
 

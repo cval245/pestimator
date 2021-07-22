@@ -17,7 +17,6 @@ class BaseAllowance(models.Model):
             country=self.application.country,
             appl_type=convert_class_applType(self.application)
         )
-
         templates = utils.filter_conditions(allow_templates, self.application.details)
         templates = templates.select_related('law_firm_template')
         ests = []
@@ -29,7 +28,6 @@ class BaseAllowance(models.Model):
                     date=e.law_firm_template.date_diff+self.date_allowance,
                     law_firm_cost=e.law_firm_template.law_firm_cost
                 )
-
             from estimation.models import AllowanceEst
             est = AllowanceEst.objects.create(
                 allowance=self,

@@ -1,4 +1,7 @@
+import random
+
 import factory
+from dateutil.relativedelta import relativedelta
 from djmoney.money import Money
 from faker.providers import BaseProvider
 
@@ -8,12 +11,17 @@ from . import models
 from .models import FilingEstimateTemplate, PublicationEstTemplate, OAEstimateTemplate, USOAEstimateTemplate, \
     AllowanceEstTemplate, IssueEstTemplate, LawFirmEst, BaseEst, FilingEstimate, OAEstimate, USOAEstimate, \
     PublicationEst, IssueEst, AllowanceEst
-
+import random
 class MoneyProvider(BaseProvider):
    def money(self):
-       return Money(555, 'USD')
+       return Money(random.random()*1000, 'USD')
+
+class DiffProvider(BaseProvider):
+    def diff(self):
+        return relativedelta(days=random.randint(0, 365))
 
 factory.Faker.add_provider(MoneyProvider)
+factory.Faker.add_provider(DiffProvider)
 
 class LineEstimationTemplateConditionsFactory(factory.django.DjangoModelFactory):
     condition_claims_min = None
@@ -42,7 +50,7 @@ class LineEstimationTemplateConditionsFactory(factory.django.DjangoModelFactory)
 
 
 
-class LawFirmEstFactory(factory.django.DjangoModelFactory):
+class LawFirmEstTemplateFactory(factory.django.DjangoModelFactory):
     law_firm_cost = factory.Faker('money')
     date_diff = 'P1Y'
 
@@ -52,15 +60,14 @@ class LawFirmEstFactory(factory.django.DjangoModelFactory):
 
 class BaseEstTemplateFactory(factory.django.DjangoModelFactory):
     official_cost = factory.Faker('money')
-    date_diff = 'P1Y'
+    date_diff = factory.Faker('diff')
     country = factory.SubFactory(CountryFactory)
     appl_type = factory.SubFactory(ApplTypeFactory)
     conditions = factory.SubFactory(LineEstimationTemplateConditionsFactory)
-    law_firm_template = factory.SubFactory(LawFirmEstFactory)
+    law_firm_template = factory.SubFactory(LawFirmEstTemplateFactory)
 
     class Meta:
         abstract = True
-        django_get_or_create = ('appl_type',)
 
 
 class FilingEstimateTemplateFactory(BaseEstTemplateFactory):

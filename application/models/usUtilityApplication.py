@@ -26,6 +26,7 @@ class USUtilityApplication(BaseUtilityApplication):
 
         date_prev = self.date_filing
         oa_array = []
+        prev_oa = None
         final_oa_bool = False
         for oa in ordered_oa:
             date_oa = date_prev + oa.date_diff
@@ -33,10 +34,12 @@ class USUtilityApplication(BaseUtilityApplication):
             created_oa = USOfficeAction.objects.create(
                 application=self,
                 oa_final_bool=final_oa_bool,
+                oa_prev=prev_oa,
                 date_office_action=date_oa)
             created_oa.generate_ests()
             oa_array.append(created_oa)
             date_prev = date_oa
+            prev_oa = created_oa
             if final_oa_bool is False:
                 final_oa_bool = True
             else:

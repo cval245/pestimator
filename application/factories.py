@@ -11,17 +11,6 @@ from user.factories import UserFactory
 from . import models
 
 
-# class DateProvider(BaseProvider):
-#    def date_aware(self):
-#        timezone.activate(pytz.timezone("Asia/Kolkata"))
-#        timezone_one = pytz.timezone('Europe/London')
-#        return timezone_one.localize(date(2020,1,1))
-#        #return timezone.make_aware(date(2020, 1, 1))
-#        # timezone.make_aware()
-#        # return pytz.FixedOffset.make_aware(date())
-#
-#
-# factory.Faker.add_provider(DateProvider)
 
 class ApplDetailsFactory(factory.django.DjangoModelFactory):
     num_indep_claims = factory.Faker('random_int', min=1, max=50, step=1)
@@ -85,6 +74,15 @@ class OfficeActionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.OfficeAction
 
+
+class USOfficeActionFactory(factory.django.DjangoModelFactory):
+    date_office_action = factory.Faker('date_object')
+    application = factory.SubFactory(BaseUtilityApplicationFactory)
+
+    class Meta:
+        model = models.USOfficeAction
+
+
 class AllowanceFactory(factory.django.DjangoModelFactory):
     application = factory.SubFactory(ApplicationFactory)
     date_allowance = factory.Faker('date_object')
@@ -93,7 +91,7 @@ class AllowanceFactory(factory.django.DjangoModelFactory):
         model = models.Allowance
 
 class IssuanceFactory(factory.django.DjangoModelFactory):
-    date_issueance = factory.Faker('date_object')
+    date_issuance = factory.Faker('date_object')
     application = factory.SubFactory(ApplicationFactory)
 
     class Meta:

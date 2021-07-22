@@ -1,6 +1,5 @@
 from characteristics.models import ApplType
 def convert_class_applType(appl):
-    print('appl is', (appl))
     if hasattr(appl, 'baseutilityapplication'):
         return ApplType.objects.get(application_type='utility')
     elif hasattr(appl, 'pctapplication'):
