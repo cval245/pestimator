@@ -1,8 +1,7 @@
 from django.db import models
 
-#from application.models import ProvApplication, PCTApplication, USUtilityApplication, BaseUtilityApplication
 
-
+# class ApplManager(PolymorphicManager):
 class ApplManager(models.Manager):
 
     def create_full(self, options, user, family_id):

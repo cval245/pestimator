@@ -1,25 +1,28 @@
-from django.shortcuts import render
 from rest_framework import viewsets
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
+
 from .models import ApplType, Country, EntitySize
-from .serializers import ApplTypeSerializer, CountrySerializer, EntitySerializer,\
+from .serializers import ApplTypeSerializer, CountrySerializer, EntitySerializer, \
     CountryAllSerializer
+
 
 # Create your views here.
 class ApplTypeViewSet(viewsets.ModelViewSet):
     queryset = ApplType.objects.all()
     serializer_class = ApplTypeSerializer
 
+
 class CountryViewSet(viewsets.ModelViewSet):
-    #queryset = Country.objects.all()
     serializer_class = CountrySerializer
+
     def get_queryset(self):
-        return Country.objects.filter(active_bool=True)
+        return Country.objects.filter(active_bool=True).exclude(country='EP')
+
 
 class CountryAllViewSet(viewsets.ModelViewSet):
-    #queryset = Country.objects.all()
     serializer_class = CountryAllSerializer
+
     def get_queryset(self):
         return Country.objects.all()
 

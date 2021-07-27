@@ -1,14 +1,12 @@
-from django.shortcuts import render
 from rest_framework import viewsets
 
-from .models import BaseEstTemplate, FilingEstimateTemplate, LawFirmEstTemplate, PublicationEstTemplate,\
-	OAEstimateTemplate, AllowanceEstTemplate, IssueEstTemplate,\
-	LineEstimationTemplateConditions
-
+from .models import BaseEstTemplate, FilingEstimateTemplate, LawFirmEstTemplate, PublicationEstTemplate, \
+	OAEstimateTemplate, AllowanceEstTemplate, IssueEstTemplate, \
+	LineEstimationTemplateConditions, USOAEstimateTemplate
 from .serializers import BaseEstTemplateSerializer, FilingEstimateTemplateSerializer, LawFirmEstTemplateSerializer, \
-	PublicationEstTemplateSerializer, OAEstimateTemplateSerializer,\
-	 AllowanceEstTemplateSerializer, IssueEstTemplateSerializer,\
-	ConditionsSerializer
+	PublicationEstTemplateSerializer, OAEstimateTemplateSerializer, \
+	AllowanceEstTemplateSerializer, IssueEstTemplateSerializer, \
+	ConditionsSerializer, USOAEstimateTemplateSerializer
 
 
 # Create your views here.
@@ -30,17 +28,27 @@ class PublicationEstTemplateViewSet(viewsets.ModelViewSet):
 	def get_queryset(self):
 		return PublicationEstTemplate.objects.all()
 
+
 class OAEstimateTemplateViewSet(viewsets.ModelViewSet):
-	serializer_class = OAEstimateTemplateSerializer 
+	serializer_class = OAEstimateTemplateSerializer
 
 	def get_queryset(self):
 		return OAEstimateTemplate.objects.all()
+
+
+class USOAEstimateTemplateViewSet(viewsets.ModelViewSet):
+	serializer_class = USOAEstimateTemplateSerializer
+
+	def get_queryset(self):
+		return USOAEstimateTemplate.objects.all()
+
 
 class AllowanceEstTemplateViewSet(viewsets.ModelViewSet):
 	serializer_class = AllowanceEstTemplateSerializer
 
 	def get_queryset(self):
 		return AllowanceEstTemplate.objects.all()
+
 
 class IssueEstTemplateViewSet(viewsets.ModelViewSet):
 	serializer_class = IssueEstTemplateSerializer

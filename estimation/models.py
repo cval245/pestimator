@@ -1,17 +1,28 @@
 from django.db import models
-from application.models import BaseApplication
-from application.models.issue import Issue
-from application.models.allowance import Allowance
-from application.models.publication import Publication
-from application.models.officeAction import OfficeAction
-from application.models.usOfficeAction import USOfficeAction
-from application.models.utilityApplication import UtilityApplication
+from djmoney.contrib.exchange.models import convert_money
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
-from characteristics.models import Country, EntitySize, ApplType
 from relativedeltafield import RelativeDeltaField
 
-# Create your models here.
+from application.models import BaseApplication
+from application.models.allowance import Allowance
+from application.models.issue import Issue
+from application.models.officeAction import OfficeAction
+from application.models.publication import Publication
+from application.models.usOfficeAction import USOfficeAction
+from application.models.utilityApplication import UtilityApplication
+from characteristics.models import Country, EntitySize, ApplType
+
+
+# class TemplateManager(models.Manager):
+#     def create(self, **kwargs):
+#         print('self', self)
+#         print('super self', dir(self))
+#         print('super self', vars(self))
+#         print('**********************88',kwargs)
+#         return self.model.create(kwargs)
+
+
 class LineEstimationTemplateConditions(models.Model):
     condition_claims_min = models.IntegerField(blank=True, null=True)
     condition_claims_max = models.IntegerField(blank=True, null=True)
@@ -19,9 +30,9 @@ class LineEstimationTemplateConditions(models.Model):
     condition_pages_max = models.IntegerField(blank=True, null=True)
     condition_drawings_min = models.IntegerField(blank=True, null=True)
     condition_drawings_max = models.IntegerField(blank=True, null=True)
-    condition_entity_size = models.ForeignKey(EntitySize, 
-                             on_delete=models.CASCADE,
-                             null=True)
+    condition_entity_size = models.ForeignKey(EntitySize,
+                                              on_delete=models.CASCADE,
+                                              null=True)
 
 class LawFirmEstTemplate(models.Model):
     law_firm_cost = MoneyField(max_digits=19,
@@ -29,6 +40,8 @@ class LawFirmEstTemplate(models.Model):
                                default=Money(0, 'USD'),
                                default_currency='USD')
     date_diff = RelativeDeltaField()
+
+    # objects = TemplateManager()
 
     class Meta:
         abstract = False
@@ -46,16 +59,23 @@ class BaseEstTemplate(models.Model):
     conditions = models.OneToOneField(LineEstimationTemplateConditions, on_delete=models.CASCADE)
     law_firm_template = models.OneToOneField(LawFirmEstTemplate, on_delete=models.CASCADE)
 
+    # objects = TemplateManager()
+
     class Meta:
         abstract = True
 
-
+    def save(self, *args, **kwargs):
+        # override so the country and currency are correct
+        self.official_cost = Money(self.official_cost.amount, self.country.currency_name)
+        self.law_firm_template.law_firm_cost = \
+            Money(self.law_firm_template.law_firm_cost.amount, self.country.currency_name)
+        self.law_firm_template.save()
+        return super().save()
 
 class FilingEstimateTemplate(BaseEstTemplate):
 
     class Meta:
         abstract = False
-
 
 class PublicationEstTemplate(BaseEstTemplate):
 
@@ -100,6 +120,11 @@ class LawFirmEst(models.Model):
                                default_currency='USD')
     date = models.DateField()
 
+    def save(self, **kwargs):
+        # official_cost
+        self.law_firm_cost = convert_money(self.law_firm_cost, 'USD')
+        super().save(kwargs)
+
 
 class BaseEst(models.Model):
     official_cost = MoneyField(max_digits=19,
@@ -110,9 +135,14 @@ class BaseEst(models.Model):
     law_firm_est = models.OneToOneField(LawFirmEst, on_delete=models.CASCADE, null=True)
     application = models.ForeignKey(BaseApplication,
                                     on_delete=models.CASCADE)
+
     class Meta:
         abstract = False
 
+    def save(self, **kwargs):
+        # official_cost
+        self.official_cost = convert_money(self.official_cost, 'USD')
+        super().save(kwargs)
 
 
 class FilingEstimate(BaseEst):

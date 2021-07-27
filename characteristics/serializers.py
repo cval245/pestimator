@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from .models import ApplType, Country, EntitySize
 
 
@@ -13,13 +14,15 @@ class CountrySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Country
-        fields = ('id', 'country', 'currency_name')
+        fields = ('id', 'country', 'currency_name', 'pct_analysis_bool', 'ep_bool',
+                  'long_name', 'color')
 
 class CountryAllSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Country
-        fields = ('id', 'country', 'active_bool', 'currency_name')
+        fields = ('id', 'country', 'active_bool', 'currency_name', 'pct_analysis_bool',
+                  'ep_bool', 'long_name', 'color')
 
 
 class EntitySerializer(serializers.ModelSerializer):

@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 
+from application import utils as applUtils
 from application.models import ApplDetails
 from application.models.managers import ApplManager
 from application.utils import convert_class_applType
@@ -17,13 +18,15 @@ class BaseApplication(models.Model):
     date_filing = models.DateField()
     details = models.OneToOneField(ApplDetails, on_delete=models.CASCADE)
     prior_appl = models.ForeignKey("self", models.SET_NULL, null=True)
-    country=models.ForeignKey(Country, on_delete=models.CASCADE)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE)
 
     objects = ApplManager()
 
     class Meta:
         abstract = False
 
+    def get_appl_type(self):
+        return applUtils.convert_class_applType(self)
 
     def generate_dates(self, options):
         # generate filing estimates

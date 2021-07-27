@@ -1,32 +1,27 @@
-from django.test import TestCase
 from datetime import date
-from djmoney.money import Money
-from django.contrib.auth import get_user_model
 
+from dateutil.relativedelta import relativedelta
+from django.contrib.auth import get_user_model
+from django.test import TestCase
+
+from application.models import ApplDetails, BaseApplication, Publication
 from characteristics.factories import ApplTypeFactory, CountryFactory, EntitySizeFactory
+from characteristics.models import ApplType, Country, EntitySize
 from estimation.factories import FilingEstimateTemplateFactory, PublicationEstTemplateFactory, \
     OAEstimateTemplateFactory, AllowanceEstTemplateFactory, IssueEstTemplateFactory
+from estimation.models import PublicationEstTemplate, PublicationEst
+from family.models import Family
 from transform.factories import DefaultFilingTransformFactory, CustomFilingTransformFactory, IssueTransformFactory, \
     AllowanceTransformFactory, OATransformFactory, PublicationTransformFactory, CountryOANumFactory, \
     DefaultCountryOANumFactory, DefaultPublTransformFactory, DefaultOATransformFactory, \
     DefaultAllowanceTransformFactory, DefaultIssueTransformFactory
-from transform.models import DefaultFilingTransform, CustomFilingTransform,\
-    IssueTransform, AllowanceTransform, OATransform, PublicationTransform,\
-    CountryOANum, DefaultCountryOANum, DefaultPublTransform,\
+from transform.models import DefaultFilingTransform, CustomFilingTransform, \
+    IssueTransform, AllowanceTransform, OATransform, PublicationTransform, \
+    CountryOANum, DefaultCountryOANum, DefaultPublTransform, \
     DefaultOATransform, DefaultAllowanceTransform, DefaultIssueTransform
-from characteristics.models import ApplType, Country, EntitySize
-from dateutil.relativedelta import relativedelta
-
 from .factories import FamEstFormDataFactory
-from .models import FamOptions, ApplOptions, PublOptions, OAOptions,\
-    FamEstFormData, AllowOptions, IssueOptions
-from estimation.models import LineEstimationTemplateConditions, FilingEstimateTemplate,\
-    OAEstimate, OAEstimateTemplate,\
-    PublicationEstTemplate, AllowanceEstTemplate, IssueEstTemplate,\
-    PublicationEst, AllowanceEst, IssueEst
-
-from family.models import Family
-from application.models import ApplDetails, BaseApplication, ProvApplication, Publication, USUtilityApplication
+from .models import FamOptions, ApplOptions, PublOptions, OAOptions, \
+    AllowOptions, IssueOptions
 
 
 # Create your tests here.
@@ -93,13 +88,13 @@ class FamFormApplicationTest(TestCase):
                                             meth_country=self.country_US,
                                             countries=self.countries)
         famFormData.generate_family_options()
-        self.assertEquals(BaseApplication.objects.all().count(),
+
+        self.assertEquals(BaseApplication.objects.all().count() - 1,
                           Publication.objects.all().count())
 
         self.assertEquals(PublicationEstTemplate.objects.all().count(),
                           PublicationEst.objects.all().count())
 
-   
 
 
 class FamOptionsTest(TestCase):
@@ -108,7 +103,11 @@ class FamOptionsTest(TestCase):
         self.user = get_user_model().objects.create_user(username='test',
                                                          password='Belgrade2010',
                                                          email='c.val@tutanota.com')
-        self.applType = ApplType.objects.create(application_type='default')
+        self.applType = ApplType.objects.create(application_type='utility')
+        self.applType_prov = ApplType.objects.create(application_type='prov')
+        self.applType_pct = ApplType.objects.create(application_type='pct')
+        self.applType_ep = ApplType.objects.create(application_type='ep')
+        self.applType_epvalidation = ApplType.objects.create(application_type='epvalidation')
         self.country = Country.objects.create(country='US', currency_name='USD')
         self.country_CN = Country.objects.create(country='CN', currency_name='CNY')
         self.countries = [self.country]
@@ -207,6 +206,7 @@ class FamOptionsTest(TestCase):
         oa_total = 2
         ret = self.famOpt.generate_appl_option(self.country, self.applDetails, self.applType,
                                                self.filing_date, oa_total)
+
         self.assertEquals(ret, ApplOptions.objects.all().first())
 
     def test_generate_appl_option_creates_publOption(self):

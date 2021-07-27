@@ -1,22 +1,25 @@
-from django.db import models
 from datetime import date
-from application.models import ApplDetails
-from relativedeltafield import RelativeDeltaField
+
 from django.conf import settings
+from django.db import models
+from relativedeltafield import RelativeDeltaField
+
+from application.models import ApplDetails
 from characteristics.models import Country, EntitySize, ApplType
 from family.models import Family
-from anytree import Node, RenderTree, PreOrderIter, findall
-from transform.models import DefaultFilingTransform, CustomFilingTransform,\
+from transform.models import DefaultFilingTransform, CustomFilingTransform, \
     IssueTransform, AllowanceTransform, OATransform, PublicationTransform, \
-    CountryOANum, DefaultCountryOANum, DefaultPublTransform,\
+    CountryOANum, DefaultCountryOANum, DefaultPublTransform, \
     DefaultOATransform, DefaultAllowanceTransform, DefaultIssueTransform
+
+
 # Create your models here.
 
 class FamEstFormData(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE)
     family = models.OneToOneField(Family, on_delete=models.CASCADE)
-    countries = models.ManyToManyField(Country)
+    countries = models.ManyToManyField(Country)  # utility appl countries
     init_appl_filing_date = models.DateField(default=date(2020, 1, 1))
     init_appl_country = models.ForeignKey(Country,
                                           on_delete=models.CASCADE,
@@ -35,13 +38,16 @@ class FamEstFormData(models.Model):
                                      on_delete=models.CASCADE,
                                      null=True,
                                      related_name='meth_country')
+
+    ep_method = models.BooleanField(default=False)
+    # ep_countries = models.ManyToManyField(Country, null=True) # utility appl countries
     # add method for paris treaty route
     # method_paris
     # method_paris_countries
     entity_size = models.ForeignKey(EntitySize, on_delete=models.CASCADE)
 
     # generate route
-    
+
     def generate_family_options(self):
         famOptions = FamOptions.objects.create(family=self.family)
         init_appl_type = self.init_appl_type
@@ -69,17 +75,40 @@ class FamEstFormData(models.Model):
         if self.method is True and not init_appl_type.application_type == 'pct':
             pct_type = ApplType.objects.get(application_type='pct')
             applOption = famOptions.generate_appl(details=applDetails,
-                                     country=self.meth_country,
-                                     appl_type=pct_type,
-                                     prev_appl_type=prev_appl_type,
-                                     prev_date=prev_date,
-                                     first_appl_bool=first_appl_bool)
+                                                  country=self.meth_country,
+                                                  appl_type=pct_type,
+                                                  prev_appl_type=prev_appl_type,
+                                                  prev_date=prev_date,
+                                                  first_appl_bool=first_appl_bool)
             prev_date = applOption.date_filing
             prev_appl_type = pct_type
 
+        # generate ep method
+        countries = Country.objects.filter(famestformdata=self)
+        if self.ep_method is True:
+            ep_applType = ApplType.objects.get(application_type='ep')
+            epAppl = famOptions.generate_appl(details=applDetails,
+                                              country=Country.objects.get(country='EP'),
+                                              appl_type=ep_applType,
+                                              prev_appl_type=prev_appl_type,
+                                              prev_date=prev_date,
+                                              first_appl_bool=first_appl_bool)
+            ep_prev_date = IssueOptions.objects.get(appl=epAppl)
+            ep_countries = countries.filter(ep_bool=True)
+            countries = countries.exclude(ep_bool=True)
+            ep_validation_appl = ApplType.objects.get(application_type='epvalidation')
+            for c in ep_countries:
+                famOptions.generate_appl(details=applDetails,
+                                         country=c,
+                                         appl_type=ep_validation_appl,
+                                         prev_appl_type=prev_appl_type,
+                                         prev_date=ep_prev_date,
+                                         first_appl_bool=first_appl_bool)
+
+            # create utility applications where country is EP
+
         # generate third node
         utility_appl = ApplType.objects.get(application_type='utility')
-        countries = Country.objects.filter(famestformdata=self)
         for c in countries:
             famOptions.generate_appl(details=applDetails,
                                      country=c,
@@ -92,7 +121,6 @@ class FamEstFormData(models.Model):
     def create_appls(self, famOptions):
         # fam = Family.objects.get(id=self.family)
         fam = self.family
-        print('fam', fam)
         fam.create_appls(famOptions)
 
 
@@ -152,11 +180,25 @@ class FamOptions(models.Model):
                                                 country=country, appl_type=appl_type,
                                                 details=details, fam_options=self)
         # select Transforms
-        applOption.create_publ_option()
-        applOption.create_all_oa_options(oa_total)
-        applOption.create_allow_option()
-        applOption.create_issue_option()
-        return applOption
+        if (applOption.appl_type == ApplType.objects.get(application_type='prov')):
+            return applOption
+        elif (applOption.appl_type == ApplType.objects.get(application_type='pct')):
+            applOption.create_publ_option()
+            return applOption
+        elif (applOption.appl_type == ApplType.objects.get(application_type='utility')):
+            applOption.create_publ_option()
+            applOption.create_all_oa_options(oa_total)
+            applOption.create_allow_option()
+            applOption.create_issue_option()
+            return applOption
+        elif (applOption.appl_type == ApplType.objects.get(application_type='ep')):
+            applOption.create_publ_option()
+            applOption.create_all_oa_options(oa_total)
+            applOption.create_allow_option()
+            return applOption
+        elif (applOption.appl_type == ApplType.objects.get(application_type='epvalidation')):
+            applOption.create_issue_option()
+            return applOption
 
 
 class ApplOptions(models.Model):
@@ -195,7 +237,8 @@ class ApplOptions(models.Model):
             trans = OATransform.objects.get(country=self.country)
         else:
             trans = DefaultOATransform.objects.get(appl_type=self.appl_type)
-
+        print('oa_prev', oa_prev)
+        print('OAOptions', OAOptions.objects.all().values('id', 'date_diff', 'appl_id', 'oa_prev_id'))
         return OAOptions.objects.create(date_diff=trans.date_diff, oa_prev=oa_prev, appl=self)
 
     def create_allow_option(self):
@@ -232,8 +275,6 @@ class OAOptions(models.Model):
     appl = models.ForeignKey(ApplOptions, on_delete=models.CASCADE)
     oa_prev = models.ForeignKey('self', models.SET_NULL, null=True)
 
-    class Meta:
-        abstract = False
 
 class AllowOptions(BaseOptions):
 

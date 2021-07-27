@@ -1,6 +1,7 @@
 from django.db import models
-from characteristics.models import Country, ApplType
 from relativedeltafield import RelativeDeltaField
+
+from characteristics.models import Country, ApplType
 
 
 class BaseTransform(models.Model):
@@ -18,10 +19,21 @@ class CustomFilingTransform(BaseTransform):
     prev_appl_type = models.ForeignKey(ApplType, on_delete=models.CASCADE,
                                        null=True, related_name='prev_appl_type')
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['appl_type', 'prev_appl_type', 'country'],
+                name='applicationTypePrevApplTypeCountryUniqueConstraint'),
+        ]
+
 
 class PublicationTransform(BaseTransform):
-    pass
-
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['country'],
+                name='PublicationCountryUniqueConstraint'),
+        ]
 
 class OATransform(BaseTransform):
     # oa_num = models.IntegerField()
@@ -30,21 +42,43 @@ class OATransform(BaseTransform):
 
 class USOATransform(OATransform):
     final_oa_bool = models.BooleanField(default=False)
-    pass
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['final_oa_bool'],
+                name='FinalOABoolUniqueConstraint'),
+        ]
 
 
 class AllowanceTransform(BaseTransform):
-    pass
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['country'],
+                name='AllowanceCountryUniqueConstraint'),
+        ]
 
 
 class IssueTransform(BaseTransform):
-    pass
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['country'],
+                name='IssueCountryUniqueConstraint'),
+        ]
 
 
 class CountryOANum(models.Model):
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
     oa_total = models.IntegerField()
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['country'],
+                name='CountryOANumCountryUniqueConstraint'),
+        ]
 
 class DefaultCountryOANum(models.Model):
     oa_total = models.IntegerField()
@@ -55,6 +89,11 @@ class BaseDefaultTransform(models.Model):
     appl_type = models.ForeignKey(ApplType, on_delete=models.CASCADE)
     class Meta:
         abstract = True
+        constraints = [
+            models.UniqueConstraint(
+                fields=['appl_type'],
+                name='ApplTypeUniqueConstraint'),
+        ]
 
 class DefaultFilingTransform(BaseDefaultTransform):
     class Meta:

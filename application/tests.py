@@ -1,33 +1,34 @@
+from dateutil.relativedelta import relativedelta
+from django.db.models import Sum
 from django.test import TestCase
+
 from characteristics.factories import ApplTypeFactory, CountryFactory, EntitySizeFactory
 from estimation.factories import FilingEstimateTemplateFactory, PublicationEstTemplateFactory, \
     OAEstimateTemplateFactory, AllowanceEstTemplateFactory, IssueEstTemplateFactory, USOAEstimateTemplateFactory, \
-    LineEstimationTemplateConditionsFactory, LawFirmEstTemplateFactory
-from famform.factories import ApplOptionsFactory, PublOptionFactory, AllowOptionsFactory, OAOptionsFactory, \
-    IssueOptionsFactory
-from famform.models import ApplOptions, OAOptions
-from family.factories import FamilyFactory
-from transform.factories import DefaultFilingTransformFactory, CustomFilingTransformFactory, IssueTransformFactory, \
-    AllowanceTransformFactory, OATransformFactory, PublicationTransformFactory, CountryOANumFactory, \
-    DefaultCountryOANumFactory, DefaultPublTransformFactory, DefaultOATransformFactory, \
-    DefaultAllowanceTransformFactory, DefaultIssueTransformFactory
-from user.factories import UserFactory
-from .factories import ApplicationFactory, USUtilityApplicationFactory, USOfficeActionFactory, IssuanceFactory, \
-    AllowanceFactory, PublicationFactory, BaseUtilityApplicationFactory, OfficeActionFactory, ApplDetailsFactory
-from .models import BaseApplication
-from .models.issue import Issue
-from .models.allowance import Allowance
-from .models.publication import Publication
-from .models.usOfficeAction import USOfficeAction
-from .models.utilityApplication import UtilityApplication
-from dateutil.relativedelta import relativedelta
-from django.db.models import Sum
+    LineEstimationTemplateConditionsFactory
 from estimation.models import \
     OAEstimate, OAEstimateTemplate, \
     PublicationEstTemplate, \
     PublicationEst, AllowanceEst, IssueEst, USOAEstimateTemplate, \
     USOAEstimate, FilingEstimate, LawFirmEst, LawFirmEstTemplate, IssueEstTemplate, AllowanceEstTemplate, \
     FilingEstimateTemplate
+from famform.factories import ApplOptionsFactory, PublOptionFactory, AllowOptionsFactory, OAOptionsFactory, \
+    IssueOptionsFactory
+from famform.models import OAOptions
+from family.factories import FamilyFactory
+from transform.factories import DefaultFilingTransformFactory, CustomFilingTransformFactory, IssueTransformFactory, \
+    AllowanceTransformFactory, OATransformFactory, PublicationTransformFactory, CountryOANumFactory, \
+    DefaultCountryOANumFactory, DefaultPublTransformFactory, DefaultOATransformFactory, \
+    DefaultAllowanceTransformFactory, DefaultIssueTransformFactory
+from user.factories import UserFactory
+from .factories import USUtilityApplicationFactory, USOfficeActionFactory, IssuanceFactory, \
+    AllowanceFactory, PublicationFactory, BaseUtilityApplicationFactory, OfficeActionFactory, ApplDetailsFactory
+from .models import BaseApplication
+from .models.allowance import Allowance
+from .models.issue import Issue
+from .models.publication import Publication
+from .models.usOfficeAction import USOfficeAction
+from .models.utilityApplication import UtilityApplication
 
 
 # Create your tests here.
@@ -41,6 +42,7 @@ class UtilityApplicationTest(TestCase):
         self.applType_utility = ApplTypeFactory(utility=True)
         self.country_US = CountryFactory(US=True)
         self.country_CN = CountryFactory(CN=True)
+        self.country_JP = CountryFactory(country='JP')
         self.countries = [self.country_US, self.country_CN]
         self.entitySize = EntitySizeFactory()
         self.family = FamilyFactory(user=self.user)
@@ -67,6 +69,7 @@ class UtilityApplicationTest(TestCase):
         self.filing_template_us = FilingEstimateTemplateFactory(country=self.country_US,
                                                                 appl_type=self.applType_utility)
         self.publication_template = PublicationEstTemplateFactory(country=self.country_US)
+        self.oa_template = OAEstimateTemplateFactory(country=self.country_JP)
         self.oa_template = OAEstimateTemplateFactory(country=self.country_CN)
         self.oa_template = USOAEstimateTemplateFactory()
         self.allowance_template = AllowanceEstTemplateFactory(country=self.country_US)

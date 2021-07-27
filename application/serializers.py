@@ -1,22 +1,27 @@
 from rest_framework import serializers
+
 from .models import BaseApplication, ApplDetails
 
 
 class ApplicationSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(
-        default = serializers.CurrentUserDefault())
+        default=serializers.CurrentUserDefault())
     # family = FamilySerializer(many=False)
     # law_firm = LawFirmSerializer(many=False)
     # application_type = ApplTypeSerializer(many=False)
-    #owner = serializers.ReadOnlyField(source='owner.username')
+    # owner = serializers.ReadOnlyField(source='owner.username')
+    appl_type = serializers.SerializerMethodField()
 
     class Meta:
         model = BaseApplication
         fields = ('id', 'title', 'country', 'user',
-                  #'application_type',
-                  #'law_firm',
-                  #'family',
+                  'appl_type',
+                  # 'law_firm',
+                  # 'family',
                   'date_filing')
+
+    def get_appl_type(self, obj):
+        return obj.get_appl_type().id
 
     # def create(self, validated_data):
 

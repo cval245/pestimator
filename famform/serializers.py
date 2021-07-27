@@ -1,7 +1,9 @@
 from rest_framework import serializers
+
 from characteristics.models import Country, EntitySize, ApplType
+from .models import FamEstFormData
 from .models import Family
-from .models import FamEstFormData 
+
 
 class FamEstFormDataNetSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=False)
@@ -20,6 +22,7 @@ class FamEstFormDataNetSerializer(serializers.Serializer):
     method = serializers.BooleanField(default=False, required=False)
     meth_country = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all(),
                                                       required=False, allow_null=True)
+    ep_method = serializers.BooleanField(default=False, required=False)
     entity_size = serializers.PrimaryKeyRelatedField(queryset=EntitySize.objects.all())
 
     def create(self, validated_data):
@@ -41,6 +44,9 @@ class FamEstFormDataNetSerializer(serializers.Serializer):
             init_appl_type=validated_data['init_appl_type'],
             init_appl_indep_claims=validated_data['init_appl_indep_claims'],
             entity_size=validated_data['entity_size'],
+            method=validated_data['method'],
+            meth_country=validated_data['meth_country'],
+            ep_method=validated_data['ep_method'],
         )
         famEstData.save()
         famEstData.countries.set(validated_data['countries'])
