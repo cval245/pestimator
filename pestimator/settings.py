@@ -15,8 +15,9 @@ from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+from celery.schedules import crontab
 
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -224,7 +225,13 @@ BROKER_CONNECTION_MAX_RETRIES = 100
 CELERY_BROKER_URL = "amqps://yivfkhqd:WrcWUxS7CP45fshvaNkIhEzEGLJyP6_2@fish.rmq.cloudamqp.com/yivfkhqd"
 CELERY_TASK_SERIALIZER = "json"
 CELERY_ACCEPT_CONTENT = ["json", "msgpack"]
-CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+CELERYBEAT_SCHEDULER = {  # 'djcelery.schedulers.DatabaseScheduler'
+    # ,
+    'update_rates': {
+        'task': 'path.to.your.task',
+        'schedule': crontab(minute=0, hour=12),
+        'kwargs': {}  # For custom arguments
+    }}
 
 
 #APPEND_SLASH = False;
