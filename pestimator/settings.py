@@ -234,7 +234,6 @@ CELERYBEAT_SCHEDULER = {  # 'djcelery.schedulers.DatabaseScheduler'
     }}
 
 
-#APPEND_SLASH = False;
 
 # LOGGING = {
 #     'version': 1,
