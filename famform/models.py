@@ -2,6 +2,7 @@ from datetime import date
 
 from django.conf import settings
 from django.db import models
+from django.db.models import Sum
 from relativedeltafield import RelativeDeltaField
 
 from application.models import ApplDetails
@@ -61,17 +62,20 @@ class FamEstFormData(models.Model):
 
         # filing date is init_filing_date
         first_appl_bool = True
-        famOptions.generate_appl(details=applDetails,
-                                 country=self.init_appl_country,
-                                 appl_type=self.init_appl_type,
-                                 prev_appl_type=None,
-                                 prev_date=self.init_appl_filing_date,
-                                 first_appl_bool=first_appl_bool)
+        prevApplOption = None
+        prov_appl_option = famOptions.generate_appl(details=applDetails,
+                                                    country=self.init_appl_country,
+                                                    appl_type=self.init_appl_type,
+                                                    prev_appl_type=None,
+                                                    prev_date=self.init_appl_filing_date,
+                                                    first_appl_bool=first_appl_bool,
+                                                    prev_appl_option=prevApplOption)
 
         # generate second node
         first_appl_bool = False
         prev_appl_type = init_appl_type
         prev_date = self.init_appl_filing_date
+        prevApplOption = prov_appl_option
         if self.method is True and not init_appl_type.application_type == 'pct':
             pct_type = ApplType.objects.get(application_type='pct')
             applOption = famOptions.generate_appl(details=applDetails,
@@ -79,10 +83,11 @@ class FamEstFormData(models.Model):
                                                   appl_type=pct_type,
                                                   prev_appl_type=prev_appl_type,
                                                   prev_date=prev_date,
-                                                  first_appl_bool=first_appl_bool)
+                                                  first_appl_bool=first_appl_bool,
+                                                  prev_appl_option=prevApplOption)
             prev_date = applOption.date_filing
             prev_appl_type = pct_type
-
+            prevApplOption = applOption
         # generate ep method
         countries = Country.objects.filter(famestformdata=self)
         if self.ep_method is True:
@@ -92,8 +97,14 @@ class FamEstFormData(models.Model):
                                               appl_type=ep_applType,
                                               prev_appl_type=prev_appl_type,
                                               prev_date=prev_date,
-                                              first_appl_bool=first_appl_bool)
-            ep_prev_date = IssueOptions.objects.get(appl=epAppl)
+                                              first_appl_bool=first_appl_bool,
+                                              prev_appl_option=prevApplOption)
+            epPrevApplOption = epAppl
+
+            # calc date of allowance
+            oa_diff = OAOptions.objects.filter(appl=epAppl).aggregate(date_diff=Sum('date_diff'))['date_diff']
+            allow_diff = AllowOptions.objects.get(appl=epAppl).date_diff
+            ep_prev_date = prev_date + oa_diff + allow_diff
             ep_countries = countries.filter(ep_bool=True)
             countries = countries.exclude(ep_bool=True)
             ep_validation_appl = ApplType.objects.get(application_type='epvalidation')
@@ -103,7 +114,8 @@ class FamEstFormData(models.Model):
                                          appl_type=ep_validation_appl,
                                          prev_appl_type=prev_appl_type,
                                          prev_date=ep_prev_date,
-                                         first_appl_bool=first_appl_bool)
+                                         first_appl_bool=first_appl_bool,
+                                         prev_appl_option=epPrevApplOption)
 
             # create utility applications where country is EP
 
@@ -115,7 +127,9 @@ class FamEstFormData(models.Model):
                                      appl_type=utility_appl,
                                      prev_appl_type=prev_appl_type,
                                      prev_date=prev_date,
-                                     first_appl_bool=first_appl_bool)
+                                     first_appl_bool=first_appl_bool,
+                                     prev_appl_option=prevApplOption)
+
         self.create_appls(famOptions)
 
     def create_appls(self, famOptions):
@@ -159,7 +173,7 @@ class FamOptions(models.Model):
         return oa_total
 
     def generate_appl(self, details, country, appl_type,
-                      prev_appl_type, prev_date, first_appl_bool):
+                      prev_appl_type, prev_date, first_appl_bool, prev_appl_option):
         # select transform and get date_diff
         date_filing = self._calc_filing_date(appl_type, country,
                                              prev_appl_type, prev_date, first_appl_bool)
@@ -170,15 +184,16 @@ class FamOptions(models.Model):
                                                date_filing=date_filing,
                                                details=details,
                                                oa_total=oa_total,
-                                               appl_type=appl_type)
+                                               appl_type=appl_type,
+                                               prev_appl_option=prev_appl_option)
         return applOption
 
-
     def generate_appl_option(self, country, details, appl_type,
-                             date_filing, oa_total):
+                             date_filing, oa_total, prev_appl_option):
         applOption = ApplOptions.objects.create(title='title', date_filing=date_filing,
                                                 country=country, appl_type=appl_type,
-                                                details=details, fam_options=self)
+                                                details=details, fam_options=self,
+                                                prev_appl_options=prev_appl_option)
         # select Transforms
         if (applOption.appl_type == ApplType.objects.get(application_type='prov')):
             return applOption
@@ -237,8 +252,6 @@ class ApplOptions(models.Model):
             trans = OATransform.objects.get(country=self.country)
         else:
             trans = DefaultOATransform.objects.get(appl_type=self.appl_type)
-        print('oa_prev', oa_prev)
-        print('OAOptions', OAOptions.objects.all().values('id', 'date_diff', 'appl_id', 'oa_prev_id'))
         return OAOptions.objects.create(date_diff=trans.date_diff, oa_prev=oa_prev, appl=self)
 
     def create_allow_option(self):

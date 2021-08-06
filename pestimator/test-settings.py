@@ -5,6 +5,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'pestimator',
+        # 'NAME': 'pestimator_two',
         'USER': 'djangoconnect',
         'HOST': 'localhost',
         'PASSWORD': 'Belgrade2010',

@@ -17,11 +17,11 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
+    path('', include('famform.urls')),
     path('', include('application.urls')),
     path('', include('characteristics.urls')),
     path('', include('estimation.urls')),
     path('', include('family.urls')),
-    path('', include('famform.urls')),
     path('', include('countryform.urls')),
     path('', include('transform.urls')),
     path('', include('account.urls')),

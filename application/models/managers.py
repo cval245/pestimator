@@ -11,11 +11,17 @@ class ApplManager(models.Manager):
         applDetails = options.details
         applDetails.pk = None
         applDetails.save()
+        prev_appl = None
+        if (options.prev_appl_options):
+            prev_appl = options.prev_appl_options.baseapplication
+
         appl = self.create(user=user, title=options.title,
                            date_filing=options.date_filing,
                            family_id=family_id,
                            country=options.country,
-                           details=applDetails)
+                           details=applDetails,
+                           appl_option=options,
+                           prior_appl=prev_appl)
         appl.generate_dates(options)
         return appl
 
@@ -40,3 +46,9 @@ class ApplManager(models.Manager):
                 # Generic Utility Application
                 from application.models import BaseUtilityApplication
                 return BaseUtilityApplication.objects.generate_appl(options=options, user=user, family_id=family_id)
+        elif (options.appl_type.application_type == 'ep'):
+            from application.models import EPApplication
+            return EPApplication.objects.generate_appl(options=options, user=user, family_id=family_id)
+        elif (options.appl_type.application_type == 'epvalidation'):
+            from application.models.epValidationApplication import EPValidationApplication
+            return EPValidationApplication.objects.generate_appl(options=options, user=user, family_id=family_id)

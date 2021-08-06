@@ -7,6 +7,7 @@ from application.models.managers import ApplManager
 from application.utils import convert_class_applType
 from characteristics.models import Country
 from estimation import utils
+from famform.models import ApplOptions
 from family.models import Family
 
 
@@ -19,6 +20,7 @@ class BaseApplication(models.Model):
     details = models.OneToOneField(ApplDetails, on_delete=models.CASCADE)
     prior_appl = models.ForeignKey("self", models.SET_NULL, null=True)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
+    appl_option = models.OneToOneField(ApplOptions, on_delete=models.CASCADE)
 
     objects = ApplManager()
 
@@ -30,7 +32,6 @@ class BaseApplication(models.Model):
 
     def generate_dates(self, options):
         # generate filing estimates
-        print('generate_dates')
         self._generate_filing_est()
 
         # generate publication date and estimates
@@ -43,7 +44,6 @@ class BaseApplication(models.Model):
         publ = Publication.objects.create(
             application=self,
             date_publication=self.date_filing + publication_diff_from_filing)
-        print('publication._generate_publication()', publ)
         publ.generate_ests()
         return publ
         # create a publication instance
@@ -59,13 +59,16 @@ class BaseApplication(models.Model):
         templates = utils.filter_conditions(filing_templates, self.details)
 
         templates = templates.select_related('law_firm_template')
+        print('\n\nself.country', self.country)
+        print('templates = ', templates)
         ests = []
         for e in templates:
             lawFirmEst = None
+            print('e.law_ = ', e.law_firm_template)
             if e.law_firm_template is not None:
                 from estimation.models import LawFirmEst
                 lawFirmEst = LawFirmEst.objects.create(
-                    date=e.law_firm_template.date_diff+self.date_filing,
+                    date=e.law_firm_template.date_diff + self.date_filing,
                     law_firm_cost=e.law_firm_template.law_firm_cost
                 )
 

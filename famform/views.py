@@ -1,19 +1,26 @@
-from django.shortcuts import render
+from django.db.models import F
 from rest_framework import viewsets
-from rest_framework import status
-from .models import FamEstFormData 
-from .serializers import FamEstFormDataNetSerializer 
-from rest_framework.parsers import JSONParser
-
 from rest_framework.response import Response
+
+from .models import FamEstFormData
+from .serializers import FamEstFormDataNetSerializer, FamEstFormDataNetPostSerializer
+
+
 # Create your views here.
 
 class FamEstFormDataViewSet(viewsets.ViewSet):
-    seriazizer_class = FamEstFormDataNetSerializer
+    serializer_class = FamEstFormDataNetSerializer
+
+    def get_queryset(self):
+        return FamEstFormData.objects.filter(family__user=self.request.user) \
+            .annotate(family_name=F('family__family_name'), family_no=F('family__family_no'))
+
+    def list(self, request):
+        return Response(FamEstFormDataNetSerializer(self.get_queryset(), many=True).data)
 
     def create(self, request, *args, **kwargs):
         context = {'request': request}
-        serializer = FamEstFormDataNetSerializer(data=request.data, context=context)
+        serializer = FamEstFormDataNetPostSerializer(data=request.data, context=context)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         return Response(serializer.data)

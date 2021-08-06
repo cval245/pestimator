@@ -28,7 +28,6 @@ class FamilyViewSet(viewsets.ModelViewSet):
 @api_view(['GET'])
 def fam_est_all(request):
     families = Family.objects.filter(user=request.user)
-    print('families = ', families)
 
     s = families.values('id', 'famestformdata').annotate(
         official_cost=ExpressionWrapper(
@@ -37,7 +36,8 @@ def fam_est_all(request):
         law_firm_cost=ExpressionWrapper(
             Coalesce(Sum('baseapplication__baseest__law_firm_est__law_firm_cost'),
                      Value(0)),
-            output_field=MoneyField()))
+            output_field=MoneyField()),
+        date_created=F('famestformdata__date_created'))
     s = s.annotate(total_cost=F('official_cost') + F('law_firm_cost'))
     return Response(s)
 
@@ -55,6 +55,10 @@ def fam_est_detail(request):
     if FamEstFormData.objects.filter(id=id).exists():
         famEst = FamEstFormData.objects.get(id=id)
         bob = createFamEstDetails(famEst.family.id)
+        print('bob', bob)
+        jane = bob.aggregate(Sum('law_firm_cost_sum'))
+        print('jane', jane)
+        print('sam', bob.aggregate(Sum('total_cost_sum')))
         return Response(bob)
     return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -71,7 +75,6 @@ def createFamEstDetails(id):
         law_firm_cost_sum=ExpressionWrapper(
             Coalesce(Sum('law_firm_est__law_firm_cost'), Value(0)),
             output_field=MoneyField()),
-        # total_cost_sum=Sum('total_cost'),
         total_cost_sum=F('official_cost_sum') + F('law_firm_cost_sum'),
     )
 

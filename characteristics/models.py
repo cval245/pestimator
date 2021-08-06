@@ -3,13 +3,14 @@ from django.db import models
 # Create your models here.
 class ApplType(models.Model):
     application_type = models.CharField(default='', max_length=100)
+    long_name = models.CharField(default='', max_length=100)
+    internal_bool = models.BooleanField(default=True)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
                 fields=['application_type'],
                 name='applicationTypeUniqueConstraint'),
-            # models.UniqueConstraint(fields='currency_name', name='unique_currency_name')
         ]
 
 class Country(models.Model):
@@ -33,6 +34,7 @@ class Country(models.Model):
 
 class EntitySize(models.Model):
     entity_size = models.CharField(max_length=30)
+    description = models.CharField(max_length=200)
 
     class Meta:
         constraints = [
@@ -52,6 +54,7 @@ class OANumPerCountry(models.Model):
     oa_num = models.IntegerField(default=2)
 
     class Meta:
+        # models.UniqueConstraint(fields='currency_name', name='unique_currency_name')
         constraints = [
             models.UniqueConstraint(
                 fields=['country'],

@@ -9,8 +9,17 @@ from .serializers import ApplTypeSerializer, CountrySerializer, EntitySerializer
 
 # Create your views here.
 class ApplTypeViewSet(viewsets.ModelViewSet):
-    queryset = ApplType.objects.all()
     serializer_class = ApplTypeSerializer
+
+    def get_queryset(self):
+        return ApplType.objects.filter(internal_bool=False)
+
+
+class ApplTypeAllViewSet(viewsets.ModelViewSet):
+    serializer_class = ApplTypeSerializer
+
+    def get_queryset(self):
+        return ApplType.objects.all()
 
 
 class CountryViewSet(viewsets.ModelViewSet):

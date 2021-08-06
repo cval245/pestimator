@@ -1,12 +1,12 @@
 from django.urls import path
+from rest_framework import routers
 from rest_framework.urlpatterns import format_suffix_patterns
-from django.urls import include
+
 from . import views
 
-from rest_framework import routers
-
 router = routers.SimpleRouter()
-router.register(r'appl-types', views.ApplTypeViewSet)
+router.register(r'appl-types', views.ApplTypeViewSet, basename='applType')
+router.register(r'appl-types-all', views.ApplTypeAllViewSet, basename='applType')
 router.register(r'countries', views.CountryViewSet, basename='countries')
 router.register(r'countries-all', views.CountryAllViewSet, basename='countriesall')
 
