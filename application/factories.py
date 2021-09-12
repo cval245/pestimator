@@ -1,9 +1,5 @@
-from datetime import date, datetime
-
 import factory
 from django.utils import timezone
-import pytz
-from faker.providers import BaseProvider
 
 from characteristics.factories import CountryFactory, EntitySizeFactory
 from family.factories import FamilyFactory
@@ -16,7 +12,7 @@ class ApplDetailsFactory(factory.django.DjangoModelFactory):
     num_indep_claims = factory.Faker('random_int', min=1, max=50, step=1)
     num_pages = factory.Faker('random_int', min=1, max=50, step=1)
     num_claims = factory.Faker('random_int', min=1, max=50, step=1)
-    num_drawings = factory.Faker('random_int', min=1, max=30, step=1)
+    num_pages_drawings = factory.Faker('random_int', min=1, max=30, step=1)
     entity_size = factory.SubFactory(EntitySizeFactory)
 
     class Meta:

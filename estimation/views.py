@@ -2,11 +2,11 @@ from rest_framework import viewsets
 
 from .models import BaseEstTemplate, FilingEstimateTemplate, LawFirmEstTemplate, PublicationEstTemplate, \
 	OAEstimateTemplate, AllowanceEstTemplate, IssueEstTemplate, \
-	LineEstimationTemplateConditions, USOAEstimateTemplate
+	LineEstimationTemplateConditions, USOAEstimateTemplate, ComplexConditions, ComplexTimeConditions
 from .serializers import BaseEstTemplateSerializer, FilingEstimateTemplateSerializer, LawFirmEstTemplateSerializer, \
 	PublicationEstTemplateSerializer, OAEstimateTemplateSerializer, \
 	AllowanceEstTemplateSerializer, IssueEstTemplateSerializer, \
-	ConditionsSerializer, USOAEstimateTemplateSerializer
+	ConditionsSerializer, USOAEstimateTemplateSerializer, ComplexConditionsSerializer, ComplexTimeConditionsSerializer
 
 
 # Create your views here.
@@ -56,15 +56,30 @@ class IssueEstTemplateViewSet(viewsets.ModelViewSet):
 	def get_queryset(self):
 		return IssueEstTemplate.objects.all()
 
+
 class LawFirmEstTemplateViewSet(viewsets.ModelViewSet):
-	serializer_class = LawFirmEstTemplateSerializer 
+	serializer_class = LawFirmEstTemplateSerializer
 
 	def get_queryset(self):
 		return LawFirmEstTemplate.objects.all()
+
 
 class ConditionsViewSet(viewsets.ModelViewSet):
 	serializer_class = ConditionsSerializer
 
 	def get_queryset(self):
 		return LineEstimationTemplateConditions.objects.all()
-	
+
+
+class ComplexConditionsViewSet(viewsets.ModelViewSet):
+	serializer_class = ComplexConditionsSerializer
+
+	def get_queryset(self):
+		return ComplexConditions.objects.all()
+
+
+class ComplexTimeConditionsViewSet(viewsets.ModelViewSet):
+	serializer_class = ComplexTimeConditionsSerializer
+
+	def get_queryset(self):
+		return ComplexTimeConditions.objects.all()

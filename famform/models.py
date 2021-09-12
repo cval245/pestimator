@@ -52,13 +52,17 @@ class FamEstFormData(models.Model):
     def generate_family_options(self):
         famOptions = FamOptions.objects.create(family=self.family)
         init_appl_type = self.init_appl_type
+        # todo handlue multiple instead of just first opitionally add for user
+        language = self.init_appl_country.languages_set.first()
 
         applDetails = ApplDetails.objects.create(
             num_indep_claims=self.init_appl_indep_claims,
             num_claims=self.init_appl_claims,
-            num_drawings=self.init_appl_drawings,
+            num_pages_drawings=self.init_appl_drawings,
             num_pages=self.init_appl_pages,
-            entity_size=self.entity_size)
+            entity_size=self.entity_size,
+            language_id=language.id
+        )
 
         # filing date is init_filing_date
         first_appl_bool = True
@@ -172,6 +176,21 @@ class FamOptions(models.Model):
 
         return oa_total
 
+    def translate_details_new_language(self, details, current_language, desired_language):
+        # convert current language to english ex. French to English
+        num_words = current_language.words_per_page * details.num_pages
+        new_pages = num_words / desired_language.words_per_page
+
+        new_details = ApplDetails.objects.create(
+            num_indep_claims=details.num_indep_claims,
+            num_pages=new_pages,
+            num_claims=details.num_claims,
+            num_pages_drawings=details.num_pages_drawings,
+            entity_size=details.entity_size,
+            language_id=desired_language.id
+        )
+        return new_details
+
     def generate_appl(self, details, country, appl_type,
                       prev_appl_type, prev_date, first_appl_bool, prev_appl_option):
         # select transform and get date_diff
@@ -179,10 +198,31 @@ class FamOptions(models.Model):
                                              prev_appl_type, prev_date, first_appl_bool)
         # get oa_total
         oa_total = self._calc_oa_num(country)
-        # calculate date_filing
+
+        # apply translations transformations
+        # these translations lookup conversions from one language to another
+        # words per page default for language
+        # converting from one to another
+        destination_languages = country.languages_set.all()
+        desired_language = destination_languages.first()
+        for lang in destination_languages:
+            if (lang == details.language):
+                desired_language = lang
+
+        translated_details = self.translate_details_new_language(
+            details=details,
+            current_language=details.language,
+            desired_language=desired_language, )
+
+        # apply transmutation transformations
+        # these transmutations convert to local patent office guidelines
+        # need user input
+        # have defaults
+        # ie transform multiple dependent claims into sets of single dependent claims
+
         applOption = self.generate_appl_option(country=country,
                                                date_filing=date_filing,
-                                               details=details,
+                                               details=translated_details,
                                                oa_total=oa_total,
                                                appl_type=appl_type,
                                                prev_appl_option=prev_appl_option)
@@ -229,8 +269,6 @@ class ApplOptions(models.Model):
         if PublicationTransform.objects.filter(country=self.country).exists():
             trans = PublicationTransform.objects.get(country=self.country)
         else:
-            print(vars(self.appl_type), vars(self.country))
-            print(DefaultPublTransform.objects.all().values('appl_type'))
             trans = DefaultPublTransform.objects.get(appl_type=self.appl_type)
 
         return PublOptions.objects.create(date_diff=trans.date_diff,
@@ -298,4 +336,3 @@ class IssueOptions(BaseOptions):
 
     class Meta:
         abstract = False
-

@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from djmoney.money import Money
 
 from application import utils as applUtils
 from application.models import ApplDetails
@@ -48,23 +49,58 @@ class BaseApplication(models.Model):
         return publ
         # create a publication instance
 
+    def _generate_translation_est(self):
+        # take previous appl country
+        # translate to new
+        if (self.prior_appl):
+            prev_language = self.prior_appl.details.language
+            language = self.details.language
+
+            from estimation.models import TranslationEstTemplate
+            if (prev_language != language):
+                start = TranslationEstTemplate.objects.filter(start_language=prev_language)
+                if start.filter(end_language=language).exists():
+                    translation_est = start.get(end_language=language)
+                else:
+                    from estimation.models import DefaultTranslationEstTemplate
+                    translation_est = DefaultTranslationEstTemplate.objects.first()
+
+                num_words = language.words_per_page * self.details.num_pages
+                translation_cost = num_words * translation_est.cost_per_word
+
+                date = self.date_filing + translation_est.date_diff
+                from estimation.models import LawFirmEst
+                lawFirmEst = LawFirmEst.objects.create(
+                    date=date,
+                    law_firm_cost=Money(0, 'USD')
+                )
+
+                from estimation.models import BaseEst
+                BaseEst.objects.create(
+                    official_cost=translation_cost,
+                    date=date,
+                    law_firm_est=lawFirmEst,
+                    application=self,
+                    translation_bool=True)
 
     def _generate_filing_est(self):
+
+        # create translation ests
+        # no need to include in the same est templates
+        # can leave on its own
+        self._generate_translation_est()
 
         from estimation.models import FilingEstimateTemplate
         filing_templates = FilingEstimateTemplate.objects.filter(
             country=self.country,
-            appl_type=convert_class_applType(self)
+            appl_type=convert_class_applType(self),
         )
-        templates = utils.filter_conditions(filing_templates, self.details)
+        templates = utils.filter_conditions(filing_templates, self)
 
         templates = templates.select_related('law_firm_template')
-        print('\n\nself.country', self.country)
-        print('templates = ', templates)
         ests = []
         for e in templates:
             lawFirmEst = None
-            print('e.law_ = ', e.law_firm_template)
             if e.law_firm_template is not None:
                 from estimation.models import LawFirmEst
                 lawFirmEst = LawFirmEst.objects.create(
@@ -73,11 +109,10 @@ class BaseApplication(models.Model):
                 )
 
             from estimation.models import FilingEstimate
-            est = FilingEstimate.objects.create(
+            est = FilingEstimate.objects.create_complex_and_simple_est(
                 application=self,
-                date=e.date_diff + self.date_filing,
-                official_cost=e.official_cost,
                 law_firm_est=lawFirmEst,
+                est_template=e,
             )
             ests.append(est)
 

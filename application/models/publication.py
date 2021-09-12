@@ -4,7 +4,6 @@ from application.models.baseApplication import BaseApplication
 from application.utils import convert_class_applType
 from estimation import utils
 
-
 class Publication(models.Model):
     date_publication = models.DateField()
     application = models.OneToOneField(
@@ -15,12 +14,13 @@ class Publication(models.Model):
         abstract = False
 
     def generate_ests(self):
+
         from estimation.models import PublicationEstTemplate
         publ_templates = PublicationEstTemplate.objects.filter(
             country=self.application.country,
-            appl_type=convert_class_applType(self.application)
+            appl_type=convert_class_applType(self.application),
         )
-        templates = utils.filter_conditions(publ_templates, self.application.details)\
+        templates = utils.filter_conditions(publ_templates, self.application) \
             .select_related('law_firm_template')
 
         ests = []
@@ -34,12 +34,11 @@ class Publication(models.Model):
                 )
 
             from estimation.models import PublicationEst
-            est = PublicationEst.objects.create(
-                publication=self,
-                date=e.date_diff + self.date_publication,
-                official_cost=e.official_cost,
+            est = PublicationEst.objects.create_complex_and_simple_est(
+                application=self,
                 law_firm_est=lawFirmEst,
-                application=self.application
+                publication=self,
+                est_template=e,
             )
             ests.append(est)
 

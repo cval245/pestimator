@@ -119,7 +119,7 @@ class FamOptionsTest(TestCase):
             num_indep_claims=1,
             num_pages=1,
             num_claims=1,
-            num_drawings=1,
+            num_pages_drawings=1,
             entity_size=self.entitySize)
 
         self.filing_date = date(2020, 1, 1)
@@ -262,7 +262,7 @@ class ApplOptionsTest(TestCase):
             num_indep_claims=1,
             num_pages=1,
             num_claims=1,
-            num_drawings=1,
+            num_pages_drawings=1,
             entity_size=self.entitySize)
 
         self.filing_date = date(2020, 1, 1)

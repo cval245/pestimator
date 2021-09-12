@@ -29,7 +29,10 @@ router.register(r'lawfirm-est-template',
                 views.LawFirmEstTemplateViewSet, basename='lawfirmestimatetemplate')
 router.register(r'conditions',
                 views.ConditionsViewSet, basename='conditionsviewset')
-
+router.register(r'complex-conditions',
+                views.ComplexConditionsViewSet, basename='complexconditionsviewset')
+router.register(r'complex-time-conditions',
+                views.ComplexTimeConditionsViewSet, basename='complextimeconditionsviewset')
 
 urlpatterns = router.urls
 urlpatterns = format_suffix_patterns(urlpatterns)

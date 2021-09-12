@@ -1,7 +1,7 @@
 from django.db import models
 from relativedeltafield import RelativeDeltaField
 
-from characteristics.models import Country, ApplType
+from characteristics.models import Country, ApplType, Languages
 
 
 class BaseTransform(models.Model):
@@ -111,14 +111,15 @@ class DefaultOATransform(BaseDefaultTransform):
         abstract = False
 
 
-
 class DefaultAllowanceTransform(BaseDefaultTransform):
     class Meta:
         abstract = False
-
 
 
 class DefaultIssueTransform(BaseDefaultTransform):
     class Meta:
         abstract = False
 
+# class LanguageTranslation(models.Model):
+#     language = models.OneToOneField(Languages, on_delete=models.CASCADE)
+#     ratio_pages_to_en_pages = models.DecimalField(max_digits=5, decimal_places=2)

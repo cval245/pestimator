@@ -10,14 +10,15 @@ class BaseAllowance(models.Model):
     )
     date_allowance = models.DateField()
 
+
     def generate_ests(self):
 
         from estimation.models import AllowanceEstTemplate
         allow_templates = AllowanceEstTemplate.objects.filter(
             country=self.application.country,
-            appl_type=convert_class_applType(self.application)
+            appl_type=convert_class_applType(self.application),
         )
-        templates = utils.filter_conditions(allow_templates, self.application.details)
+        templates = utils.filter_conditions(allow_templates, self.application)
         templates = templates.select_related('law_firm_template')
         ests = []
         for e in templates:
@@ -25,17 +26,24 @@ class BaseAllowance(models.Model):
             if e.law_firm_template is not None:
                 from estimation.models import LawFirmEst
                 lawFirmEst = LawFirmEst.objects.create(
-                    date=e.law_firm_template.date_diff+self.date_allowance,
+                    date=e.law_firm_template.date_diff + self.date_allowance,
                     law_firm_cost=e.law_firm_template.law_firm_cost
                 )
             from estimation.models import AllowanceEst
-            est = AllowanceEst.objects.create(
-                allowance=self,
-                date=e.date_diff + self.date_allowance,
-                official_cost=e.official_cost,
+
+            est = AllowanceEst.objects.create_complex_and_simple_est(
+                application=self,
                 law_firm_est=lawFirmEst,
-                application=self.application
+                allowance=self,
+                est_template=e,
             )
+            # est = AllowanceEst.objects.create(
+            #     allowance=self,
+            #     date=e.date_diff + self.date_allowance,
+            #     official_cost=e.official_cost,
+            #     law_firm_est=lawFirmEst,
+            #     application=self.application
+            # )
             ests.append(est)
 
         return ests

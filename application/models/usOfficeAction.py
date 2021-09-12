@@ -16,13 +16,24 @@ class USOfficeAction(BaseOfficeAction):
 
     def generate_ests(self):
 
-        #from estimation.models import Law
+        foas = USOfficeAction.objects.filter(application=self.application, oa_final_bool=True)
+        if (foas.count() == 1):
+            oa_first_final_bool = True
+        else:
+            oa_first_final_bool = False
+
+        # check for the pct examining authority
+        # prior_pct_same_country = self._check_prior_appl_pct_same_country()
+
         from estimation.models import USOAEstimateTemplate
         oa_templates = USOAEstimateTemplate.objects.filter(
             country=self.application.country,
-            appl_type=convert_class_applType(self.application)
+            appl_type=convert_class_applType(self.application),
+            oa_final_bool=self.oa_final_bool,
+            oa_first_final_bool=oa_first_final_bool,
+            # prior_pct_same_country=prior_pct_same_country,
         )
-        templates = utils.filter_conditions(oa_templates, self.application.details)
+        templates = utils.filter_conditions(oa_templates, self.application)
 
         templates = templates.select_related('law_firm_template')
         ests = []
@@ -31,17 +42,16 @@ class USOfficeAction(BaseOfficeAction):
             if e.law_firm_template is not None:
                 from estimation.models import LawFirmEst
                 lawFirmEst = LawFirmEst.objects.create(
-                    date=e.law_firm_template.date_diff+self.date_office_action,
+                    date=e.law_firm_template.date_diff + self.date_office_action,
                     law_firm_cost=e.law_firm_template.law_firm_cost
                 )
 
             from estimation.models import USOAEstimate
-            est = USOAEstimate.objects.create(
-                office_action=self,
-                date=e.date_diff + self.date_office_action,
-                official_cost=e.official_cost,
+            est = USOAEstimate.objects.create_complex_and_simple_est(
+                application=self.application,
                 law_firm_est=lawFirmEst,
-                application=self.application
+                office_action=self,
+                est_template=e,
             )
             ests.append(est)
 

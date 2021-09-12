@@ -1,4 +1,4 @@
-from django.db.models import Sum, F, Value, ExpressionWrapper
+from django.db.models import Sum, F, Value, ExpressionWrapper, Q
 from django.db.models.functions import Coalesce
 from djmoney.models.fields import MoneyField
 from rest_framework import viewsets, status
@@ -68,11 +68,13 @@ def createFamEstDetails(id):
                       year=F('date__year')) \
         .annotate(
         official_cost_sum=ExpressionWrapper(
-            Coalesce(Sum('official_cost'), Value(0)), output_field=MoneyField()),
+            Coalesce(Sum('official_cost', filter=Q(translation_bool=False)), Value(0)), output_field=MoneyField()),
         law_firm_cost_sum=ExpressionWrapper(
             Coalesce(Sum('law_firm_est__law_firm_cost'), Value(0)),
             output_field=MoneyField()),
-        total_cost_sum=F('official_cost_sum') + F('law_firm_cost_sum'),
+        translation_cost_sum=ExpressionWrapper(
+            Coalesce(Sum('official_cost', filter=Q(translation_bool=True)), Value(0)), output_field=MoneyField()),
+        total_cost_sum=F('official_cost_sum') + F('law_firm_cost_sum') + F('translation_cost_sum'),
     )
 
     return bill

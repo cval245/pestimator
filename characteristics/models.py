@@ -54,10 +54,13 @@ class OANumPerCountry(models.Model):
     oa_num = models.IntegerField(default=2)
 
     class Meta:
-        # models.UniqueConstraint(fields='currency_name', name='unique_currency_name')
         constraints = [
             models.UniqueConstraint(
                 fields=['country'],
                 name='countryOANumUniqueConstraint'),
         ]
 
+class Languages(models.Model):
+    name = models.CharField(max_length=50)
+    country = models.ManyToManyField(Country)
+    words_per_page = models.IntegerField()

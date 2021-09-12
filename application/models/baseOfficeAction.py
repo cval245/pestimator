@@ -19,9 +19,9 @@ class BaseOfficeAction(models.Model):
         from estimation.models import OAEstimateTemplate
         oa_templates = OAEstimateTemplate.objects.filter(
             country=self.application.country,
-            appl_type=convert_class_applType(self.application)
+            appl_type=convert_class_applType(self.application),
         )
-        templates = utils.filter_conditions(oa_templates, self.application.details)
+        templates = utils.filter_conditions(oa_templates, self.application)
         templates = templates.select_related('law_firm_template')
         ests = []
         for e in templates:
@@ -29,18 +29,24 @@ class BaseOfficeAction(models.Model):
             if e.law_firm_template is not None:
                 from estimation.models import LawFirmEst
                 lawFirmEst = LawFirmEst.objects.create(
-                    date=e.law_firm_template.date_diff+self.date_office_action,
+                    date=e.law_firm_template.date_diff + self.date_office_action,
                     law_firm_cost=e.law_firm_template.law_firm_cost
                 )
 
             from estimation.models import OAEstimate
-            est = OAEstimate.objects.create(
-                office_action=self,
-                date=e.date_diff + self.date_office_action,
-                official_cost=e.official_cost,
+            est = OAEstimate.objects.create_complex_and_simple_est(
+                application=self,
                 law_firm_est=lawFirmEst,
-                application=self.application
+                office_action=self,
+                est_template=e,
             )
+            # est = OAEstimate.objects.create(
+            #     office_action=self,
+            #     date=e.date_diff + self.date_office_action,
+            #     official_cost=e.official_cost,
+            #     law_firm_est=lawFirmEst,
+            #     application=self.application
+            # )
             ests.append(est)
 
         return ests

@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
                 ('num_indep_claims', models.IntegerField()),
                 ('num_pages', models.IntegerField()),
                 ('num_claims', models.IntegerField()),
-                ('num_drawings', models.IntegerField()),
+                ('num_pages_drawings', models.IntegerField()),
             ],
         ),
         migrations.CreateModel(
