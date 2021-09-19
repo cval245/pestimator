@@ -3,7 +3,6 @@ from django.conf import settings
 # Create your models here.
 
 class UserProfile(models.Model):
-
     user = models.OneToOneField(settings.AUTH_USER_MODEL,
                                 on_delete=models.CASCADE)
     company_name = models.TextField()
@@ -11,4 +10,4 @@ class UserProfile(models.Model):
     city = models.TextField()
     state = models.TextField()
     zip_code = models.IntegerField()
-
+    estimates_remaining = models.IntegerField(default=0)

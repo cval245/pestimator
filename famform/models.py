@@ -29,7 +29,10 @@ class FamEstFormData(models.Model):
     init_appl_indep_claims = models.IntegerField()
     init_appl_claims = models.IntegerField()
     init_appl_drawings = models.IntegerField()
-    init_appl_pages = models.IntegerField()
+    # init_appl_pages = models.IntegerField()
+    init_appl_pages_desc = models.IntegerField()
+    init_appl_pages_drawings = models.IntegerField()
+    init_appl_pages_claims = models.IntegerField()
     date_created = models.DateTimeField(auto_now_add=True)
 
     # change method to method_pct boolean
@@ -58,8 +61,10 @@ class FamEstFormData(models.Model):
         applDetails = ApplDetails.objects.create(
             num_indep_claims=self.init_appl_indep_claims,
             num_claims=self.init_appl_claims,
-            num_pages_drawings=self.init_appl_drawings,
-            num_pages=self.init_appl_pages,
+            num_drawings=self.init_appl_drawings,
+            num_pages_drawings=self.init_appl_pages_drawings,
+            num_pages_claims=self.init_appl_pages_claims,
+            num_pages_description=self.init_appl_pages_desc,
             entity_size=self.entity_size,
             language_id=language.id
         )
@@ -134,12 +139,11 @@ class FamEstFormData(models.Model):
                                      first_appl_bool=first_appl_bool,
                                      prev_appl_option=prevApplOption)
 
-        self.create_appls(famOptions)
+        self.family.create_appls(famOptions)
 
-    def create_appls(self, famOptions):
-        # fam = Family.objects.get(id=self.family)
-        fam = self.family
-        fam.create_appls(famOptions)
+    # def create_appls(self, famOptions):
+    #     fam = self.family
+    #     fam.create_appls(famOptions)
 
 
 class FamOptions(models.Model):
@@ -178,13 +182,15 @@ class FamOptions(models.Model):
 
     def translate_details_new_language(self, details, current_language, desired_language):
         # convert current language to english ex. French to English
-        num_words = current_language.words_per_page * details.num_pages
+        num_words = current_language.words_per_page * details.num_pages_description
         new_pages = num_words / desired_language.words_per_page
 
         new_details = ApplDetails.objects.create(
             num_indep_claims=details.num_indep_claims,
-            num_pages=new_pages,
             num_claims=details.num_claims,
+            num_drawings=details.num_drawings,
+            num_pages_description=new_pages,
+            num_pages_claims=details.num_pages_claims,
             num_pages_drawings=details.num_pages_drawings,
             entity_size=details.entity_size,
             language_id=desired_language.id
@@ -208,11 +214,25 @@ class FamOptions(models.Model):
         for lang in destination_languages:
             if (lang == details.language):
                 desired_language = lang
+        if (appl_type == ApplType.objects.get(application_type='epvalidation')):
+            if ((country == Country.objects.get(country='GB'))
+                    | (country == Country.objects.get(country='FR'))
+                    | (country == Country.objects.get(country='DE'))
+            ):
+                translated_details = details
+                translated_details.pk = None
+                translated_details.save()
+            else:
+                translated_details = self.translate_details_new_language(
+                    details=details,
+                    current_language=details.language,
+                    desired_language=desired_language, )
 
-        translated_details = self.translate_details_new_language(
-            details=details,
-            current_language=details.language,
-            desired_language=desired_language, )
+        else:
+            translated_details = self.translate_details_new_language(
+                details=details,
+                current_language=details.language,
+                desired_language=desired_language, )
 
         # apply transmutation transformations
         # these transmutations convert to local patent office guidelines

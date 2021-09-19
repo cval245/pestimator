@@ -47,21 +47,34 @@ def _filter_indep_claims(templates, appl_details):
 def _filter_pages(templates, appl_details):
     templates = templates.exclude(
         conditions__condition_pages_min__gte=
-        appl_details.num_pages)
+        appl_details.total_pages)
 
     templates = templates.exclude(
         conditions__condition_pages_max__lte=
-        appl_details.num_pages)
+        appl_details.total_pages)
     return templates
+
+
+def _filter_desc_pages(templates, appl_details):
+    templates = templates.exclude(
+        conditions__condition_pages_desc_min__gte=
+        appl_details.num_pages_description)
+
+    templates = templates.exclude(
+        conditions__condition_pages_desc_max__lte=
+        appl_details.num_pages_description)
+
+    return templates
+
 
 def _filter_drawings(templates, appl_details):
     templates = templates.exclude(
         conditions__condition_drawings_min__gte=
-        appl_details.num_pages)
+        appl_details.num_drawings)
 
     templates = templates.exclude(
         conditions__condition_drawings_max__lte=
-        appl_details.num_pages)
+        appl_details.num_drawings)
     return templates
 
 

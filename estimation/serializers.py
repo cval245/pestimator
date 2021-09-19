@@ -74,15 +74,16 @@ class ConditionsSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = LineEstimationTemplateConditions
 		fields = ('id',
-				  'condition_annual_prosecution_fee',
-				  'condition_claims_min', 'condition_claims_max',
-				  'condition_indep_claims_min', 'condition_indep_claims_max',
-				  'condition_pages_min', 'condition_pages_max',
-				  'condition_drawings_min', 'condition_drawings_max',
-				  'condition_entity_size',
-				  'condition_time_complex', 'condition_complex',
-				  'prior_pct_same_country', 'prior_pct',
-				  'prev_appl_date_excl_intermediary_time')
+                  'condition_annual_prosecution_fee',
+                  'condition_claims_min', 'condition_claims_max',
+                  'condition_indep_claims_min', 'condition_indep_claims_max',
+                  'condition_pages_min', 'condition_pages_max',
+                  'condition_pages_desc_min', 'condition_pages_desc_max',
+                  'condition_drawings_min', 'condition_drawings_max',
+                  'condition_entity_size',
+                  'condition_time_complex', 'condition_complex',
+                  'prior_pct_same_country', 'prior_pct',
+                  'prev_appl_date_excl_intermediary_time')
 
 
 class ComplexConditionsSerializer(serializers.ModelSerializer):

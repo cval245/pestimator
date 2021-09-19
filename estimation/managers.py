@@ -1,4 +1,5 @@
 from django.db import models
+from application import utils as applUtils
 
 
 class EstimateManager(models.Manager):
@@ -16,13 +17,18 @@ class EstimateManager(models.Manager):
             new_date = time_complex.calc_complex_time_condition(application, date_diff,
                                                                 est_template.conditions)
 
-        est = self.create(
-            application=application,
-            date=new_date,
-            official_cost=cost,
-            law_firm_est=law_firm_est,
-        )
-        return est
+        date_of_expiry = applUtils.get_date_of_expiry(application)
+        if (date_of_expiry > new_date):
+            est = self.create(
+                application=application,
+                date=new_date,
+                official_cost=cost,
+                law_firm_est=law_firm_est,
+                fee_code=est_template.fee_code,
+                description=est_template.description,
+            )
+            return est
+        return None
 
 
 class PublEstimateManager(models.Manager):
@@ -41,32 +47,19 @@ class PublEstimateManager(models.Manager):
             new_date = time_complex.calc_complex_time_condition(application, date_diff,
                                                                 est_template.conditions)
 
-        est = self.create(
-            application=application,
-            date=new_date,
-            official_cost=cost,
-            publication=publication,
-            law_firm_est=law_firm_est,
-        )
-        return est
-    # def create_complex_and_simple_est(self, application, appl_details,
-    #                                   template_conditions,
-    #                                   date, official_cost, law_firm_est, publication):
-    #     cost = official_cost
-    #     if template_conditions.condition_complex:
-    #         complex_condition = template_conditions.condition_complex
-    #         cost = complex_condition.calc_complex_condition(appl_details,
-    #                                                         official_cost,
-    #                                                         template_conditions)
-    #
-    #     est = self.create(
-    #         application=application,
-    #         date=date,
-    #         official_cost=cost,
-    #         publication=publication,
-    #         law_firm_est=law_firm_est,
-    #     )
-    #     return est
+        date_of_expiry = applUtils.get_date_of_expiry(application)
+        if (date_of_expiry > new_date):
+            est = self.create(
+                application=application,
+                date=new_date,
+                official_cost=cost,
+                publication=publication,
+                law_firm_est=law_firm_est,
+                fee_code=est_template.fee_code,
+                description=est_template.description,
+            )
+            return est
+        return None
 
 
 class AllowanceEstimateManager(models.Manager):
@@ -85,33 +78,21 @@ class AllowanceEstimateManager(models.Manager):
             new_date = time_complex.calc_complex_time_condition(application, date_diff,
                                                                 est_template.conditions)
 
-        est = self.create(
-            application=application,
-            date=new_date,
-            official_cost=cost,
-            allowance=allowance,
-            law_firm_est=law_firm_est,
-        )
-        return est
+        date_of_expiry = applUtils.get_date_of_expiry(application)
+        if (date_of_expiry > new_date):
+            est = self.create(
+                application=application,
+                date=new_date,
+                official_cost=cost,
+                allowance=allowance,
+                law_firm_est=law_firm_est,
+                fee_code=est_template.fee_code,
+                description=est_template.description,
+            )
+            return est
+        return None
 
-    # def create_complex_and_simple_est(self, application, appl_details,
-    #                                   template_conditions,
-    #                                   date, official_cost, law_firm_est, allowance):
-    #     cost = official_cost
-    #     if template_conditions.condition_complex:
-    #         complex_condition = template_conditions.condition_complex
-    #         cost = complex_condition.calc_complex_condition(appl_details,
-    #                                                         official_cost,
-    #                                                         template_conditions)
-    #
-    #     est = self.create(
-    #         application=application,
-    #         date=date,
-    #         official_cost=cost,
-    #         allowance=allowance,
-    #         law_firm_est=law_firm_est,
-    #     )
-    #     return est
+
 
 
 class IssueEstimateManager(models.Manager):
@@ -130,33 +111,21 @@ class IssueEstimateManager(models.Manager):
             new_date = time_complex.calc_complex_time_condition(application, date_diff,
                                                                 est_template.conditions)
 
-        est = self.create(
-            application=application,
-            date=new_date,
-            official_cost=cost,
-            issue=issuance,
-            law_firm_est=law_firm_est,
-        )
-        return est
+        date_of_expiry = applUtils.get_date_of_expiry(application)
+        if (date_of_expiry > new_date):
+            est = self.create(
+                application=application,
+                date=new_date,
+                official_cost=cost,
+                issue=issuance,
+                law_firm_est=law_firm_est,
+                fee_code=est_template.fee_code,
+                description=est_template.description,
+            )
 
-    # def create_complex_and_simple_est(self, application, appl_details,
-    #                                   template_conditions,
-    #                                   date, official_cost, law_firm_est, issuance):
-    #     cost = official_cost
-    #     if template_conditions.condition_complex:
-    #         complex_condition = template_conditions.condition_complex
-    #         cost = complex_condition.calc_complex_condition(appl_details,
-    #                                                         official_cost,
-    #                                                         template_conditions)
-    #
-    #     est = self.create(
-    #         application=application,
-    #         date=date,
-    #         official_cost=cost,
-    #         issue=issuance,
-    #         law_firm_est=law_firm_est,
-    #     )
-    #     return est
+            return est
+        return None
+
 
 
 class OAEstimateManager(models.Manager):
@@ -175,32 +144,19 @@ class OAEstimateManager(models.Manager):
             new_date = time_complex.calc_complex_time_condition(application, date_diff,
                                                                 est_template.conditions)
 
-        est = self.create(
-            application=application,
-            date=new_date,
-            official_cost=cost,
-            office_action=office_action,
-            law_firm_est=law_firm_est,
-        )
-        return est
-    # def create_complex_and_simple_est(self, application, appl_details,
-    #                                   template_conditions,
-    #                                   date, official_cost, law_firm_est, office_action):
-    #     cost = official_cost
-    #     if template_conditions.condition_complex:
-    #         complex_condition = template_conditions.condition_complex
-    #         cost = complex_condition.calc_complex_condition(appl_details,
-    #                                                         official_cost,
-    #                                                         template_conditions)
-    #
-    #     est = self.create(
-    #         application=application,
-    #         date=date,
-    #         official_cost=cost,
-    #         office_action=office_action,
-    #         law_firm_est=law_firm_est,
-    #     )
-    #     return est
+        date_of_expiry = applUtils.get_date_of_expiry(application)
+        if (date_of_expiry > new_date):
+            est = self.create(
+                application=application,
+                date=new_date,
+                official_cost=cost,
+                office_action=office_action,
+                law_firm_est=law_firm_est,
+                fee_code=est_template.fee_code,
+                description=est_template.description,
+            )
+            return est
+        return None
 
 
 class USOAEstimateManager(models.Manager):
@@ -219,30 +175,16 @@ class USOAEstimateManager(models.Manager):
             new_date = time_complex.calc_complex_time_condition(application, date_diff,
                                                                 est_template.conditions)
 
-        est = self.create(
-            application=application,
-            date=new_date,
-            official_cost=cost,
-            office_action=office_action,
-            law_firm_est=law_firm_est,
-        )
-        return est
-
-    # def create_complex_and_simple_est(self, application, appl_details,
-    #                                   template_conditions,
-    #                                   date, official_cost, law_firm_est, office_action):
-    #     cost = official_cost
-    #     if template_conditions.condition_complex:
-    #         complex_condition = template_conditions.condition_complex
-    #         cost = complex_condition.calc_complex_condition(appl_details,
-    #                                                         official_cost,
-    #                                                         template_conditions)
-    #
-    #     est = self.create(
-    #         application=application,
-    #         date=date,
-    #         official_cost=cost,
-    #         office_action=office_action,
-    #         law_firm_est=law_firm_est,
-    #     )
-    #     return est
+        date_of_expiry = applUtils.get_date_of_expiry(application)
+        if (date_of_expiry > new_date):
+            est = self.create(
+                application=application,
+                date=new_date,
+                official_cost=cost,
+                office_action=office_action,
+                law_firm_est=law_firm_est,
+                fee_code=est_template.fee_code,
+                description=est_template.description,
+            )
+            return est
+        return None

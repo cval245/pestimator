@@ -35,7 +35,7 @@ class Publication(models.Model):
 
             from estimation.models import PublicationEst
             est = PublicationEst.objects.create_complex_and_simple_est(
-                application=self,
+                application=self.application,
                 law_firm_est=lawFirmEst,
                 publication=self,
                 est_template=e,

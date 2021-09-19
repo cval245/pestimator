@@ -2,6 +2,7 @@ from django.db.models import F
 from rest_framework import viewsets
 from rest_framework.response import Response
 
+from user.permissions import PostFamFormPermission
 from .models import FamEstFormData
 from .serializers import FamEstFormDataNetSerializer, FamEstFormDataNetPostSerializer
 
@@ -10,6 +11,7 @@ from .serializers import FamEstFormDataNetSerializer, FamEstFormDataNetPostSeria
 
 class FamEstFormDataViewSet(viewsets.ViewSet):
     serializer_class = FamEstFormDataNetSerializer
+    permission_classes = [PostFamFormPermission]
 
     def get_queryset(self):
         return FamEstFormData.objects.filter(family__user=self.request.user) \

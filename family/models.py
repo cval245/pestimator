@@ -20,6 +20,10 @@ class Family(models.Model):
         for x in bob:
             BaseApplication.objects.create_full(options=x, user=self.user,
                                                 family_id=self.id)
+
+        # subtract one from user accounts
+        self.user.userprofile.estimates_remaining = self.user.userprofile.estimates_remaining - 1
+        self.user.userprofile.save()
                
     def select_all_fam_ests(self):
         appls = self.baseapplication_set.all()

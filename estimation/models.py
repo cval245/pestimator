@@ -16,7 +16,7 @@ from application.models.utilityApplication import UtilityApplication
 from characteristics.models import Country, EntitySize, ApplType, Languages
 from estimation.managers import EstimateManager, OAEstimateManager, USOAEstimateManager, PublEstimateManager, \
     AllowanceEstimateManager, IssueEstimateManager
-
+from application import utils as applUtils
 
 class ComplexTimeConditions(models.Model):
     name = models.CharField(max_length=200)
@@ -26,7 +26,12 @@ class ComplexTimeConditions(models.Model):
             return self.calc_from_priority_date(application, date_diff)
         elif (self.name == 'from ep filing date'):
             return self.calc_from_date_of_parent_ep_application(application, date_diff)
-
+        elif (self.name == 'from date of parent ep appl acc fees'):
+            return self.calc_from_date_of_parent_ep_appl_acc_fees(application, date_diff)
+        elif (self.name == 'from date of filing and issue acc fees'):
+            return self.calc_acc_fees_from_filing_to_issue(application, date_diff)
+        elif (self.anme == 'from inter filing date or filing date'):
+            return self.calc_from_international_filing_date_or_filing_date()
         return None
 
     def calc_from_priority_date(self, application, date_diff):
@@ -47,9 +52,51 @@ class ComplexTimeConditions(models.Model):
         new_date = application.date_filing + date_diff
         prior_application = application.prior_appl
         if (prior_application):
-            if (prior_application.appl_type
-                    == ApplType.objects.get(appl_type='ep')):
+            if (applUtils.convert_class_applType(prior_application)
+                    == ApplType.objects.get(application_type='ep')):
                 new_date = prior_application.date_filing + date_diff
+
+        return new_date
+
+    def calc_from_date_of_parent_ep_appl_acc_fees(self, application, date_diff):
+        # date of EP and date of EP validation
+        # accumulate any values that happen between date of EP and EPValidation
+        # implement the date on the date of filing the EPValidation
+        # otherwise implement date_diff from ep filing date
+        new_date = application.date_filing + date_diff
+        prior_application = application.prior_appl
+        if (prior_application):
+            if (applUtils.convert_class_applType(prior_application)
+                    == ApplType.objects.get(application_type='ep')):
+                new_date = prior_application.date_filing + date_diff
+                if (new_date < application.date_filing):
+                    new_date = application.date_filing
+
+        return new_date
+
+    def calc_acc_fees_from_filing_to_issue(self, application, date_diff):
+        # date of filing and date of issuance
+        # accumulate any values that happen between date of filing and issuance
+        # implement the date on the date of issuance
+        # otherwise implement date_diff from filing date
+        new_date = application.date_filing + date_diff
+        issue = application.issue
+        if (issue):
+            if (applUtils.convert_class_applType(issue)
+                    == ApplType.objects.get(application_type='ep')):
+                new_date = application.date_filing + date_diff
+                if (new_date < issue.date_issuance):
+                    new_date = issue.date_issueance
+
+        return new_date
+
+    def calc_from_international_filing_date_or_filing_date(self, application, date_diff):
+        # from date of international filing
+        # from pct phase
+        new_date = application.date_filing + date_diff
+        prior_application = application.prior_appl
+        if (prior_application):
+            new_date = prior_application.date_filing + date_diff
 
         return new_date
 
@@ -139,6 +186,8 @@ class LineEstimationTemplateConditions(models.Model):
     condition_indep_claims_max = models.IntegerField(blank=True, null=True)
     condition_pages_min = models.IntegerField(blank=True, null=True)
     condition_pages_max = models.IntegerField(blank=True, null=True)
+    condition_pages_desc_min = models.IntegerField(blank=True, null=True)
+    condition_pages_desc_max = models.IntegerField(blank=True, null=True)
     condition_drawings_min = models.IntegerField(blank=True, null=True)
     condition_drawings_max = models.IntegerField(blank=True, null=True)
     condition_entity_size = models.ForeignKey(EntitySize,
@@ -273,12 +322,15 @@ class BaseEst(models.Model):
                                default=Money(0, 'USD'),
                                default_currency='USD')
     date = models.DateField()
+    description = models.TextField()
+    fee_code = models.CharField(max_length=30)
     law_firm_est = models.OneToOneField(LawFirmEst, on_delete=models.CASCADE, null=True)
     application = models.ForeignKey(BaseApplication,
                                     on_delete=models.CASCADE)
     translation_bool = models.BooleanField(default=False)
 
     objects = EstimateManager()
+
     class Meta:
         abstract = False
 

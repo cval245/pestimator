@@ -65,7 +65,7 @@ class BaseApplication(models.Model):
                     from estimation.models import DefaultTranslationEstTemplate
                     translation_est = DefaultTranslationEstTemplate.objects.first()
 
-                num_words = language.words_per_page * self.details.num_pages
+                num_words = language.words_per_page * self.details.num_pages_description
                 translation_cost = num_words * translation_est.cost_per_word
 
                 date = self.date_filing + translation_est.date_diff

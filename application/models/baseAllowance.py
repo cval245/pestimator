@@ -32,7 +32,7 @@ class BaseAllowance(models.Model):
             from estimation.models import AllowanceEst
 
             est = AllowanceEst.objects.create_complex_and_simple_est(
-                application=self,
+                application=self.application,
                 law_firm_est=lawFirmEst,
                 allowance=self,
                 est_template=e,
