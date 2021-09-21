@@ -11,22 +11,30 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 import os
+import environ
 from datetime import timedelta
 from pathlib import Path
+
+env = environ.ENV(
+    DEBUG=(bool, False)
+)
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+# Take environment variables from .env file
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+# False if not in os.environ because of casting above
+DEBUG = env('DEBUG')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 from celery.schedules import crontab
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-fvr3+$jwp+bv-!nbx(*ld5mv)i5&xbf9=yj9d-61^*7j@&#d@)'
-
+SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+# DEBUG = False
 
 ALLOWED_HOSTS = ["localhost", "pestimator.herokuapp.com"]
 
@@ -93,19 +101,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'pestimator.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'pestimator',
-#         'USER': 'djangoconnect',
-#         'HOST': 'localhost',
-#         'PASSWORD': 'Belgrade2010',
-#         'PORT': '5432',
-#     }
-# }
 
 DATABASES = {
     'default': {
