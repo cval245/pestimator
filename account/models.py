@@ -11,3 +11,23 @@ class UserProfile(models.Model):
     state = models.TextField()
     zip_code = models.IntegerField()
     estimates_remaining = models.IntegerField(default=0)
+
+
+class PurchaseOrder(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE)
+    session_id = models.CharField(max_length=200, blank=True)
+    paid = models.BooleanField(default=False)
+    total_amount = models.DecimalField(max_digits=19, decimal_places=4, blank=True)
+
+
+class LineItem(models.Model):
+    purchase_order = models.ForeignKey(PurchaseOrder, on_delete=models.CASCADE)
+    quantity_purchased = models.IntegerField()
+    product_id = models.CharField(max_length=200)
+    line_item_id = models.CharField(max_length=200)
+
+
+class ProductPrice(models.Model):
+    price_id = models.CharField(max_length=200)
+    price_description = models.CharField(max_length=200)

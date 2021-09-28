@@ -15,13 +15,16 @@ import environ
 from datetime import timedelta
 from pathlib import Path
 
-env = environ.ENV(
-    DEBUG=(bool, False)
-)
+env = environ.Env(DEBUG=(bool, False))
+# env = environ.ENV(
+#     DEBUG=(bool, False)
+# )
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 # Take environment variables from .env file
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+SECRET_KEY = env('SECRET_KEY')
 
 # False if not in os.environ because of casting above
 DEBUG = env('DEBUG')
@@ -32,7 +35,6 @@ from celery.schedules import crontab
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
-SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = False
 
@@ -105,14 +107,13 @@ WSGI_APPLICATION = 'pestimator.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'de9ftmo4vm9jj1',
-        'USER': 'mzabyikihumhgg',
-        'HOST': 'ec2-23-20-124-77.compute-1.amazonaws.com',
-        'PASSWORD': '4419a81170245ee8749644f3e5f230f236013784424104661b9e79594569be68',
-        'PORT': '5432',
+        'NAME': env('DATABASE_NAME'),
+        'USER': env('DATABASE_USER'),
+        'HOST': env('DATABASE_HOST'),
+        'PASSWORD': env('DATABASE_PASSWORD'),
+        'PORT': env('DATABASE_PORT')
     }
 }
-
 
 AUTH_USER_MODEL = 'user.User'
 REST_FRAMEWORK = {
@@ -139,10 +140,6 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
     "https://localhost:4200",
-    # "https://cval.me",
-    # "https://www.cval.me",
-    # "https://cval.me",
-    # "https://www.cval.me",
     "https://patport.cc",
     "https://www.patport.cc"
 ]
@@ -178,7 +175,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
@@ -189,18 +185,16 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
-EMAIL_HOST = 'mail.privateemail.com'
-EMAIL_PORT = 465
-EMAIL_HOST_USER = 'cval.me@patport.cc'
-EMAIL_HOST_PASSWORD = 'xZmLvUYiKlR51j7yu9N2'
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_PORT = env('EMAIL_PORT')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
-
-DEFAULT_FROM_EMAIL = 'cval.me@patport.cc'
-
-#DOMAIN = 'localhost:4200'
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
 
 DOMAIN = 'patport.cc'
+DOMAIN_FULL = 'https://patport.cc'
 SITE_NAME = 'PatPort'
 DJOSER = {
     'SEND_ACTIVATION_EMAIL': True,
@@ -210,7 +204,7 @@ DJOSER = {
     'PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND': True,
     'TOKEN_MODEL': None,
 }
-OPEN_EXCHANGE_RATES_APP_ID = 'f8873179704e447fb5e75f4543dd98b5'
+OPEN_EXCHANGE_RATES_APP_ID = env('OPEN_EXCHANGE_RATES_APP_ID')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
@@ -228,7 +222,7 @@ CELERYBEAT_SCHEDULER = {  # 'djcelery.schedulers.DatabaseScheduler'
         'kwargs': {}  # For custom arguments
     }}
 
-
+STRIPE_PRIVATE_KEY = env('STRIPE_PRIVATE_KEY')
 
 # LOGGING = {
 #     'version': 1,

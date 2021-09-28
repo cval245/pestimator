@@ -12,7 +12,7 @@ class DataPermission(permissions.BasePermission):
 
 
 class PostFamFormPermission(permissions.BasePermission):
-    message = 'please purchase additional estimates'
+    message = 'Please purchase additional estimates'
 
     def has_permission(self, request, view):
         if view.action == 'create' or view.action == 'update' or view.action == 'partial_update':

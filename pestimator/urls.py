@@ -25,6 +25,7 @@ urlpatterns = [
     path('', include('countryform.urls')),
     path('', include('transform.urls')),
     path('', include('account.urls')),
+    path('', include('user.urls')),
     path('admin/', admin.site.urls),
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.jwt')),

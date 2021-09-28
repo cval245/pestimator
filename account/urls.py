@@ -15,4 +15,5 @@ router = OptionalSlashRouter()
 router.register(r'account/?', views.UserProfileViewSet, basename='account')
 b = [path(r'retrieve-username/', csrf_exempt(views.retrieveUsername))]
 c = [path(r'checkout/', csrf_exempt(views.create_checkout_session))]
-urlpatterns = router.urls + b + c
+d = [path(r'webhooks/', csrf_exempt(views.webhook_stripe_add_estimate))]
+urlpatterns = router.urls + b + c + d

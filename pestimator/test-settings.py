@@ -1,6 +1,6 @@
 from .settings import * 
 DEBUG = True;
-
+SECRET_KEY = env('SECRET_KEY')
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -13,6 +13,8 @@ DATABASES = {
     }
 }
 
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+
 SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer'),
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=10),
@@ -20,6 +22,7 @@ SIMPLE_JWT = {
 }
 
 DOMAIN = 'localhost:4200'
+DOMAIN_FULL = 'http://localhost:4200'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'mail.privateemail.com'
 EMAIL_PORT = 465
