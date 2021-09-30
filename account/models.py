@@ -2,15 +2,25 @@ from django.db import models
 from django.conf import settings
 # Create your models here.
 
+
 class UserProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL,
                                 on_delete=models.CASCADE)
-    company_name = models.TextField()
-    address = models.TextField()
-    city = models.TextField()
-    state = models.TextField()
-    zip_code = models.IntegerField()
+    company_name = models.TextField(null=True)
+    address = models.TextField(null=True)
+    city = models.TextField(null=True)
+    state = models.TextField(null=True)
+    zip_code = models.IntegerField(null=True)
     estimates_remaining = models.IntegerField(default=0)
+
+    def save(self, *args, **kwargs):
+        if (self.pk is None):
+            # if being created and not updated
+            self.estimates_remaining = 1
+            # set first estimate as free
+            super(UserProfile, self).save(*args, **kwargs)
+        else:
+            super(UserProfile, self).save(*args, **kwargs)
 
 
 class PurchaseOrder(models.Model):

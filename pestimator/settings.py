@@ -14,6 +14,7 @@ import os
 import environ
 from datetime import timedelta
 from pathlib import Path
+from . import base_settings
 
 env = environ.Env(DEBUG=(bool, False))
 # env = environ.ENV(
@@ -26,82 +27,12 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 SECRET_KEY = env('SECRET_KEY')
 
-# False if not in os.environ because of casting above
 DEBUG = env('DEBUG')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 from celery.schedules import crontab
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
-
-# SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = False
-
-ALLOWED_HOSTS = ["localhost", "pestimator.herokuapp.com"]
-
-
-# Application definition
-
-INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'rest_framework',
-    'djoser',
-    'corsheaders',
-    'djmoney',
-    'djmoney.contrib.exchange',
-    'djcelery_email',
-    'account.apps.AccountConfig',
-    'application.apps.ApplicationConfig',
-    'estimation.apps.EstimationConfig',
-    'characteristics.apps.CharacteristicsConfig',
-    'family.apps.FamilyConfig',
-    'famform.apps.FamformConfig',
-    'transform.apps.TransformConfig',
-    'lawfirm.apps.LawfirmConfig',
-    'user.apps.UserConfig',
-    'countryform.apps.CountryformConfig',
-]
-
-MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.RemoteUserMiddleware',
-    #'silk.middleware.SilkyMiddleware',
-]
-
-ROOT_URLCONF = 'pestimator.urls'
-
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
-    },
-]
-
-WSGI_APPLICATION = 'pestimator.wsgi.application'
-
+ALLOWED_HOSTS = ["pestimator.herokuapp.com"]
 
 
 DATABASES = {
@@ -115,74 +46,15 @@ DATABASES = {
     }
 }
 
-AUTH_USER_MODEL = 'user.User'
-REST_FRAMEWORK = {
-    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-}
-
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-    'django.contrib.auth.backends.RemoteUserBackend',
-]
-
-SIMPLE_JWT = {
-    'AUTH_HEADER_TYPES': ('Bearer'),
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=10),
-    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=600),
-}
-
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:4200",
-    "https://localhost:4200",
     "https://patport.cc",
     "https://www.patport.cc"
 ]
-# Password validation
-# https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
-
-
-# Internationalization
-# https://docs.djangoproject.com/en/3.2/topics/i18n/
-
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
-USE_I18N = True
-
-USE_L10N = True
-
-USE_TZ = True
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
 EMAIL_HOST = env('EMAIL_HOST')
@@ -196,47 +68,21 @@ DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
 DOMAIN = 'patport.cc'
 DOMAIN_FULL = 'https://patport.cc'
 SITE_NAME = 'PatPort'
-DJOSER = {
-    'SEND_ACTIVATION_EMAIL': True,
-    'USER_CREATE_PASSWORD_RETYPE': True,
-    'ACTIVATION_URL': 'account/activate/{uid}/{token}',
-    'PASSWORD_RESET_CONFIRM_URL': 'account/password-reset/{uid}/{token}',
-    'PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND': True,
-    'TOKEN_MODEL': None,
-}
+
 OPEN_EXCHANGE_RATES_APP_ID = env('OPEN_EXCHANGE_RATES_APP_ID')
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-BROKER_URL = os.environ.get("amqps://yivfkhqd:WrcWUxS7CP45fshvaNkIhEzEGLJyP6_2@fish.rmq.cloudamqp.com/yivfkhqd", "django://")
+BROKER_URL = os.environ.get(env('BROKER_PARTIAL_URL'), "django://")
 BROKER_POOL_LIMIT = 1
 BROKER_CONNECTION_MAX_RETRIES = 100
-CELERY_BROKER_URL = "amqps://yivfkhqd:WrcWUxS7CP45fshvaNkIhEzEGLJyP6_2@fish.rmq.cloudamqp.com/yivfkhqd"
+CELERY_BROKER_URL = env('BROKER_PARTIAL_URL')
 CELERY_TASK_SERIALIZER = "json"
 CELERY_ACCEPT_CONTENT = ["json", "msgpack"]
-CELERYBEAT_SCHEDULER = {  # 'djcelery.schedulers.DatabaseScheduler'
-    # ,
+CELERYBEAT_SCHEDULER = {
     'update_rates': {
-        'task': 'path.to.your.task',
+        'task': './tasks.py/update_rates',
         'schedule': crontab(minute=0, hour=12),
         'kwargs': {}  # For custom arguments
     }}
 
 STRIPE_PRIVATE_KEY = env('STRIPE_PRIVATE_KEY')
 
-# LOGGING = {
-#     'version': 1,
-#     'handlers': {
-#         'file': {
-#             'level': 'DEBUG',
-#             'class': 'logging.FileHandler',
-#             'filename': './debug.log',
-#         },
-#     },
-#     'loggers': {
-#         'django.db.backends': {
-#             'handlers': ['file'],
-#             'level': 'DEBUG',
-#         },
-#     },
-# }

@@ -1,6 +1,4 @@
-import simplejson as simplejson
 from django.http import JsonResponse
-from django.shortcuts import redirect
 from rest_framework import viewsets
 
 from user.models import User
@@ -16,12 +14,20 @@ from django.conf import settings
 
 stripe.api_key = settings.STRIPE_PRIVATE_KEY
 
+
 # Create your views here.
 class UserProfileViewSet(viewsets.ModelViewSet):
     serializer_class = UserProfileSerializer
 
     def get_queryset(self):
         return UserProfile.objects.filter(user=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        # add one free estimate
+        request.data['estimates_remaining'] = 1
+        print('request.data', request.data)
+
+        return super().create(request, *args, **kwargs)
 
 
 @api_view(['POST'])
@@ -32,7 +38,7 @@ def retrieveUsername(request):
         send_mail(
             'Retrieve Username',
             'Your username is ' + username,
-            'cval.me@patport.cc',
+            settings.DEFAULT_FROM_EMAIL,
             [request.data['email']]
         )
         return Response()
