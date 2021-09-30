@@ -95,6 +95,7 @@ docopt==0.6.2
 docutils @ file:///tmp/build/80754af9/docutils_1620827983598/work
 drf-writable-nested==0.6.2
 entrypoints==0.3
+environ==1.0
 epc==0.0.5
 et-xmlfile==1.1.0
 factory-boy==3.2.0
