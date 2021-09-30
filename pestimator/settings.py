@@ -14,7 +14,7 @@ import os
 import environ
 from datetime import timedelta
 from pathlib import Path
-from . import base_settings
+from .base_settings import *
 
 env = environ.Env(DEBUG=(bool, False))
 # env = environ.ENV(

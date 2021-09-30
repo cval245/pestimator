@@ -1,3 +1,4 @@
+import os
 from datetime import timedelta
 
 INSTALLED_APPS = [
@@ -112,3 +113,7 @@ DJOSER = {
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MEDIA_ROOT = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static/media')
+
+MEDIA_URL = '/media/'
