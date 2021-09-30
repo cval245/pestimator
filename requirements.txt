@@ -19,6 +19,7 @@ Django==3.2.5
 django-appconf==1.0.4
 django-celery-email==3.0.0
 django-cors-headers==3.7.0
+django-environ==0.7.0
 django-filter==2.4.0
 django-money==2.0
 django-polymorphic==3.0.0
@@ -28,7 +29,6 @@ django-templated-mail==1.1.1
 djangorestframework==3.12.4
 djangorestframework-simplejwt==4.7.2
 djoser==2.1.0
-environ==1.0
 factory-boy==3.2.0
 Faker==8.10.1
 gunicorn==20.1.0
