@@ -80,7 +80,8 @@ CELERY_ACCEPT_CONTENT = ["json", "msgpack"]
 CELERYBEAT_SCHEDULER = {
     'update_rates': {
         'task': './tasks.py/update_rates',
-        'schedule': crontab(minute=5, hour=0),
+        # 'schedule': crontab(minute=5, hour=0),
+        'schedule': crontab(minute="*"),
         'kwargs': {}  # For custom arguments
     }}
 
