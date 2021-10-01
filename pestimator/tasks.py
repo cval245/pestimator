@@ -1,8 +1,9 @@
 from celery import Celery
 from django.utils.module_loading import import_string
 from djmoney import settings
+from django.conf import settings
 
-app = Celery('tasks', broker='pyamqp://guest@localhost//')
+app = Celery('tasks', broker=settings.CELERY_BROKER_URL)
 
 
 @app.task
