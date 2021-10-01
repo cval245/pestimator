@@ -5,8 +5,13 @@ from django.conf import settings
 
 app = Celery('tasks', broker=settings.CELERY_BROKER_URL)
 
+@app.on_after_configure.connect
+def setup_periodic_tasks(sender, **kwargs):
+    sender.add_periodic_task(30.0, update_rates())
+
 
 @app.task
-def update_rates(backend=settings.EXCHANGE_BACKEND, **kwargs):
+def update_rates(**kwargs):
+    backend = settings.EXCHANGE_BACKEND
     backend = import_string(backend)()
     backend.update_rates(**kwargs)
