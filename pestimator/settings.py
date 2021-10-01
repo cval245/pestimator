@@ -77,13 +77,19 @@ BROKER_CONNECTION_MAX_RETRIES = 100
 CELERY_BROKER_URL = env('BROKER_PARTIAL_URL')
 CELERY_TASK_SERIALIZER = "json"
 CELERY_ACCEPT_CONTENT = ["json", "msgpack"]
+# CELERYBEAT_SCHEDULER = {
+#     'update_rates': {
+#         'task': './tasks.py/update_rates',
+#         # 'schedule': crontab(minute=5, hour=0),
+#         'schedule': crontab(minute="*"),
+#         'kwargs': {}  # For custom arguments
+#     }}
+
 CELERYBEAT_SCHEDULER = {
     'update_rates': {
-        'task': './tasks.py/update_rates',
+        'task': '.tasks.update_rates',
         # 'schedule': crontab(minute=5, hour=0),
         'schedule': crontab(minute="*"),
         'kwargs': {}  # For custom arguments
     }}
-
 STRIPE_PRIVATE_KEY = env('STRIPE_PRIVATE_KEY')
-
