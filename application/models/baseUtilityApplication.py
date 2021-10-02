@@ -96,9 +96,6 @@ class BaseUtilityApplication(BaseApplication):
     #         appl_type=convert_class_applType(self)
     #     )
     #     templates = utils.filter_conditions(filing_templates, self.details)
-    #     # print('country', self.country)
-    #     # print('appl_type', convert_class_applType(self))
-    #     # print('templates', templates)
     #     from estimation.models import FilingEstimate
     #     ests = [
     #         FilingEstimate.objects.create(

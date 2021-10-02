@@ -22,4 +22,3 @@ class TestLawFirmEst(TestCase):
 
 
         # appl_two = factories.ApplicationFactory(prior_appl=appl)
-        # print(lawfirmEst, appl)

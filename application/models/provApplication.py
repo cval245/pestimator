@@ -7,5 +7,4 @@ class ProvApplication(BaseApplication):
 
     def generate_dates(self, options):
         # generate filing estimates
-        print('generate_dates')
         self._generate_filing_est()

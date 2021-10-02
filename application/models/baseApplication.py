@@ -57,7 +57,7 @@ class BaseApplication(models.Model):
             language = self.details.language
 
             from estimation.models import TranslationEstTemplate
-            if (prev_language != language):
+            if (self.appl_option.translation_full_required):
                 start = TranslationEstTemplate.objects.filter(start_language=prev_language)
                 if start.filter(end_language=language).exists():
                     translation_est = start.get(end_language=language)

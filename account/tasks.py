@@ -14,7 +14,6 @@ def setup_periodic_tasks(sender, **kwargs):
 
 @app.task
 def update_rates(**kwargs):
-    print('updating rates')
     backend = settings.EXCHANGE_BACKEND
     backend = import_string(backend)()
     backend.update_rates(**kwargs)

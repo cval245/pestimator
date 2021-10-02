@@ -26,22 +26,3 @@ class EPValidationApplication(BaseApplication):
         )
         issue.generate_ests()
         return issue
-
-    # def _generate_filing_est(self):
-    #
-    #     from estimation.models import FilingEstimateTemplate
-    #     filing_templates = FilingEstimateTemplate.objects.filter(
-    #         country=self.country,
-    #         appl_type=convert_class_applType(self)
-    #     )
-    #     templates = utils.filter_conditions(filing_templates, self.details)
-    #     from estimation.models import FilingEstimate
-    #     ests = [
-    #         FilingEstimate.objects.create(
-    #             application=self,
-    #             date=e.date_diff + self.date_filing,
-    #             official_cost=e.official_cost
-    #         )
-    #         for e in templates
-    #     ]
-    #     return ests

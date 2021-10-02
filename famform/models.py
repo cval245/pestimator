@@ -209,30 +209,24 @@ class FamOptions(models.Model):
         # these translations lookup conversions from one language to another
         # words per page default for language
         # converting from one to another
-        destination_languages = country.languages_set.all()
-        desired_language = destination_languages.first()
-        for lang in destination_languages:
-            if (lang == details.language):
-                desired_language = lang
-        if (appl_type == ApplType.objects.get(application_type='epvalidation')):
-            if ((country == Country.objects.get(country='GB'))
-                    | (country == Country.objects.get(country='FR'))
-                    | (country == Country.objects.get(country='DE'))
-            ):
-                translated_details = details
-                translated_details.pk = None
-                translated_details.save()
-            else:
-                translated_details = self.translate_details_new_language(
-                    details=details,
-                    current_language=details.language,
-                    desired_language=desired_language, )
+        desired_language = self.determine_desired_language(
+            details=details, country=country,
+        )
+        translation_full_required = self.determine_translation_full_required(
+            country=country,
+            appl_type=appl_type,
+            language=desired_language,
+            prev_appl_option=prev_appl_option)
 
-        else:
+        if (translation_full_required):
             translated_details = self.translate_details_new_language(
                 details=details,
                 current_language=details.language,
-                desired_language=desired_language, )
+                desired_language=desired_language)
+        else:
+            translated_details = details
+            translated_details.pk = None
+            translated_details.save()
 
         # apply transmutation transformations
         # these transmutations convert to local patent office guidelines
@@ -244,15 +238,44 @@ class FamOptions(models.Model):
                                                date_filing=date_filing,
                                                details=translated_details,
                                                oa_total=oa_total,
+                                               translation_full_required=translation_full_required,
                                                appl_type=appl_type,
                                                prev_appl_option=prev_appl_option)
         return applOption
 
+    def determine_translation_full_required(self, country, appl_type, language, prev_appl_option):
+        # determine if translations are required.
+        translation_full_required = True;
+        if (appl_type == ApplType.objects.get(application_type='epvalidation')):
+            # epvalidation countries behave weirdly
+            if ((country == Country.objects.get(country='GB'))
+                    | (country == Country.objects.get(country='FR'))
+                    | (country == Country.objects.get(country='DE'))
+            ):
+                translation_full_required = False
+        elif (prev_appl_option):
+            if (language == prev_appl_option.details.language):
+                # same languages don't require translation
+                translation_full_required = False
+        return translation_full_required
+
+    def determine_desired_language(self, details, country):
+        # starting_langagues
+        destination_languages = country.languages_set.all()
+        desired_language = destination_languages.first()
+        for lang in destination_languages:
+            if (lang == details.language):
+                desired_language = lang
+
+        return desired_language
+
     def generate_appl_option(self, country, details, appl_type,
+                             translation_full_required,
                              date_filing, oa_total, prev_appl_option):
         applOption = ApplOptions.objects.create(title='title', date_filing=date_filing,
                                                 country=country, appl_type=appl_type,
                                                 details=details, fam_options=self,
+                                                translation_full_required=translation_full_required,
                                                 prev_appl_options=prev_appl_option)
         # select Transforms
         if (applOption.appl_type == ApplType.objects.get(application_type='prov')):
@@ -281,6 +304,7 @@ class ApplOptions(models.Model):
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
     appl_type = models.ForeignKey(ApplType, on_delete=models.CASCADE)
     date_filing = models.DateField()
+    translation_full_required = models.BooleanField(default=False)
     details = models.ForeignKey(ApplDetails, on_delete=models.CASCADE)
     fam_options = models.ForeignKey(FamOptions, on_delete=models.CASCADE)
     prev_appl_options = models.ForeignKey("self", on_delete=models.SET_NULL, null=True)

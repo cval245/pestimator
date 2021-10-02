@@ -25,7 +25,6 @@ class UserProfileViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         # add one free estimate
         request.data['estimates_remaining'] = 1
-        print('request.data', request.data)
 
         return super().create(request, *args, **kwargs)
 
@@ -53,16 +52,13 @@ def webhook_stripe_add_estimate(request):
     try:
         # event = simplejson.loads(payload)
         event = payload
-        print('event', event['type'])
     except:
-        # print('sdf', simplejson.loads(payload))
         return JsonResponse(data={'success': False})
 
     if event and event['type'] == 'payment_intent.succeeded':
         payment_intent = event['data']['object']  # contains a stripe.PaymentIntent
         # session = stripe.checkout.Session.retrieve(request.args.get('session_id'))
         session = request
-        print('Payment for {} succeeded'.format(payment_intent['amount']))
         # Then define and call a method to handle the successful payment intent.
         # handle_payment_intent_succeeded(payment_intent)
     elif event['type'] == 'payment_method.attached':
@@ -95,9 +91,6 @@ def webhook_stripe_add_estimate(request):
             userProfile.estimates_remaining = userProfile.estimates_remaining + item['quantity']
             userProfile.save()
 
-    else:
-        # Unexpected event type
-        print('Unhandled event type {}'.format(event['type']))
 
     return JsonResponse(data={'success': True})
 

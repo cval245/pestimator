@@ -39,14 +39,11 @@ class CountryAllViewSet(viewsets.ModelViewSet):
 @api_view(['GET'])
 def getEntitySize(request):
     entitySize = EntitySize.objects.all()
-    print(entitySize)
     entitySizeSerial = []
     i=0
     for e in entitySize:
         entitySizeSerial.append(EntitySerializer(entitySize[i]).data)
-        print(entitySizeSerial)
         i+=1
-    print(entitySizeSerial)
     # return Response(entitySizeSerial)
     #entitySize = list(entitySize)
     #bob = EntitySerializer(entitySize)
