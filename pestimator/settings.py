@@ -80,27 +80,12 @@ CELERY_ACCEPT_CONTENT = ["json", "msgpack"]
 
 CELERY_BEAT_SCHEDULE = {
     'update_rates': {
-        'task': 'pestimator.tasks.update_rates',
-        'schedule': 30.0,
-        'args': (16, 16),
+        'task': 'account.tasks.update_rates',
+        'schedule': crontab(hour=8, minute=24),
         'options': {
-            'expires': 15.0,
+            'expires': 300.0,
         },
     },
 }
-# CELERYBEAT_SCHEDULER = {
-#     'update_rates': {
-#         'task': './tasks.py/update_rates',
-#         # 'schedule': crontab(minute=5, hour=0),
-#         'schedule': crontab(minute="*"),
-#         'kwargs': {}  # For custom arguments
-#     }}
 
-# CELERYBEAT_SCHEDULER = {
-#     'update_rates': {
-#         'task': '.tasks.update_rates',
-#         # 'schedule': crontab(minute=5, hour=0),
-#         'schedule': crontab(minute="*"),
-#         'kwargs': {}  # For custom arguments
-#     }}
 STRIPE_PRIVATE_KEY = env('STRIPE_PRIVATE_KEY')

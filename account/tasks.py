@@ -9,10 +9,9 @@ app = Celery()
 
 @app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
-    sender.add_periodic_task(30.0, update_rates.s())
+    sender.add_periodic_task(40.0, update_rates())
 
 
-# @shared_task()
 @app.task
 def update_rates(**kwargs):
     print('updating rates')
