@@ -6,9 +6,9 @@ from django.conf import settings
 app = Celery('tasks', broker=settings.CELERY_BROKER_URL)
 
 
-# @app.on_after_configure.connect
-# def setup_periodic_tasks(sender, **kwargs):
-#     sender.add_periodic_task(30.0, update_rates())
+@app.on_after_configure.connect
+def setup_periodic_tasks(sender, **kwargs):
+    sender.add_periodic_task(30.0, update_rates())
 
 
 # @app.task
