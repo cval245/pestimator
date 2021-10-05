@@ -284,7 +284,7 @@ class TranslationEstTemplate(models.Model):
     start_language = models.ForeignKey(Languages, on_delete=models.CASCADE, related_name='start_language_est_temp')
     end_language = models.ForeignKey(Languages, on_delete=models.CASCADE, related_name='end_language_est_temp')
     date_diff = RelativeDeltaField()
-    cost_per_word = MoneyField(max_digits=5,
+    cost_per_word = MoneyField(max_digits=19,
                                decimal_places=4,
                                default=Money(0, 'USD'),
                                default_currency='USD')
@@ -292,7 +292,7 @@ class TranslationEstTemplate(models.Model):
 
 class DefaultTranslationEstTemplate(models.Model):
     date_diff = RelativeDeltaField()
-    cost_per_word = MoneyField(max_digits=5,
+    cost_per_word = MoneyField(max_digits=19,
                                decimal_places=4,
                                default=Money(0, 'USD'),
                                default_currency='USD')
@@ -311,7 +311,6 @@ class LawFirmEst(models.Model):
     date = models.DateField()
 
     def save(self, **kwargs):
-        # official_cost
         self.law_firm_cost = convert_money(self.law_firm_cost, 'USD')
         super().save(kwargs)
 

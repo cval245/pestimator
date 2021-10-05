@@ -1,5 +1,6 @@
 
 import factory
+from django.conf import settings
 from django.utils import timezone
 
 from . import models
@@ -12,6 +13,9 @@ class UserFactory(factory.django.DjangoModelFactory):
     is_staff = False
     is_active = True
     date_joined = factory.Faker('date_time', tzinfo=timezone.get_default_timezone())
+    admin_data = False
+    terms_agreed = True
 
     class Meta:
-        model = models.User
+        model = settings.AUTH_USER_MODEL
+        # model = models.User

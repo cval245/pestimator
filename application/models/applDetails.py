@@ -5,7 +5,6 @@ from characteristics.models import EntitySize, Languages
 
 class ApplDetails(models.Model):
     num_indep_claims = models.IntegerField()
-    # num_pages = models.IntegerField()  # excluding pages of drawings
     num_claims = models.IntegerField()
     num_drawings = models.IntegerField()
     num_pages_description = models.IntegerField()

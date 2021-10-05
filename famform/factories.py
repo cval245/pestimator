@@ -5,7 +5,6 @@ from application.factories import ApplDetailsFactory
 from characteristics.factories import CountryFactory, ApplTypeFactory, EntitySizeFactory
 from family.factories import FamilyFactory
 from user.factories import UserFactory
-from . import models
 from .models import FamEstFormData, FamOptions, ApplOptions, BaseOptions, PublOptions, OAOptions, AllowOptions, \
     IssueOptions
 
@@ -30,9 +29,10 @@ class FamEstFormDataFactory(factory.django.DjangoModelFactory):
     init_appl_indep_claims = factory.Faker('random_int', min=1, max=10, step=1)
     init_appl_claims = factory.Faker('random_int', min=1, max=50, step=1)
     init_appl_drawings = factory.Faker('random_int', min=1, max=50, step=1)
-    init_appl_pages = factory.Faker('random_int', min=1, max=50, step=1)
+    init_appl_pages_desc = factory.Faker('random_int', min=1, max=50, step=1)
+    init_appl_pages_drawings = factory.Faker('random_int', min=1, max=50, step=1)
+    init_appl_pages_claims = factory.Faker('random_int', min=1, max=50, step=1)
     date_created = factory.Faker('date_object')
-
     method = factory.Faker('boolean')
     meth_country = factory.SubFactory(CountryFactory)
 
@@ -53,7 +53,9 @@ class ApplOptionsFactory(factory.django.DjangoModelFactory):
     title = factory.sequence(lambda n: "Title %03d" % n)
     country = factory.SubFactory(CountryFactory)
     appl_type = factory.SubFactory(ApplTypeFactory)
-    date_filing = factory.Faker('date_time', tzinfo=timezone.get_default_timezone())
+    # date_filing = factory.Faker('date_time', tzinfo=timezone.get_default_timezone())
+    date_filing = factory.Faker('date_object')
+    translation_full_required = False
     details = factory.SubFactory(ApplDetailsFactory)
     fam_options = factory.SubFactory(FamOptionsFactory)
     prev_appl_options = None

@@ -1,6 +1,11 @@
+from datetime import datetime
+from math import trunc
+
 from dateutil.relativedelta import relativedelta
 from django.db.models import Sum
 from django.test import TestCase
+from djmoney.contrib.exchange.models import convert_money
+from djmoney.money import Money
 
 from characteristics.factories import ApplTypeFactory, CountryFactory, EntitySizeFactory
 from estimation.factories import FilingEstimateTemplateFactory, PublicationEstTemplateFactory, \
@@ -83,7 +88,8 @@ class UtilityApplicationTest(TestCase):
 
     def test_create_full_creates_Publication(self):
         UtilityApplication.objects.create_full(options=self.applOption,
-                                               user=self.user, family_id=self.family.id)
+                                               user=self.user,
+                                               family_id=self.family.id)
 
         uAppl = BaseApplication.objects.get(user=self.user)
         date_publication = uAppl.date_filing + self.publOption.date_diff
@@ -91,7 +97,8 @@ class UtilityApplicationTest(TestCase):
 
     def test_create_full_creates_oa(self):
         UtilityApplication.objects.create_full(options=self.applOption,
-                                               user=self.user, family_id=self.family.id)
+                                               user=self.user,
+                                               family_id=self.family.id)
 
         uAppl = BaseApplication.objects.get(user=self.user)
         # relativedelta is calced by combining options in Setup
@@ -100,7 +107,8 @@ class UtilityApplicationTest(TestCase):
 
     def test_create_full_creates_allowance(self):
         UtilityApplication.objects.create_full(options=self.applOption,
-                                               user=self.user, family_id=self.family.id)
+                                               user=self.user,
+                                               family_id=self.family.id)
         uAppl = BaseApplication.objects.get(user=self.user)
         # relativedelta is calced by combining options in Setup
         oa_agg = self.applOption.oaoptions_set.all().aggregate(date_diff=Sum('date_diff'))
@@ -190,11 +198,12 @@ class USUtilityApplicationTest(TestCase):
 
         self.filing_template_us = FilingEstimateTemplateFactory(country=self.country_US,
                                                                 appl_type=self.applType_utility)
-        self.publication_template = PublicationEstTemplateFactory(country=self.country_US)
-        self.oa_template = USOAEstimateTemplateFactory()
-        self.oa_template_foa = USOAEstimateTemplateFactory(oa_type='FOA')
-        self.allowance_template = AllowanceEstTemplateFactory(country=self.country_US)
-        self.issue_template = IssueEstTemplateFactory(country=self.country_US)
+        self.publication_template = PublicationEstTemplateFactory(country=self.country_US,
+                                                                  appl_type=self.applType_utility)
+        self.oa_template = USOAEstimateTemplateFactory(appl_type=self.applType_utility)
+        self.oa_template_foa = USOAEstimateTemplateFactory(first_foa=True, appl_type=self.applType_utility)
+        self.allowance_template = AllowanceEstTemplateFactory(country=self.country_US, appl_type=self.applType_utility)
+        self.issue_template = IssueEstTemplateFactory(country=self.country_US, appl_type=self.applType_utility)
 
         self.applOption = ApplOptionsFactory(country=self.country_US, appl_type=self.applType_utility)
         self.publOption = PublOptionFactory(appl=self.applOption)
@@ -236,7 +245,7 @@ class USUtilityApplicationTest(TestCase):
         oa_first = [x for x in oas if x.oa_prev is None][0]
         oa_option_first = [y for y in oa_options if y.oa_prev is None][0]
         self.assertEquals(oa_first.date_office_action,
-                          (oa_option_first.date_diff + application.date_filing).date())
+                          (oa_option_first.date_diff + application.date_filing))
         oa_second = [x for x in oas if x.oa_prev == oa_first][0]
         oa_option_second = [y for y in oa_options if y.oa_prev == oa_option_first][0]
         self.assertEquals(oa_second.date_office_action,
@@ -255,11 +264,30 @@ class AllowanceTest(TestCase):
 
     def setUp(self):
         self.country_us = CountryFactory(US=True)
-        self.applType = ApplTypeFactory(utility=True)
-        self.application = USUtilityApplicationFactory(country=self.country_us)
+        self.applType_prov = ApplTypeFactory(prov=True)
+        self.applType_pct = ApplTypeFactory(pct=True)
+        self.applType_utility = ApplTypeFactory(utility=True)
+        self.entity_size = EntitySizeFactory(small=True)
+        self.details = ApplDetailsFactory(entity_size=self.entity_size)
+        self.application = USUtilityApplicationFactory(country=self.country_us, details=self.details,
+                                                       date_filing=datetime(2020, 10, 1).date())
         self.usAllowance = AllowanceFactory(application=self.application)
-        AllowanceEstTemplateFactory.create_batch(3, country=self.country_us,
-                                                 appl_type=self.applType)
+        self.conditions_one = LineEstimationTemplateConditionsFactory(
+            condition_entity_size=EntitySizeFactory(small=True))
+        self.conditions_two = LineEstimationTemplateConditionsFactory(
+            condition_entity_size=EntitySizeFactory(small=True))
+        self.conditions_three = LineEstimationTemplateConditionsFactory(
+            condition_entity_size=EntitySizeFactory(small=True))
+        self.allowEstTemp_one = AllowanceEstTemplateFactory(country=self.country_us,
+                                                            conditions=self.conditions_one,
+                                                            appl_type=self.applType_utility)
+        self.allowEstTemp_two = AllowanceEstTemplateFactory(country=self.country_us,
+                                                            conditions=self.conditions_two,
+                                                            appl_type=self.applType_utility)
+
+        self.allowEStTemp_three = AllowanceEstTemplateFactory(country=self.country_us,
+                                                              conditions=self.conditions_three,
+                                                              appl_type=self.applType_utility)
 
     def test_generate_ests_creates_three_ests(self):
         self.usAllowance.generate_ests()
@@ -284,37 +312,59 @@ class AllowanceTest(TestCase):
                           LawFirmEst.objects.all().aggregate(Sum('law_firm_cost')))
 
     def test_generate_ests_creates_3_of_4_ests(self):
-        conditions = LineEstimationTemplateConditionsFactory(condition_entity_size=EntitySizeFactory(small=True))
+        conditions = LineEstimationTemplateConditionsFactory(condition_entity_size=EntitySizeFactory(micro=True))
         AllowanceEstTemplateFactory.create(country=self.country_us,
-                                           appl_type=self.applType,
+                                           appl_type=self.applType_utility,
                                            conditions=conditions)
         self.usAllowance.generate_ests()
         self.assertEquals(AllowanceEstTemplate.objects.all().count(), 4)
         self.assertEquals(AllowanceEst.objects.all().count(), 3)
 
     def test_generate_ests_creates_correct_date(self):
-        conditions = LineEstimationTemplateConditionsFactory(condition_entity_size=EntitySizeFactory(small=True))
-        allowEstTemp = AllowanceEstTemplateFactory.create(country=self.country_us,
-                                       appl_type=self.applType,
-                                       conditions=conditions)
+        # conditions = LineEstimationTemplateConditionsFactory(condition_entity_size=EntitySizeFactory(small=True))
+        # allowEstTemp = AllowanceEstTemplateFactory.create(country=self.country_us,
+        #                                appl_type=self.applType_utility,
+        #                                conditions=self.conditions)
         entitySize = EntitySizeFactory(small=True)
         application = USUtilityApplicationFactory(country=self.country_us,
                                                   details=ApplDetailsFactory(entity_size=entitySize))
-        usAllow = AllowanceFactory(application=application)
-        usAllow.generate_ests()
+        # usAllow = AllowanceFactory(application=application)
+        # usAllow.generate_ests()
+        self.usAllowance.generate_ests()
         self.assertEquals(AllowanceEst.objects.all().first().date,
-                          allowEstTemp.date_diff + usAllow.date_allowance)
+                          self.allowEstTemp_one.date_diff + self.usAllowance.date_allowance)
 
 
 class IssueTest(TestCase):
 
     def setUp(self):
         self.country_us = CountryFactory(US=True)
-        self.applType = ApplTypeFactory(utility=True)
-        self.application = USUtilityApplicationFactory(country=self.country_us)
+        self.applType_prov = ApplTypeFactory(prov=True)
+        self.applType_pct = ApplTypeFactory(pct=True)
+        self.applType_utility = ApplTypeFactory(utility=True)
+        self.entity_size = EntitySizeFactory(small=True)
+        self.details = ApplDetailsFactory(entity_size=self.entity_size)
+        self.application = USUtilityApplicationFactory(country=self.country_us, details=self.details,
+                                                       date_filing=datetime(2020, 10, 1).date())
         self.usIssuance = IssuanceFactory(application=self.application)
-        IssueEstTemplateFactory.create_batch(3, country=self.country_us,
-                                                 appl_type=self.applType)
+
+        self.conditions_one = LineEstimationTemplateConditionsFactory(
+            condition_entity_size=EntitySizeFactory(small=True))
+        self.conditions_two = LineEstimationTemplateConditionsFactory(
+            condition_entity_size=EntitySizeFactory(small=True))
+        self.conditions_three = LineEstimationTemplateConditionsFactory(
+            condition_entity_size=EntitySizeFactory(small=True))
+
+        self.issueEstTemp_one = IssueEstTemplateFactory(country=self.country_us,
+                                                        conditions=self.conditions_one,
+                                                        appl_type=self.applType_utility)
+        self.issueEstTemp_two = IssueEstTemplateFactory(country=self.country_us,
+                                                        conditions=self.conditions_two,
+                                                        appl_type=self.applType_utility)
+
+        self.issueEstTemp_three = IssueEstTemplateFactory(country=self.country_us,
+                                                          conditions=self.conditions_three,
+                                                          appl_type=self.applType_utility)
 
     def test_generate_ests_creates_three_ests(self):
         self.usIssuance.generate_ests()
@@ -339,36 +389,59 @@ class IssueTest(TestCase):
                           LawFirmEst.objects.all().aggregate(Sum('law_firm_cost')))
 
     def test_generate_ests_creates_3_of_4_ests(self):
-        conditions = LineEstimationTemplateConditionsFactory(condition_entity_size=EntitySizeFactory(small=True))
+        conditions = LineEstimationTemplateConditionsFactory(condition_entity_size=EntitySizeFactory(micro=True))
         IssueEstTemplateFactory.create(country=self.country_us,
-                                           appl_type=self.applType,
-                                           conditions=conditions)
+                                       appl_type=self.applType_utility,
+                                       conditions=conditions)
         self.usIssuance.generate_ests()
         self.assertEquals(IssueEstTemplate.objects.all().count(), 4)
         self.assertEquals(IssueEst.objects.all().count(), 3)
 
     def test_generate_ests_creates_correct_date(self):
-        conditions = LineEstimationTemplateConditionsFactory(condition_entity_size=EntitySizeFactory(small=True))
-        issueEstTemp = IssueEstTemplateFactory.create(country=self.country_us,
-                                             appl_type=self.applType,
-                                             conditions=conditions)
-        entitySize = EntitySizeFactory(small=True)
-        application = USUtilityApplicationFactory(country=self.country_us,
-                                                  details=ApplDetailsFactory(entity_size=entitySize))
-        usIssue = IssuanceFactory(application=application)
-        usIssue.generate_ests()
+        # conditions = LineEstimationTemplateConditionsFactory(condition_entity_size=EntitySizeFactory(small=True))
+        # issueEstTemp = IssueEstTemplateFactory.create(country=self.country_us,
+        #                                      appl_type=self.applType_utility,
+        #                                      conditions=conditions)
+        # entitySize = EntitySizeFactory(small=True)
+        # application = USUtilityApplicationFactory(country=self.country_us,
+        #                                           details=ApplDetailsFactory(entity_size=entitySize))
+        # usIssue = IssuanceFactory(application=application)
+        # usIssue.generate_ests()
+        self.usIssuance.generate_ests()
         self.assertEquals(IssueEst.objects.all().first().date,
-                          issueEstTemp.date_diff + usIssue.date_issuance)
+                          self.issueEstTemp_one.date_diff + self.usIssuance.date_issuance)
+
 
 class OfficeActionTest(TestCase):
+    fixtures = ['exchange-data.json']
 
     def setUp(self):
         self.country_cn = CountryFactory(CN=True)
-        self.applType = ApplTypeFactory(utility=True)
-        self.application = BaseUtilityApplicationFactory(country=self.country_cn)
+        self.applType_prov = ApplTypeFactory(prov=True)
+        self.applType_pct = ApplTypeFactory(pct=True)
+        self.applType_utility = ApplTypeFactory(utility=True)
+        self.entity_size = EntitySizeFactory(small=True)
+        self.details = ApplDetailsFactory(entity_size=self.entity_size)
+        self.application = BaseUtilityApplicationFactory(country=self.country_cn, details=self.details,
+                                                         date_filing=datetime(2020, 10, 1).date())
         self.cnOfficeAction = OfficeActionFactory(application=self.application)
-        OAEstimateTemplateFactory.create_batch(3, country=self.country_cn,
-                                                 appl_type=self.applType)
+
+        self.conditions_one = LineEstimationTemplateConditionsFactory(
+            condition_entity_size=EntitySizeFactory(small=True))
+        self.conditions_two = LineEstimationTemplateConditionsFactory(
+            condition_entity_size=EntitySizeFactory(small=True))
+        self.conditions_three = LineEstimationTemplateConditionsFactory(
+            condition_entity_size=EntitySizeFactory(small=True))
+
+        self.oaEstTemplate_one = OAEstimateTemplateFactory(country=self.country_cn,
+                                                           conditions=self.conditions_one,
+                                                           appl_type=self.applType_utility)
+        self.oaEstTemplate_two = OAEstimateTemplateFactory(country=self.country_cn,
+                                                           conditions=self.conditions_two,
+                                                           appl_type=self.applType_utility)
+        self.oaEstTemplate_three = OAEstimateTemplateFactory(country=self.country_cn,
+                                                             conditions=self.conditions_three,
+                                                             appl_type=self.applType_utility)
 
     def test_generate_ests_creates_three_ests(self):
         self.cnOfficeAction.generate_ests()
@@ -378,8 +451,9 @@ class OfficeActionTest(TestCase):
 
     def test_generate_ests_creates_correct_cost(self):
         self.cnOfficeAction.generate_ests()
-        self.assertEquals(OAEstimateTemplate.objects.all().aggregate(Sum('official_cost')),
-                          OAEstimate.objects.all().aggregate(Sum('official_cost')))
+        oaEstTemps_tot = OAEstimateTemplate.objects.all().aggregate((Sum('official_cost')))
+        self.assertEquals(trunc(convert_money(Money(oaEstTemps_tot['official_cost__sum'], 'CNY'), 'USD').amount),
+                          trunc(OAEstimate.objects.all().aggregate(Sum('official_cost'))['official_cost__sum']))
 
     def test_generate_ests_creates_three_law_firm_ests(self):
         self.cnOfficeAction.generate_ests()
@@ -389,41 +463,61 @@ class OfficeActionTest(TestCase):
 
     def test_generate_ests_creates_correct_cost_law_firm_ests(self):
         self.cnOfficeAction.generate_ests()
-        self.assertEquals(LawFirmEstTemplate.objects.all().aggregate(Sum('law_firm_cost')),
-                          LawFirmEst.objects.all().aggregate(Sum('law_firm_cost')))
+        law_est_temps_tot = LawFirmEstTemplate.objects.all().aggregate(Sum('law_firm_cost'))
+        self.assertEquals(trunc(convert_money(Money(law_est_temps_tot['law_firm_cost__sum'], 'CNY'), 'USD').amount),
+                          trunc(LawFirmEst.objects.all().aggregate(Sum('law_firm_cost'))['law_firm_cost__sum']))
 
     def test_generate_ests_creates_3_of_4_ests(self):
-        conditions = LineEstimationTemplateConditionsFactory(condition_entity_size=EntitySizeFactory(small=True))
+        conditions = LineEstimationTemplateConditionsFactory(condition_entity_size=EntitySizeFactory(micro=True))
         OAEstimateTemplateFactory.create(country=self.country_cn,
-                                           appl_type=self.applType,
-                                           conditions=conditions)
+                                         appl_type=self.applType_utility,
+                                         conditions=conditions)
         self.cnOfficeAction.generate_ests()
         self.assertEquals(OAEstimateTemplate.objects.all().count(), 4)
         self.assertEquals(OAEstimate.objects.all().count(), 3)
 
     def test_generate_ests_creates_correct_date(self):
-        conditions = LineEstimationTemplateConditionsFactory(condition_entity_size=EntitySizeFactory(small=True))
-        OAEstimateTemplateFactory.create(country=self.country_cn,
-                                         appl_type=self.applType,
-                                         conditions=conditions)
-        entitySize = EntitySizeFactory(small=True)
-        BaseUtilityApplicationFactory(country=self.country_cn,
-                                                    details=ApplDetailsFactory(entity_size=entitySize))
-        cnOfficeAction = OfficeActionFactory(application=self.application)
-        cnOfficeAction.generate_ests()
+        # conditions = LineEstimationTemplateConditionsFactory(condition_entity_size=EntitySizeFactory(small=True))
+        # OAEstimateTemplateFactory.create(country=self.country_cn,
+        #                                  appl_type=self.applType_utility,
+        #                                  conditions=conditions)
+        # entitySize = EntitySizeFactory(small=True)
+        # BaseUtilityApplicationFactory(country=self.country_cn,
+        #                                             details=ApplDetailsFactory(entity_size=entitySize))
+        # cnOfficeAction = OfficeActionFactory(application=self.application)
+        self.cnOfficeAction.generate_ests()
         self.assertEquals(OAEstimate.objects.all().first().date,
-                         OAEstimateTemplate.objects.all().first().date_diff + cnOfficeAction.date_office_action)
+                          self.oaEstTemplate_one.date_diff + self.cnOfficeAction.date_office_action)
 
 
 class USOfficeActionTest(TestCase):
 
     def setUp(self):
         self.country_us = CountryFactory(US=True)
-        self.applType = ApplTypeFactory(utility=True)
-        self.application = USUtilityApplicationFactory(country=self.country_us)
+        self.applType_prov = ApplTypeFactory(prov=True)
+        self.applType_pct = ApplTypeFactory(pct=True)
+        self.applType_utility = ApplTypeFactory(utility=True)
+        self.entity_size = EntitySizeFactory(small=True)
+        self.details = ApplDetailsFactory(entity_size=self.entity_size)
+        self.application = USUtilityApplicationFactory(country=self.country_us, details=self.details,
+                                                       date_filing=datetime(2020, 10, 1).date())
         self.usOfficeAction = USOfficeActionFactory(application=self.application)
-        USOAEstimateTemplateFactory.create_batch(3, country=self.country_us,
-                                                 appl_type=self.applType)
+
+        self.conditions_one = LineEstimationTemplateConditionsFactory(
+            condition_entity_size=EntitySizeFactory(small=True))
+        self.conditions_two = LineEstimationTemplateConditionsFactory(
+            condition_entity_size=EntitySizeFactory(small=True))
+        self.conditions_three = LineEstimationTemplateConditionsFactory(
+            condition_entity_size=EntitySizeFactory(small=True))
+        self.usOAEstTemplate_one = USOAEstimateTemplateFactory(country=self.country_us,
+                                                               conditions=self.conditions_one,
+                                                               appl_type=self.applType_utility)
+        self.usOAEstTemplate_two = USOAEstimateTemplateFactory(country=self.country_us,
+                                                               conditions=self.conditions_two,
+                                                               appl_type=self.applType_utility)
+        self.usOAEstTemplate_three = USOAEstimateTemplateFactory(country=self.country_us,
+                                                                 conditions=self.conditions_three,
+                                                                 appl_type=self.applType_utility)
 
     def test_generate_ests_creates_three_ests(self):
         self.usOfficeAction.generate_ests()
@@ -448,9 +542,9 @@ class USOfficeActionTest(TestCase):
                           LawFirmEst.objects.all().aggregate(Sum('law_firm_cost')))
 
     def test_generate_ests_creates_3_of_4_ests(self):
-        conditions = LineEstimationTemplateConditionsFactory(condition_entity_size=EntitySizeFactory(small=True))
+        conditions = LineEstimationTemplateConditionsFactory(condition_entity_size=EntitySizeFactory(micro=True))
         USOAEstimateTemplateFactory.create(country=self.country_us,
-                                           appl_type=self.applType,
+                                           appl_type=self.applType_utility,
                                            conditions=conditions)
         self.usOfficeAction.generate_ests()
         self.assertEquals(USOAEstimateTemplate.objects.all().count(), 4)
@@ -459,8 +553,8 @@ class USOfficeActionTest(TestCase):
     def test_generate_ests_creates_correct_date(self):
         conditions = LineEstimationTemplateConditionsFactory(condition_entity_size=EntitySizeFactory(small=True))
         USOAEstimateTemplateFactory.create(country=self.country_us,
-                                         appl_type=self.applType,
-                                         conditions=conditions)
+                                           appl_type=self.applType_utility,
+                                           conditions=conditions)
         entitySize = EntitySizeFactory(small=True)
         USUtilityApplicationFactory(country=self.country_us,
                                                     details=ApplDetailsFactory(entity_size=entitySize))
@@ -474,11 +568,30 @@ class PublicationTest(TestCase):
 
     def setUp(self):
         self.country_us = CountryFactory(US=True)
-        self.applType = ApplTypeFactory(utility=True)
-        self.application = USUtilityApplicationFactory(country=self.country_us)
+        self.applType_prov = ApplTypeFactory(prov=True)
+        self.applType_pct = ApplTypeFactory(pct=True)
+        self.applType_utility = ApplTypeFactory(utility=True)
+        self.entity_size = EntitySizeFactory(small=True)
+        self.details = ApplDetailsFactory(entity_size=self.entity_size)
+        self.application = USUtilityApplicationFactory(country=self.country_us, details=self.details,
+                                                       date_filing=datetime(2020, 10, 1).date())
         self.usPublication = PublicationFactory(application=self.application)
-        PublicationEstTemplateFactory.create_batch(3, country=self.country_us,
-                                                 appl_type=self.applType)
+        self.conditions_one = LineEstimationTemplateConditionsFactory(
+            condition_entity_size=EntitySizeFactory(small=True))
+        self.conditions_two = LineEstimationTemplateConditionsFactory(
+            condition_entity_size=EntitySizeFactory(small=True))
+        self.conditions_three = LineEstimationTemplateConditionsFactory(
+            condition_entity_size=EntitySizeFactory(small=True))
+
+        self.publEstTemplate_one = PublicationEstTemplateFactory(country=self.country_us,
+                                                                 conditions=self.conditions_one,
+                                                                 appl_type=self.applType_utility)
+        self.publEstTemplate_two = PublicationEstTemplateFactory(country=self.country_us,
+                                                                 conditions=self.conditions_two,
+                                                                 appl_type=self.applType_utility)
+        self.publEstTemplate_three = PublicationEstTemplateFactory(country=self.country_us,
+                                                                   conditions=self.conditions_three,
+                                                                   appl_type=self.applType_utility)
 
     def test_generate_ests_creates_three_ests(self):
         self.usPublication.generate_ests()
@@ -503,23 +616,23 @@ class PublicationTest(TestCase):
                           LawFirmEst.objects.all().aggregate(Sum('law_firm_cost')))
 
     def test_generate_ests_creates_3_of_4_ests(self):
-        conditions = LineEstimationTemplateConditionsFactory(condition_entity_size=EntitySizeFactory(small=True))
+        conditions = LineEstimationTemplateConditionsFactory(condition_entity_size=EntitySizeFactory(micro=True))
         PublicationEstTemplateFactory.create(country=self.country_us,
-                                           appl_type=self.applType,
-                                           conditions=conditions)
+                                             appl_type=self.applType_utility,
+                                             conditions=conditions)
         self.usPublication.generate_ests()
         self.assertEquals(PublicationEstTemplate.objects.all().count(), 4)
         self.assertEquals(PublicationEst.objects.all().count(), 3)
 
     def test_generate_ests_creates_correct_date(self):
-        conditions = LineEstimationTemplateConditionsFactory(condition_entity_size=EntitySizeFactory(small=True))
-        publEstTemp = PublicationEstTemplateFactory.create(country=self.country_us,
-                                             appl_type=self.applType,
-                                             conditions=conditions)
-        entitySize = EntitySizeFactory(small=True)
-        application = USUtilityApplicationFactory(country=self.country_us,
-                                    details=ApplDetailsFactory(entity_size=entitySize))
-        usPublication = PublicationFactory(application=application)
-        usPublication.generate_ests()
+        # conditions = LineEstimationTemplateConditionsFactory(condition_entity_size=EntitySizeFactory(small=True))
+        # publEstTemp = PublicationEstTemplateFactory.create(country=self.country_us,
+        #                                      appl_type=self.applType_utility,
+        #                                      conditions=conditions)
+        # entitySize = EntitySizeFactory(small=True)
+        # application = USUtilityApplicationFactory(country=self.country_us,
+        #                             details=ApplDetailsFactory(entity_size=entitySize))
+        # usPublication = PublicationFactory(application=application)
+        self.usPublication.generate_ests()
         self.assertEquals(PublicationEst.objects.all().first().date,
-                          publEstTemp.date_diff + usPublication.date_publication)
+                          self.publEstTemplate_one.date_diff + self.usPublication.date_publication)

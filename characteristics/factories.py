@@ -11,20 +11,54 @@ class ApplTypeFactory(factory.django.DjangoModelFactory):
 
     class Params:
         prov = factory.Trait(
-            application_type='prov'
+            application_type='prov',
+            long_name='Provisional Application',
+            internal_bool='False',
         )
         pct = factory.Trait(
-            application_type='pct'
+            application_type='pct',
+            long_name='Provisional Application',
+            internal_bool='False',
         )
         utility = factory.Trait(
-            application_type='utility'
+            application_type='utility',
+            long_name='Provisional Application',
+            internal_bool='False',
+        )
+        ep = factory.Trait(
+            application_type='ep',
+            long_name='EP application',
+            internal_bool=True,
+        )
+        epvalidation = factory.Trait(
+            application_type='epvalidation',
+            long_name='EP Validation Application',
+            internal_bool=True,
+        )
+        nationalphase = factory.Trait(
+            application_type='nationalphase',
+            long_name='National Phase',
+            internal_bool=True,
         )
 
 
 class CountryFactory(factory.django.DjangoModelFactory):
-    country = 'JP'
+    country = 'US'
     active_bool = True
-    currency_name = 'JPY'
+    ep_bool = False
+    pct_analysis_bool = True
+    currency_name = 'USD'
+    long_name = 'United States of America'
+    color = '#25560'
+
+    @factory.post_generation
+    def languages(self, create, extracted, **kwargs):
+        if not create:
+            return
+        if extracted:
+            # self.languages.set(extracted)
+            for lang in extracted:
+                self.languages_set.add(lang)
 
     class Meta:
         model = models.Country
@@ -33,16 +67,116 @@ class CountryFactory(factory.django.DjangoModelFactory):
     class Params:
         US = factory.Trait(
             country='US',
-            currency_name='USD'
+            active_bool=True,
+            ep_bool=False,
+            pct_analysis_bool=True,
+            currency_name='USD',
+            long_name='United States of America',
+            color='#25560',
         )
         CN = factory.Trait(
             country='CN',
-            currency_name='CNY'
+            active_bool=True,
+            ep_bool=False,
+            pct_analysis_bool=True,
+            currency_name='CNY',
+            long_name='China',
+            color='#59C3C3',
+        )
+        JP = factory.Trait(
+            country='JP',
+            active_bool=True,
+            ep_bool=False,
+            pct_analysis_bool=True,
+            currency_name='JPY',
+            long_name='Japan',
+            color='#E6AF2E',
+        )
+        KR = factory.Trait(
+            country='KR',
+            active_bool=True,
+            ep_bool=False,
+            pct_analysis_bool=True,
+            currency_name='KRW',
+            long_name='South Korea',
+            color='#DE6B48',
+        )
+        EP = factory.Trait(
+            country='EP',
+            active_bool=True,
+            ep_bool=True,
+            pct_analysis_bool=True,
+            currency_name='EUR',
+            long_name='European Patent Office',
+            color='#CAB1BD',
+        )
+        GB = factory.Trait(
+            country='GB',
+            active_bool=True,
+            ep_bool=True,
+            pct_analysis_bool=True,
+            currency_name='GBP',
+            long_name='Great Britain',
+            color='#824C71',
+        )
+        DE = factory.Trait(
+            country='DE',
+            active_bool=True,
+            ep_bool=True,
+            pct_analysis_bool=True,
+            currency_name='EUR',
+            long_name='Germany',
+            color='#4D243D',
+        )
+        FR = factory.Trait(
+            country='FR',
+            active_bool=True,
+            ep_bool=True,
+            pct_analysis_bool=True,
+            currency_name='EUR',
+            long_name='France',
+            color='#6622CC',
+        )
+
+
+class LanguagesFactory(factory.django.DjangoModelFactory):
+    name = 'english'
+    words_per_page = 800
+
+    class Meta:
+        model = models.Languages
+        django_get_or_create = ('name',)
+
+    class Params:
+        english = factory.Trait(
+            name='english',
+            words_per_page=800,
+        )
+        chinese = factory.Trait(
+            name='chinese',
+            words_per_page=1000,
+        )
+        korean = factory.Trait(
+            name='korean',
+            words_per_page=700,
+        )
+        japanese = factory.Trait(
+            name='japanese',
+            words_per_page=700,
+        )
+        german = factory.Trait(
+            name='german',
+            words_per_page=700,
+        )
+        french = factory.Trait(
+            name='french',
+            words_per_page=700,
         )
 
 
 class EntitySizeFactory(factory.django.DjangoModelFactory):
     entity_size = 'default'
+    description = 'default entity size description'
 
     class Meta:
         model = models.EntitySize
@@ -50,25 +184,10 @@ class EntitySizeFactory(factory.django.DjangoModelFactory):
 
     class Params:
         small = factory.Trait(
-            entity_size='small'
+            entity_size='small',
+            description='small entity desc'
         )
         micro = factory.Trait(
-            entity_size='micro'
+            entity_size='micro',
+            description='micro entity desc'
         )
-
-class OANumPerCountryFactory(factory.django.DjangoModelFactory):
-    country = factory.SubFactory(CountryFactory)
-    oa_num = factory.Faker('random_digit_not_null')
-
-    class Meta:
-        model = models.OANumPerCountry
-        django_get_or_create = ('country',)
-
-    class Params:
-        small = factory.Trait(
-            entity_size='small'
-        )
-        micro = factory.Trait(
-            entity_size='micro'
-        )
-

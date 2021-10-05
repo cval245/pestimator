@@ -18,7 +18,10 @@ class BaseAllowance(models.Model):
             country=self.application.country,
             appl_type=convert_class_applType(self.application),
         )
+        print('appl', self.application)
+        print('allow_templates = ', allow_templates)
         templates = utils.filter_conditions(allow_templates, self.application)
+        print('templates = ', templates)
         templates = templates.select_related('law_firm_template')
         ests = []
         for e in templates:
@@ -37,15 +40,9 @@ class BaseAllowance(models.Model):
                 allowance=self,
                 est_template=e,
             )
-            # est = AllowanceEst.objects.create(
-            #     allowance=self,
-            #     date=e.date_diff + self.date_allowance,
-            #     official_cost=e.official_cost,
-            #     law_firm_est=lawFirmEst,
-            #     application=self.application
-            # )
-            ests.append(est)
 
+            ests.append(est)
+        print('ests', ests)
         return ests
 
     class Meta:

@@ -29,4 +29,4 @@ class EntitySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EntitySize
-        fields = ('id', 'entity_size')
+        fields = ('id', 'entity_size', 'description')

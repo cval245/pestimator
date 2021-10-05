@@ -35,7 +35,7 @@ class BaseOfficeAction(models.Model):
 
             from estimation.models import OAEstimate
             est = OAEstimate.objects.create_complex_and_simple_est(
-                application=self,
+                application=self.application,
                 law_firm_est=lawFirmEst,
                 office_action=self,
                 est_template=e,

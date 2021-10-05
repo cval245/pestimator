@@ -6,11 +6,11 @@ from djmoney.money import Money
 from faker.providers import BaseProvider
 
 from application.factories import ApplicationFactory
-from characteristics.factories import EntitySizeFactory, CountryFactory, ApplTypeFactory
+from characteristics.factories import EntitySizeFactory, CountryFactory, ApplTypeFactory, LanguagesFactory
 from . import models
 from .models import FilingEstimateTemplate, PublicationEstTemplate, OAEstimateTemplate, USOAEstimateTemplate, \
     AllowanceEstTemplate, IssueEstTemplate, LawFirmEst, BaseEst, FilingEstimate, OAEstimate, USOAEstimate, \
-    PublicationEst, IssueEst, AllowanceEst
+    PublicationEst, IssueEst, AllowanceEst, TranslationEstTemplate, DefaultTranslationEstTemplate
 import random
 class MoneyProvider(BaseProvider):
    def money(self):
@@ -26,11 +26,21 @@ factory.Faker.add_provider(DiffProvider)
 class LineEstimationTemplateConditionsFactory(factory.django.DjangoModelFactory):
     condition_claims_min = None
     condition_claims_max = None
+    condition_indep_claims_min = None
+    condition_indep_claims_max = None
     condition_pages_min = None
     condition_pages_max = None
+    condition_pages_desc_min = None
+    condition_pages_desc_max = None
     condition_drawings_min = None
     condition_drawings_max = None
     condition_entity_size = factory.SubFactory(EntitySizeFactory)
+    condition_annual_prosecution_fee = False
+    condition_complex = None
+    condition_time_complex = None
+    prior_pct = None
+    prior_pct_same_country = None
+    prev_appl_date_excl_intermediary_time = False
 
     class Meta:
         model = models.LineEstimationTemplateConditions
@@ -90,16 +100,33 @@ class OAEstimateTemplateFactory(BaseEstTemplateFactory):
 
 class USOAEstimateTemplateFactory(BaseEstTemplateFactory):
     country = factory.SubFactory(CountryFactory, country='US')
-    oa_type = 'NFOA'
+    oa_final_bool = False
+    oa_first_final_bool = False
 
     class Meta:
         model = USOAEstimateTemplate
         abstract = False
 
+    class Params:
+        nfoa = factory.Trait(
+            oa_final_bool=False,
+            oa_first_final_bool=False,
+        )
+        first_foa = factory.Trait(
+            oa_final_bool=True,
+            oa_first_final_bool=False,
+        )
+        second_foa = factory.Trait(
+            oa_final_bool=True,
+            oa_first_final_bool=True
+        )
+
+
 class AllowanceEstTemplateFactory(BaseEstTemplateFactory):
     class Meta:
         model = AllowanceEstTemplate
         abstract = False
+
 
 class IssueEstTemplateFactory(BaseEstTemplateFactory):
     class Meta:
@@ -109,11 +136,31 @@ class IssueEstTemplateFactory(BaseEstTemplateFactory):
 
 class LawFirmEstFactory(factory.django.DjangoModelFactory):
     law_firm_cost = factory.Faker('money')
+
     date = factory.Faker('date_object')
-    #date_filing = factory.Faker('date_time', tzinfo=timezone.get_default_timezone())
+
+    # date_filing = factory.Faker('date_time', tzinfo=timezone.get_default_timezone())
 
     class Meta:
         model = LawFirmEst
+
+
+class TranslationEstTemplateFactory(factory.django.DjangoModelFactory):
+    start_language = factory.SubFactory(LanguagesFactory)
+    end_language = factory.SubFactory(LanguagesFactory)
+    date_diff = factory.Faker('diff')
+    cost_per_word = factory.Faker('money')
+
+    class Meta:
+        model = TranslationEstTemplate
+
+
+class DefaultTranslationEstTemplateFactory(factory.django.DjangoModelFactory):
+    date_diff = factory.Faker('diff')
+    cost_per_word = factory.Faker('money')
+
+    class Meta:
+        model = DefaultTranslationEstTemplate
 
 
 class BaseEstFactory(factory.django.DjangoModelFactory):
@@ -150,4 +197,3 @@ class AllowanceEstFactory(BaseEstFactory):
 class IssueEstFactory(BaseEstFactory):
     class Meta:
         model = IssueEst
-

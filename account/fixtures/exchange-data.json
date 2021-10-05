@@ -1,0 +1,29 @@
+[
+  {
+    "model": "exchange.exchangebackend",
+    "pk": 1,
+    "fields": {
+      "name": "openexchangerates.org",
+      "last_update": "2021-08-03 19:20",
+      "base_currency": "USD"
+    }
+  },
+  {
+    "model": "exchange.rate",
+    "pk": 1,
+    "fields": {
+      "currency": "USD",
+      "value": 1,
+      "backend_id": "openexchangerates.org"
+    }
+  },
+  {
+    "model": "exchange.rate",
+    "pk": 2,
+    "fields": {
+      "currency": "CNY",
+      "value": 2,
+      "backend_id": "openexchangerates.org"
+    }
+  }
+]
