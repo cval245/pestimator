@@ -18,10 +18,7 @@ class BaseAllowance(models.Model):
             country=self.application.country,
             appl_type=convert_class_applType(self.application),
         )
-        print('appl', self.application)
-        print('allow_templates = ', allow_templates)
         templates = utils.filter_conditions(allow_templates, self.application)
-        print('templates = ', templates)
         templates = templates.select_related('law_firm_template')
         ests = []
         for e in templates:
@@ -42,7 +39,6 @@ class BaseAllowance(models.Model):
             )
 
             ests.append(est)
-        print('ests', ests)
         return ests
 
     class Meta:

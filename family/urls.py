@@ -9,7 +9,7 @@ router.register(r'families', views.FamilyViewSet, basename='family')
 
 func_urls = [
 	path(r'fam-est/', views.fam_est_all, name='fam-est-all'),
-    path(r'fam-est-detail/<int:id>', views.fam_est, name='fam-est'),
+    # path(r'fam-est-detail/<int:id>', views.fam_est, name='fam-est'),
     path(r'fam-est-detail/', views.fam_est_detail, name='fam-est-detail')
 ]
 

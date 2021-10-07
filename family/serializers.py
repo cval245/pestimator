@@ -10,4 +10,4 @@ class FamilySerializer(serializers.ModelSerializer):
     class Meta:
         model = Family
         fields = ('id', 'family_no', 'family_name',
-                  'user')
+                  'user', 'unique_display_no')

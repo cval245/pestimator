@@ -2,7 +2,7 @@ from datetime import date
 
 from django.conf import settings
 from django.db import models
-from django.db.models import Sum
+from django.db.models import Sum, Max
 from relativedeltafield import RelativeDeltaField
 
 from application.models import ApplDetails
@@ -20,6 +20,7 @@ class FamEstFormData(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE)
     family = models.OneToOneField(Family, on_delete=models.CASCADE)
+    unique_display_no = models.IntegerField()
     countries = models.ManyToManyField(Country)  # utility appl countries
     init_appl_filing_date = models.DateField(default=date(2020, 1, 1))
     init_appl_country = models.ForeignKey(Country,
@@ -44,13 +45,18 @@ class FamEstFormData(models.Model):
                                      related_name='meth_country')
 
     ep_method = models.BooleanField(default=False)
-    # ep_countries = models.ManyToManyField(Country, null=True) # utility appl countries
-    # add method for paris treaty route
-    # method_paris
-    # method_paris_countries
     entity_size = models.ForeignKey(EntitySize, on_delete=models.CASCADE)
 
     # generate route
+    def save(self, *args, **kwargs):
+        if self.pk == None:
+            # get all pervious families by user
+            max_udn = FamEstFormData.objects.filter(user=self.user).aggregate(max_udn=Max('unique_display_no'))
+            if max_udn['max_udn'] is not None:
+                self.unique_display_no = max_udn['max_udn'] + 1
+            else:
+                self.unique_display_no = 1
+        return super(FamEstFormData, self).save(*args, **kwargs)
 
     def generate_family_options(self):
         famOptions = FamOptions.objects.create(family=self.family)
@@ -141,9 +147,6 @@ class FamEstFormData(models.Model):
 
         self.family.create_appls(famOptions)
 
-    # def create_appls(self, famOptions):
-    #     fam = self.family
-    #     fam.create_appls(famOptions)
 
 
 class FamOptions(models.Model):
@@ -199,49 +202,54 @@ class FamOptions(models.Model):
 
     def generate_appl(self, details, country, appl_type,
                       prev_appl_type, prev_date, first_appl_bool, prev_appl_option):
-        # select transform and get date_diff
-        date_filing = self._calc_filing_date(appl_type, country,
-                                             prev_appl_type, prev_date, first_appl_bool)
-        # get oa_total
-        oa_total = self._calc_oa_num(country)
+        # see if appl_type is valid for that country
+        if (appl_type in country.available_appl_types.all()):
 
-        # apply translations transformations
-        # these translations lookup conversions from one language to another
-        # words per page default for language
-        # converting from one to another
-        desired_language = self.determine_desired_language(
-            details=details, country=country,
-        )
-        translation_full_required = self.determine_translation_full_required(
-            country=country,
-            appl_type=appl_type,
-            language=desired_language,
-            prev_appl_option=prev_appl_option)
+            # select transform and get date_diff
+            date_filing = self._calc_filing_date(appl_type, country,
+                                                 prev_appl_type, prev_date, first_appl_bool)
+            # get oa_total
+            oa_total = self._calc_oa_num(country)
 
-        if (translation_full_required):
-            translated_details = self.translate_details_new_language(
-                details=details,
-                current_language=details.language,
-                desired_language=desired_language)
+            # apply translations transformations
+            # these translations lookup conversions from one language to another
+            # words per page default for language
+            # converting from one to another
+            desired_language = self.determine_desired_language(
+                details=details, country=country,
+            )
+            translation_full_required = self.determine_translation_full_required(
+                country=country,
+                appl_type=appl_type,
+                language=desired_language,
+                prev_appl_option=prev_appl_option)
+
+            if (translation_full_required):
+                translated_details = self.translate_details_new_language(
+                    details=details,
+                    current_language=details.language,
+                    desired_language=desired_language)
+            else:
+                translated_details = details
+                translated_details.pk = None
+                translated_details.save()
+
+            # apply transmutation transformations
+            # these transmutations convert to local patent office guidelines
+            # need user input
+            # have defaults
+            # ie transform multiple dependent claims into sets of single dependent claims
+
+            applOption = self.generate_appl_option(country=country,
+                                                   date_filing=date_filing,
+                                                   details=translated_details,
+                                                   oa_total=oa_total,
+                                                   translation_full_required=translation_full_required,
+                                                   appl_type=appl_type,
+                                                   prev_appl_option=prev_appl_option)
+            return applOption
         else:
-            translated_details = details
-            translated_details.pk = None
-            translated_details.save()
-
-        # apply transmutation transformations
-        # these transmutations convert to local patent office guidelines
-        # need user input
-        # have defaults
-        # ie transform multiple dependent claims into sets of single dependent claims
-
-        applOption = self.generate_appl_option(country=country,
-                                               date_filing=date_filing,
-                                               details=translated_details,
-                                               oa_total=oa_total,
-                                               translation_full_required=translation_full_required,
-                                               appl_type=appl_type,
-                                               prev_appl_option=prev_appl_option)
-        return applOption
+            raise 'Error: ApplType not available for country'
 
     def determine_translation_full_required(self, country, appl_type, language, prev_appl_option):
         # determine if translations are required.

@@ -1,3 +1,4 @@
+
 from django.db.models import Sum, F, Value, ExpressionWrapper, Q
 from django.db.models.functions import Coalesce
 from djmoney.models.fields import MoneyField
@@ -18,10 +19,13 @@ class FamilyViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = Family.objects.filter(user=self.request.user)
-        fam_est_form_data = self.request.query_params.get('FamEstFormData')
-        if fam_est_form_data is not None:
-            if queryset.filter(famestformdata=fam_est_form_data).exists():
-                queryset = queryset.filter(famestformdata=fam_est_form_data)
+        fam_est_form_data_udn = self.request.query_params.get('FamEstFormDataUDN')
+        if fam_est_form_data_udn is not None:
+            if queryset.filter(user=self.request.user,
+                               famestformdata__unique_display_no=fam_est_form_data_udn).exists():
+                queryset = queryset.filter(
+                    user=self.request.user,
+                    famestformdata__unique_display_no=fam_est_form_data_udn)
         return queryset
 
 
@@ -43,19 +47,21 @@ def fam_est_all(request):
 
 
 @api_view(['GET'])
-def fam_est(request, id):
-    famEst = FamEstFormData.objects.get(id=id)
+def fam_est(request, udn):
+    # famEst = FamEstFormData.objects.get(id=id)
+    famEst = FamEstFormData.objects.get(unique_display_no=udn, user=request.user)
     famEstDetails = createFamEstDetails(famEst.family.id)
     return Response({'FamEstDetail': famEstDetails})
 
 
 @api_view(['GET'])
 def fam_est_detail(request):
-    id = request.query_params.get('FamEstFormData')
-    if FamEstFormData.objects.filter(id=id).exists():
-        famEst = FamEstFormData.objects.get(id=id)
+    udn = request.query_params.get('FamEstFormDataUDN')
+    if FamEstFormData.objects.filter(user=request.user, unique_display_no=udn).exists():
+        famEst = FamEstFormData.objects.get(user=request.user, unique_display_no=udn)
         bob = createFamEstDetails(famEst.family.id)
-        jane = bob.aggregate(Sum('law_firm_cost_sum'))
+        # jane = bob.aggregate(Sum('law_firm_cost_sum'))
+        # law fees canceld out
         return Response(bob)
     return Response(status=status.HTTP_404_NOT_FOUND)
 

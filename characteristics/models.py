@@ -22,6 +22,7 @@ class Country(models.Model):
     currency_name = models.CharField(default='', max_length=5)
     long_name = models.CharField(default='', max_length=100)
     color = models.CharField(default='', max_length=20)
+    available_appl_types = models.ManyToManyField(ApplType)
 
     class Meta:
         constraints = [

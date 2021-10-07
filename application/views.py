@@ -13,22 +13,24 @@ class ApplicationViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = BaseApplication.objects.filter(user=self.request.user)
-        family=self.request.query_params.get('family')
-        if family is not None:
-            if queryset.filter(family=family).exists():
-                queryset = queryset.filter(family=family)
+        family_udn = self.request.query_params.get('familyUDN')
+        if family_udn is not None:
+            if queryset.filter(user=self.request.user,
+                               baseapplication__family__unique_display_no=family_udn).exists():
+                queryset = queryset.filter(user=self.request.user,
+                                           baseapplication__family__unique_display_no=family_udn)
         return queryset
 
-
-    @action(detail=False,url_path='filter/family=(?P<family_id>\d+)')
-    def filter(self, request, family_id):
-        family=Family.objects.get(id=family_id)
-        applications=BaseApplication.objects.filter(family=family)
-        serializer = self.get_serializer(applications, many=True)
-        return Response(serializer.data)
 
 class ApplDetailViewSet(viewsets.ModelViewSet):
     serializer_class = ApplDetailSerializer
 
     def get_queryset(self):
         queryset = ApplDetails.objects.filter(baseapplication__user=self.request.user)
+        family_udn = self.request.query_params.get('familyUDN')
+        if family_udn is not None:
+            if queryset.filter(baseapplication__user=self.request.user,
+                               baseapplication__family__unique_display_no=family_udn).exists():
+                queryset = queryset.filter(baseapplication__user=self.request.user,
+                                           baseapplication__family__unique_display_no=family_udn)
+        return queryset

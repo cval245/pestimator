@@ -6,8 +6,6 @@ class USUtilityApplication(BaseUtilityApplication):
     class Meta:
         abstract = False
 
-    # def generate_dates(self, options):
-    #     print('retarded generate dates')
 
     def _generate_oa(self, args):
         ordered_oa = []

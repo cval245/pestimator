@@ -13,15 +13,17 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['email', 'terms_agreed', 'recaptcha']
 
     def save(self, *args, **kwargs):
-        # print('self.recaptcha ', self.recaptcha)
-        # Recaptcha validation
-        url = 'https://www.google.com/recaptcha/api/siteverify'
-        values = {
-            'secret': settings.GOOGLE_RECAPTCHA_SECRET_KEY,
-            'response': self.recaptcha
-        }
-        r = requests.post(url, data=values)
-        rjson = r.json()
-        print('rjson = ', rjson)
-        if (rjson['success'] == True):
+        if settings.USE_RECAPTCHA_BOOL:
+            # Recaptcha validation
+            url = 'https://www.google.com/recaptcha/api/siteverify'
+            values = {
+                'secret': settings.GOOGLE_RECAPTCHA_SECRET_KEY,
+                'response': self.recaptcha
+            }
+            r = requests.post(url, data=values)
+            rjson = r.json()
+            if (rjson['success'] == True):
+                super(User, self).save(*args, **kwargs)
+        else:
+            # not recaptcha for testing only
             super(User, self).save(*args, **kwargs)

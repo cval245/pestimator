@@ -27,6 +27,7 @@ class FamEstFormDataNetSerializer(serializers.Serializer):
     ep_method = serializers.BooleanField(default=False, required=False)
     entity_size = serializers.PrimaryKeyRelatedField(queryset=EntitySize.objects.all())
 
+    unique_display_no = serializers.IntegerField()
 
 
 class FamEstFormDataNetPostSerializer(serializers.Serializer):
@@ -50,6 +51,7 @@ class FamEstFormDataNetPostSerializer(serializers.Serializer):
                                                       required=False, allow_null=True)
     ep_method = serializers.BooleanField(default=False, required=False)
     entity_size = serializers.PrimaryKeyRelatedField(queryset=EntitySize.objects.all())
+    unique_display_no = serializers.IntegerField()
 
     def create(self, validated_data):
         fam = Family.objects.create(
