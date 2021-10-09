@@ -30,6 +30,15 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
     "https://localhost:4200",
 ]
+# DJOSER = {
+#     'SEND_ACTIVATION_EMAIL': True,
+#     'USER_CREATE_PASSWORD_RETYPE': True,
+#     'ACTIVATION_URL': 'account/activate/{uid}/{token}',
+#     'PASSWORD_RESET_CONFIRM_URL': 'account/password-reset/{uid}/{token}',
+#     'PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND': True,
+#     'TOKEN_MODEL': None,
+# }
+
 #
 # ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 #
@@ -54,4 +63,5 @@ DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
 
 STRIPE_PRIVATE_KEY = env('STRIPE_PRIVATE_KEY')
 GOOGLE_RECAPTCHA_SECRET_KEY = env('GOOGLE_RECAPTCHA_SECRET_KEY')
-USE_RECAPTCHA_BOOL = False
+# USE_RECAPTCHA_BOOL = False
+USE_RECAPTCHA_BOOL = True

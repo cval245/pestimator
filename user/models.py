@@ -12,18 +12,20 @@ class User(AbstractUser):
 
     REQUIRED_FIELDS = ['email', 'terms_agreed', 'recaptcha']
 
-    def save(self, *args, **kwargs):
-        if settings.USE_RECAPTCHA_BOOL:
-            # Recaptcha validation
-            url = 'https://www.google.com/recaptcha/api/siteverify'
-            values = {
-                'secret': settings.GOOGLE_RECAPTCHA_SECRET_KEY,
-                'response': self.recaptcha
-            }
-            r = requests.post(url, data=values)
-            rjson = r.json()
-            if (rjson['success'] == True):
-                super(User, self).save(*args, **kwargs)
-        else:
-            # not recaptcha for testing only
-            super(User, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if settings.USE_RECAPTCHA_BOOL:
+    #         # Recaptcha validation
+    #         url = 'https://www.google.com/recaptcha/api/siteverify'
+    #         values = {
+    #             'secret': settings.GOOGLE_RECAPTCHA_SECRET_KEY,
+    #             'response': self.recaptcha
+    #         }
+    #         r = requests.post(url, data=values)
+    #         rjson = r.json()
+    #         self.is_active=False
+    #         if (rjson['success'] == True):
+    #             super(User, self).save(*args, **kwargs)
+    #     else:
+    #         # not recaptcha for testing only
+    #         self.is_active=False
+    #         super(User, self).save(*args, **kwargs)
