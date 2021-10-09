@@ -26,7 +26,7 @@ class CountryViewSet(viewsets.ModelViewSet):
     serializer_class = CountrySerializer
 
     def get_queryset(self):
-        return Country.objects.filter(active_bool=True).exclude(country='EP')
+        return Country.objects.filter(active_bool=True)
 
 
 class CountryAllViewSet(viewsets.ModelViewSet):

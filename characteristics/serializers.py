@@ -7,7 +7,7 @@ class ApplTypeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ApplType
-        fields = ('id', 'application_type', 'long_name')
+        fields = ('id', 'application_type', 'long_name', 'country_set')
 
 
 class CountrySerializer(serializers.ModelSerializer):
@@ -22,7 +22,7 @@ class CountryAllSerializer(serializers.ModelSerializer):
     class Meta:
         model = Country
         fields = ('id', 'country', 'active_bool', 'currency_name', 'pct_analysis_bool',
-                  'ep_bool', 'long_name', 'color')
+                  'ep_bool', 'long_name', 'color', 'available_appl_types')
 
 
 class EntitySerializer(serializers.ModelSerializer):

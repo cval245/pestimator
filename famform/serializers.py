@@ -21,14 +21,16 @@ class FamEstFormDataNetSerializer(serializers.Serializer):
     init_appl_pages_claims = serializers.IntegerField()
     init_appl_pages_drawings = serializers.IntegerField()
     init_appl_indep_claims = serializers.IntegerField()
-    method = serializers.BooleanField(default=False, required=False)
-    meth_country = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all(),
-                                                      required=False, allow_null=True)
+
+    pct_method = serializers.BooleanField(default=False, required=False)
+    pct_country = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all(),
+                                                     required=False, allow_null=True)
+    pct_countries = serializers.PrimaryKeyRelatedField(many=True, queryset=Country.objects.all())
     ep_method = serializers.BooleanField(default=False, required=False)
+    ep_countries = serializers.PrimaryKeyRelatedField(many=True, queryset=Country.objects.all())
+    paris_countries = serializers.PrimaryKeyRelatedField(many=True, queryset=Country.objects.all())
     entity_size = serializers.PrimaryKeyRelatedField(queryset=EntitySize.objects.all())
-
     unique_display_no = serializers.IntegerField()
-
 
 class FamEstFormDataNetPostSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=False)
@@ -36,7 +38,6 @@ class FamEstFormDataNetPostSerializer(serializers.Serializer):
         default=serializers.CurrentUserDefault())
     family_name = serializers.CharField(write_only=True)
     family_no = serializers.CharField(default='', max_length=20, write_only=True)
-    countries = serializers.PrimaryKeyRelatedField(many=True, queryset=Country.objects.all())
     init_appl_filing_date = serializers.DateField()
     init_appl_country = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all())
     init_appl_type = serializers.PrimaryKeyRelatedField(queryset=ApplType.objects.all())
@@ -46,10 +47,13 @@ class FamEstFormDataNetPostSerializer(serializers.Serializer):
     init_appl_pages_claims = serializers.IntegerField()
     init_appl_pages_drawings = serializers.IntegerField()
     init_appl_indep_claims = serializers.IntegerField()
-    method = serializers.BooleanField(default=False, required=False)
-    meth_country = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all(),
-                                                      required=False, allow_null=True)
+    pct_method = serializers.BooleanField(default=False, required=False)
+    pct_country = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all(),
+                                                     required=False, allow_null=True)
+    pct_countries = serializers.PrimaryKeyRelatedField(many=True, queryset=Country.objects.all())
     ep_method = serializers.BooleanField(default=False, required=False)
+    ep_countries = serializers.PrimaryKeyRelatedField(many=True, queryset=Country.objects.all())
+    paris_countries = serializers.PrimaryKeyRelatedField(many=True, queryset=Country.objects.all())
     entity_size = serializers.PrimaryKeyRelatedField(queryset=EntitySize.objects.all())
     unique_display_no = serializers.IntegerField()
 
@@ -74,13 +78,15 @@ class FamEstFormDataNetPostSerializer(serializers.Serializer):
             init_appl_type=validated_data['init_appl_type'],
             init_appl_indep_claims=validated_data['init_appl_indep_claims'],
             entity_size=validated_data['entity_size'],
-            method=validated_data['method'],
-            meth_country=validated_data['meth_country'],
+            pct_method=validated_data['pct_method'],
+            pct_country=validated_data['pct_country'],
             ep_method=validated_data['ep_method'],
         )
         famEstData.save()
-        famEstData.countries.set(validated_data['countries'])
+        famEstData.pct_countries.set(validated_data['pct_countries'])
+        famEstData.ep_countries.set(validated_data['ep_countries'])
+        famEstData.paris_countries.set(validated_data['paris_countries'])
+
         # famEstDataCreateOptions
         famEstData.generate_family_options()
         return famEstData
-
