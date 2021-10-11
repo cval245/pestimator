@@ -15,14 +15,14 @@ class CountrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Country
         fields = ('id', 'country', 'currency_name', 'pct_analysis_bool', 'ep_bool',
-                  'long_name', 'color')
+                  'long_name', 'color', 'isa_countries')
 
 class CountryAllSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Country
         fields = ('id', 'country', 'active_bool', 'currency_name', 'pct_analysis_bool',
-                  'ep_bool', 'long_name', 'color', 'available_appl_types')
+                  'ep_bool', 'long_name', 'color', 'available_appl_types', 'isa_countries')
 
 
 class EntitySerializer(serializers.ModelSerializer):

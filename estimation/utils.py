@@ -15,7 +15,7 @@ def filter_conditions(templates, application):
     temp_five = _filter_indep_claims(temp_four, appl_details)
     temp_six = _filter_annual_prosecution_fee(temp_five, application)
     temp_seven = _filter_prior_appl_pct(temp_six, application)
-    temp_eight = _filter_prior_appl_pct(temp_seven, application)
+    temp_eight = _filter_prior_appl_pct_same_country(temp_seven, application)
     temp_nine = _filter_fee_from_prior_appl_filing_date_and_excluding_overlapping_dates(temp_eight, application)
     final_temps = temp_nine
     return final_temps
@@ -121,13 +121,14 @@ def _filter_prior_appl_pct(templates, application):
 
 
 def _filter_prior_appl_pct_same_country(templates, application):
+    # ISA country not Receiving Office
     prior_appl = application.prior_appl
     prior_pct_same_country = False
     if (prior_appl):
         appl_type = appl_utils.convert_class_applType(prior_appl)
         if (appl_type == ApplType.objects.get(application_type='pct')):
             # create us Validation
-            if (prior_appl.country == application.country):
+            if (prior_appl.isa_country == application.country):
                 prior_pct_same_country = True
                 # now special conditions apply
     templates = templates.filter(

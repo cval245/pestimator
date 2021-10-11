@@ -16,9 +16,9 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         family_udn = self.request.query_params.get('familyUDN')
         if family_udn is not None:
             if queryset.filter(user=self.request.user,
-                               baseapplication__family__unique_display_no=family_udn).exists():
+                               family__unique_display_no=family_udn).exists():
                 queryset = queryset.filter(user=self.request.user,
-                                           baseapplication__family__unique_display_no=family_udn)
+                                           family__unique_display_no=family_udn)
         return queryset
 
 

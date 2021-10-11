@@ -42,6 +42,10 @@ class FamEstFormData(models.Model):
                                     on_delete=models.CASCADE,
                                     null=True,
                                     related_name='pct_country')
+    isa_country = models.ForeignKey(Country,
+                                    on_delete=models.CASCADE,
+                                    null=True,
+                                    related_name='isa_country')
     pct_countries = models.ManyToManyField(Country, related_name='pct_countries')  # utility appl countries
 
     ep_method = models.BooleanField(default=False)
@@ -79,84 +83,6 @@ class FamEstFormData(models.Model):
             language_id=language.id
         )
 
-        # filing date is init_filing_date
-        # first_appl_bool = True
-        # prevApplOption = None
-        # prov_appl_option = famOptions.generate_appl(details=applDetails,
-        #                                             country=self.init_appl_country,
-        #                                             appl_type=self.init_appl_type,
-        #                                             prev_appl_type=None,
-        #                                             prev_date=self.init_appl_filing_date,
-        #                                             first_appl_bool=first_appl_bool,
-        #                                             prev_appl_option=prevApplOption)
-        #
-        # # generate second node
-        # first_appl_bool = False
-        # prev_appl_type = init_appl_type
-        # prev_date = self.init_appl_filing_date
-        # prevApplOption = prov_appl_option
-        # if self.pct_method is True and not init_appl_type.application_type == 'pct':
-        #     pct_type = ApplType.objects.get(application_type='pct')
-        #     applOption = famOptions.generate_appl(details=applDetails,
-        #                                           country=self.pct_country,
-        #                                           appl_type=pct_type,
-        #                                           prev_appl_type=prev_appl_type,
-        #                                           prev_date=prev_date,
-        #                                           first_appl_bool=first_appl_bool,
-        #                                           prev_appl_option=prevApplOption)
-        #     prev_date = applOption.date_filing
-        #     prev_appl_type = pct_type
-        #     prevApplOption = applOption
-        #     for country in self.pct_countries:
-        #         famOptions.generate_appl(details=applDetails,
-        #                                  country=c,
-        #                                  appl_type=ep_validation_appl,
-        #                                  prev_appl_type=prev_appl_type,
-        #                                  prev_date=ep_prev_date,
-        #                                  first_appl_bool=first_appl_bool,
-        #                                  prev_appl_option=epPrevApplOption)
-        #
-        # # generate ep method
-        # countries = Country.objects.filter(famestformdata=self)
-        # if self.ep_method is True:
-        #     ep_applType = ApplType.objects.get(application_type='ep')
-        #     epAppl = famOptions.generate_appl(details=applDetails,
-        #                                       country=Country.objects.get(country='EP'),
-        #                                       appl_type=ep_applType,
-        #                                       prev_appl_type=prev_appl_type,
-        #                                       prev_date=prev_date,
-        #                                       first_appl_bool=first_appl_bool,
-        #                                       prev_appl_option=prevApplOption)
-        #     epPrevApplOption = epAppl
-        #
-        #     # calc date of allowance
-        #     oa_diff = OAOptions.objects.filter(appl=epAppl).aggregate(date_diff=Sum('date_diff'))['date_diff']
-        #     allow_diff = AllowOptions.objects.get(appl=epAppl).date_diff
-        #     ep_prev_date = prev_date + oa_diff + allow_diff
-        #     # ep_countries = countries.filter(ep_bool=True)
-        #     # countries = countries.exclude(ep_bool=True)
-        #     ep_validation_appl = ApplType.objects.get(application_type='epvalidation')
-        #     for c in self.ep_countries:
-        #         famOptions.generate_appl(details=applDetails,
-        #                                  country=c,
-        #                                  appl_type=ep_validation_appl,
-        #                                  prev_appl_type=prev_appl_type,
-        #                                  prev_date=ep_prev_date,
-        #                                  first_appl_bool=first_appl_bool,
-        #                                  prev_appl_option=epPrevApplOption)
-        #
-        #     # create utility applications where country is EP
-        #
-        # # generate third node
-        # utility_appl = ApplType.objects.get(application_type='utility')
-        # for c in countries:
-        #     famOptions.generate_appl(details=applDetails,
-        #                              country=c,
-        #                              appl_type=utility_appl,
-        #                              prev_appl_type=prev_appl_type,
-        #                              prev_date=prev_date,
-        #                              first_appl_bool=first_appl_bool,
-        #                              prev_appl_option=prevApplOption)
         init_appl_option = self.parse_first_appl_stage(famOptions, applDetails)
         if (self.init_appl_type != ApplType.objects.get(application_type='pct')
                 and self.pct_method is True):
@@ -175,7 +101,9 @@ class FamEstFormData(models.Model):
         # take in first appl
         # if ep, then commence
         # parse_ep_stage()
-        if (self.init_appl_type == ApplType.objects.get(application_type='pct')):
+        print('asdfasghs', ApplType.objects.get(application_type='pct'))
+        if self.init_appl_type == ApplType.objects.get(application_type='pct'):
+            print('asdfasghs', ApplType.objects.get(application_type='pct'))
             first_appl_option = self.parse_international_stage(famOptions=famOptions,
                                                                applDetails=applDetails,
                                                                prevApplOption=None,
@@ -183,7 +111,7 @@ class FamEstFormData(models.Model):
                                                                prevApplType=self.init_appl_type,
                                                                firstApplBool=True)
 
-        elif (self.init_appl_type == ApplType.objects.get(application_type='ep')):
+        elif self.init_appl_type == ApplType.objects.get(application_type='ep'):
             first_appl_option = self.parse_ep_stage(famOptions=famOptions,
                                                     applDetails=applDetails,
                                                     prevApplOption=None,
@@ -200,7 +128,7 @@ class FamEstFormData(models.Model):
                                                          prev_date=self.init_appl_filing_date,
                                                          first_appl_bool=True,
                                                          prev_appl_option=None)
-
+        print('first_appl_option', first_appl_option)
         return first_appl_option
 
     def parse_international_stage(self, famOptions, applDetails,
@@ -212,21 +140,25 @@ class FamEstFormData(models.Model):
             # if yes and then no, create ep option
             # if ep first was checked then get nothing
             pct_valid_type = ApplType.objects.get(application_type='pct')
-            pct_appl_option = famOptions.generate_appl(details=applDetails,
-                                                       country=self.pct_country,
-                                                       appl_type=pct_valid_type,
-                                                       prev_appl_type=prevApplType,
-                                                       prev_date=prevDate,
-                                                       first_appl_bool=firstApplBool,
-                                                       prev_appl_option=prevApplOption)
+            print('parsing inter stage')
+            pct_appl_option = famOptions.generate_pct_appl(details=applDetails,
+                                                           country=self.pct_country,
+                                                           isa_country=self.isa_country,
+                                                           # appl_type=pct_valid_type,
+                                                           prev_appl_type=prevApplType,
+                                                           prev_date=prevDate,
+                                                           first_appl_bool=firstApplBool,
+                                                           prev_appl_option=prevApplOption)
 
+            print('parsing inter stage', pct_appl_option)
             utility_type = ApplType.objects.get(application_type='utility')
             for c in self.pct_countries.all():
                 if (c == Country.objects.get(country='EP')
-                        & self.ep_method == True):
+                        and self.ep_method is True
+                        and self.init_appl_type != ApplType.objects.get(application_type='ep')):
                     self.parse_ep_stage(famOptions=famOptions,
                                         applDetails=applDetails,
-                                        prevApplOption=pct_appl_option.date_filing,
+                                        prevApplOption=pct_appl_option,
                                         firstApplBool=False,
                                         prev_date=pct_appl_option.date_filing,
                                         prev_appl_type=pct_valid_type)
@@ -246,8 +178,9 @@ class FamEstFormData(models.Model):
         # check if pct countries apply
         if (self.ep_method is True):
             ep_type = ApplType.objects.get(application_type='ep')
+            ep_country = Country.objects.get(country='EP')
             ep_appl_option = famOptions.generate_appl(details=applDetails,
-                                                      country=self.pct_country,
+                                                      country=ep_country,
                                                       appl_type=ep_type,
                                                       prev_appl_type=prev_appl_type,
                                                       prev_date=prev_date,
@@ -279,7 +212,7 @@ class FamEstFormData(models.Model):
         utility_appl = ApplType.objects.get(application_type='utility')
         for c in self.paris_countries.all():
             if (c == Country.objects.get(country='EP')
-                    & self.ep_method == True):
+                    and self.ep_method is True):
                 self.parse_ep_stage(famOptions=famOptions,
                                     applDetails=applDetails,
                                     prevApplOption=prevApplOption.date_filing,
@@ -294,10 +227,8 @@ class FamEstFormData(models.Model):
                                          prev_appl_option=prevApplOption)
 
 
-
 class FamOptions(models.Model):
     family = models.ForeignKey(Family, on_delete=models.CASCADE)
-
 
     def _calc_filing_date(self, appl_type, country, prev_appl_type,
                           prev_date, first_appl_bool):
@@ -305,9 +236,9 @@ class FamOptions(models.Model):
             date_filing = prev_date
         else:
             custom_exists = CustomFilingTransform.objects.filter(
-            appl_type=appl_type,
-            country=country,
-            prev_appl_type=prev_appl_type).exists()
+                appl_type=appl_type,
+                country=country,
+                prev_appl_type=prev_appl_type).exists()
             if custom_exists:
                 cFilTrans = CustomFilingTransform.objects.get(
                     appl_type=appl_type,
@@ -345,6 +276,54 @@ class FamOptions(models.Model):
             language_id=desired_language.id
         )
         return new_details
+
+    def generate_pct_appl(self, details, country, isa_country, prev_appl_type, prev_date,
+                          first_appl_bool, prev_appl_option):
+        pct_appl_type = ApplType.objects.get(application_type='pct')
+        if (isa_country not in country.isa_countries):
+            raise 'isa country needs to be available for country'
+        if pct_appl_type in country.available_appl_types.all():
+            # select transform and get date_diff
+            date_filing = self._calc_filing_date(pct_appl_type, country,
+                                                 prev_appl_type, prev_date, first_appl_bool)
+            # get oa_total
+            oa_total = self._calc_oa_num(country)
+
+            desired_language = self.determine_desired_language(
+                details=details, country=country,
+            )
+            translation_full_required = self.determine_translation_full_required(
+                country=country,
+                appl_type=pct_appl_type,
+                language=desired_language,
+                prev_appl_option=prev_appl_option)
+
+            if (translation_full_required):
+                translated_details = self.translate_details_new_language(
+                    details=details,
+                    current_language=details.language,
+                    desired_language=desired_language)
+            else:
+                translated_details = details
+                translated_details.pk = None
+                translated_details.save()
+
+            # apply transmutation transformations
+            # these transmutations convert to local patent office guidelines
+            # need user input
+            # have defaults
+            # ie transform multiple dependent claims into sets of single dependent claims
+
+            applOption = self.generate_pct_appl_option(country=country,
+                                                       isa_country=isa_country,
+                                                       date_filing=date_filing,
+                                                       details=translated_details,
+                                                       oa_total=oa_total,
+                                                       translation_full_required=translation_full_required,
+                                                       prev_appl_option=prev_appl_option)
+            return applOption
+        else:
+            raise 'Error: ApplType not available for country'
 
     def generate_appl(self, details, country, appl_type,
                       prev_appl_type, prev_date, first_appl_bool, prev_appl_option):
@@ -395,6 +374,8 @@ class FamOptions(models.Model):
                                                    prev_appl_option=prev_appl_option)
             return applOption
         else:
+            print(appl_type.application_type,
+                  '<+ appl type  country=>  ', country.country)
             raise 'Error: ApplType not available for country'
 
     def determine_translation_full_required(self, country, appl_type, language, prev_appl_option):
@@ -423,6 +404,18 @@ class FamOptions(models.Model):
 
         return desired_language
 
+    def generate_pct_appl_option(self, country, isa_country, translation_full_required,
+                                 date_filing, oa_total, prev_appl_option, details):
+        pct_appl_type = ApplType.objects.get(application_type='pct')
+        applOption = PCTApplOptions.objects.create(title='title', date_filing=date_filing,
+                                                   country=country, appl_type=pct_appl_type,
+                                                   isa_country=isa_country,
+                                                   details=details, fam_options=self,
+                                                   translation_full_required=translation_full_required,
+                                                   prev_appl_options=prev_appl_option)
+        applOption.create_publ_option()
+        return applOption
+
     def generate_appl_option(self, country, details, appl_type,
                              translation_full_required,
                              date_filing, oa_total, prev_appl_option):
@@ -434,9 +427,9 @@ class FamOptions(models.Model):
         # select Transforms
         if (applOption.appl_type == ApplType.objects.get(application_type='prov')):
             return applOption
-        elif (applOption.appl_type == ApplType.objects.get(application_type='pct')):
-            applOption.create_publ_option()
-            return applOption
+        # elif (applOption.appl_type == ApplType.objects.get(application_type='pct')):
+        #     applOption.create_publ_option()
+        #     return applOption
         elif (applOption.appl_type == ApplType.objects.get(application_type='utility')):
             applOption.create_publ_option()
             applOption.create_all_oa_options(oa_total)
@@ -507,6 +500,10 @@ class ApplOptions(models.Model):
         return IssueOptions.objects.create(date_diff=trans.date_diff, appl=self)
 
 
+class PCTApplOptions(ApplOptions):
+    isa_country = models.ForeignKey(Country, on_delete=models.CASCADE)
+
+
 class BaseOptions(models.Model):
     date_diff = RelativeDeltaField()
     appl = models.OneToOneField(ApplOptions, on_delete=models.CASCADE)
@@ -514,10 +511,11 @@ class BaseOptions(models.Model):
     class Meta:
         abstract = True
 
-class PublOptions(BaseOptions):
 
+class PublOptions(BaseOptions):
     class Meta:
         abstract = False
+
 
 class OAOptions(models.Model):
     date_diff = RelativeDeltaField()
@@ -526,11 +524,10 @@ class OAOptions(models.Model):
 
 
 class AllowOptions(BaseOptions):
-
     class Meta:
         abstract = False
 
-class IssueOptions(BaseOptions):
 
+class IssueOptions(BaseOptions):
     class Meta:
         abstract = False

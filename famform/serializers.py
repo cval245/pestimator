@@ -11,7 +11,7 @@ class FamEstFormDataNetSerializer(serializers.Serializer):
         default=serializers.CurrentUserDefault())
     family_name = serializers.CharField(write_only=False)
     family_no = serializers.CharField(default='', max_length=20, write_only=False)
-    countries = serializers.PrimaryKeyRelatedField(many=True, queryset=Country.objects.all())
+    # countries = serializers.PrimaryKeyRelatedField(many=True, queryset=Country.objects.all())
     init_appl_filing_date = serializers.DateField()
     init_appl_country = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all())
     init_appl_type = serializers.PrimaryKeyRelatedField(queryset=ApplType.objects.all())
@@ -24,6 +24,8 @@ class FamEstFormDataNetSerializer(serializers.Serializer):
 
     pct_method = serializers.BooleanField(default=False, required=False)
     pct_country = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all(),
+                                                     required=False, allow_null=True)
+    isa_country = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all(),
                                                      required=False, allow_null=True)
     pct_countries = serializers.PrimaryKeyRelatedField(many=True, queryset=Country.objects.all())
     ep_method = serializers.BooleanField(default=False, required=False)
@@ -49,6 +51,8 @@ class FamEstFormDataNetPostSerializer(serializers.Serializer):
     init_appl_indep_claims = serializers.IntegerField()
     pct_method = serializers.BooleanField(default=False, required=False)
     pct_country = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all(),
+                                                     required=False, allow_null=True)
+    isa_country = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all(),
                                                      required=False, allow_null=True)
     pct_countries = serializers.PrimaryKeyRelatedField(many=True, queryset=Country.objects.all())
     ep_method = serializers.BooleanField(default=False, required=False)
@@ -80,6 +84,7 @@ class FamEstFormDataNetPostSerializer(serializers.Serializer):
             entity_size=validated_data['entity_size'],
             pct_method=validated_data['pct_method'],
             pct_country=validated_data['pct_country'],
+            isa_country=validated_data['isa_country'],
             ep_method=validated_data['ep_method'],
         )
         famEstData.save()
