@@ -96,7 +96,6 @@ class BaseApplication(models.Model):
             appl_type=convert_class_applType(self),
         )
         templates = utils.filter_conditions(filing_templates, self)
-
         templates = templates.select_related('law_firm_template')
         ests = []
         for e in templates:

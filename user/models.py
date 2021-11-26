@@ -12,15 +12,20 @@ class User(AbstractUser):
 
     REQUIRED_FIELDS = ['email', 'terms_agreed', 'recaptcha']
 
-    # def save(self, *args, **kwargs):
-    #     if settings.USE_RECAPTCHA_BOOL:
-    #         # Recaptcha validation
-    #         url = 'https://www.google.com/recaptcha/api/siteverify'
-    #         values = {
-    #             'secret': settings.GOOGLE_RECAPTCHA_SECRET_KEY,
-    #             'response': self.recaptcha
-    #         }
-    #         r = requests.post(url, data=values)
+#
+# class Group(models.Model):
+#     name = models.CharField(max_length=200, default='')
+#     user = models.ManyToManyField(User)
+
+# def save(self, *args, **kwargs):
+#     if settings.USE_RECAPTCHA_BOOL:
+#         # Recaptcha validation
+#         url = 'https://www.google.com/recaptcha/api/siteverify'
+#         values = {
+#             'secret': settings.GOOGLE_RECAPTCHA_SECRET_KEY,
+#             'response': self.recaptcha
+#         }
+#         r = requests.post(url, data=values)
     #         rjson = r.json()
     #         self.is_active=False
     #         if (rjson['success'] == True):

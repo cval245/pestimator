@@ -17,6 +17,8 @@ router.register(r'filing-est-template',
                 views.FilingEstimateTemplateViewSet, basename='filingesttemplate')
 router.register(r'publication-est-template',
                 views.PublicationEstTemplateViewSet, basename='filingesttemplate')
+router.register(r'request-exam-est-template',
+                views.RequestExamEstTemplateViewSet, basename='requestexamesttemplate')
 router.register(r'oa-est-template',
                 views.OAEstimateTemplateViewSet, basename='oaestimatetemplate')
 router.register(r'us-oa-est-template',

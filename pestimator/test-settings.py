@@ -22,7 +22,6 @@ DATABASES = {
         'PORT': env('DATABASE_PORT')
     }
 }
-
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 ALLOWED_HOSTS = ["localhost"]
@@ -30,6 +29,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
     "https://localhost:4200",
 ]
+# CORS_ALLOW_HEADERS = ['content-disposition']
+CORS_EXPOSE_HEADERS = ['content-disposition']
 # DJOSER = {
 #     'SEND_ACTIVATION_EMAIL': True,
 #     'USER_CREATE_PASSWORD_RETYPE': True,
@@ -65,3 +66,12 @@ STRIPE_PRIVATE_KEY = env('STRIPE_PRIVATE_KEY')
 GOOGLE_RECAPTCHA_SECRET_KEY = env('GOOGLE_RECAPTCHA_SECRET_KEY')
 # USE_RECAPTCHA_BOOL = False
 USE_RECAPTCHA_BOOL = True
+# REST_FRAMEWORK = {
+#     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+#     'DEFAULT_PERMISSION_CLASSES': (
+#         'rest_framework.permissions.IsAuthenticated',
+#     ),
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'rest_framework_simplejwt.authentication.JWTAuthentication',
+#     ),
+# }

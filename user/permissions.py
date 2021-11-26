@@ -4,7 +4,7 @@ from rest_framework import permissions
 class DataPermission(permissions.BasePermission):
     message = 'access to template data forbidden'
 
-    def has_permission(selfself, request, view):
+    def has_permission(self, request, view):
         if request.user.admin_data:
             return True
         else:

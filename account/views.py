@@ -1,6 +1,7 @@
 from django.http import JsonResponse
 from rest_framework import viewsets
 
+from user.accesspolicies import AllAccess
 from user.models import User
 from .models import UserProfile, PurchaseOrder, LineItem, ProductPrice
 from .serializers import UserProfileSerializer
@@ -18,6 +19,7 @@ stripe.api_key = settings.STRIPE_PRIVATE_KEY
 # Create your views here.
 class UserProfileViewSet(viewsets.ModelViewSet):
     serializer_class = UserProfileSerializer
+    permission_classes = (AllAccess,)
 
     def get_queryset(self):
         return UserProfile.objects.filter(user=self.request.user)

@@ -1,5 +1,6 @@
 from rest_framework import viewsets
 
+from user.accesspolicies import StaffOnlyAccess
 from user.permissions import DataPermission
 from .models import BaseEstTemplate, FilingEstimateTemplate, LawFirmEstTemplate, PublicationEstTemplate, \
 	OAEstimateTemplate, AllowanceEstTemplate, IssueEstTemplate, \
@@ -7,27 +8,38 @@ from .models import BaseEstTemplate, FilingEstimateTemplate, LawFirmEstTemplate,
 from .serializers import BaseEstTemplateSerializer, FilingEstimateTemplateSerializer, LawFirmEstTemplateSerializer, \
 	PublicationEstTemplateSerializer, OAEstimateTemplateSerializer, \
 	AllowanceEstTemplateSerializer, IssueEstTemplateSerializer, \
-	ConditionsSerializer, USOAEstimateTemplateSerializer, ComplexConditionsSerializer, ComplexTimeConditionsSerializer
+	ConditionsSerializer, USOAEstimateTemplateSerializer, ComplexConditionsSerializer, ComplexTimeConditionsSerializer, \
+	RequestExamEstTemplateSerializer
 
 
 # Create your views here.
 class BaseEstTemplateViewSet(viewsets.ModelViewSet):
 	serializer_class = BaseEstTemplateSerializer
-	permission_classes = [DataPermission]
+	permission_classes = [StaffOnlyAccess]
 
 	def get_queryset(self):
 		return BaseEstTemplate.objects.all()
 
+
 class FilingEstimateTemplateViewSet(viewsets.ModelViewSet):
 	serializer_class = FilingEstimateTemplateSerializer
-	permission_classes = [DataPermission]
+	permission_classes = [StaffOnlyAccess]
 
 	def get_queryset(self):
 		return FilingEstimateTemplate.objects.all()
 
+
 class PublicationEstTemplateViewSet(viewsets.ModelViewSet):
 	serializer_class = PublicationEstTemplateSerializer
-	permission_classes = [DataPermission]
+	permission_classes = [StaffOnlyAccess]
+
+	def get_queryset(self):
+		return PublicationEstTemplate.objects.all()
+
+
+class RequestExamEstTemplateViewSet(viewsets.ModelViewSet):
+	serializer_class = RequestExamEstTemplateSerializer
+	permission_classes = [StaffOnlyAccess]
 
 	def get_queryset(self):
 		return PublicationEstTemplate.objects.all()
@@ -35,7 +47,7 @@ class PublicationEstTemplateViewSet(viewsets.ModelViewSet):
 
 class OAEstimateTemplateViewSet(viewsets.ModelViewSet):
 	serializer_class = OAEstimateTemplateSerializer
-	permission_classes = [DataPermission]
+	permission_classes = [StaffOnlyAccess]
 
 	def get_queryset(self):
 		return OAEstimateTemplate.objects.all()
@@ -43,7 +55,7 @@ class OAEstimateTemplateViewSet(viewsets.ModelViewSet):
 
 class USOAEstimateTemplateViewSet(viewsets.ModelViewSet):
 	serializer_class = USOAEstimateTemplateSerializer
-	permission_classes = [DataPermission]
+	permission_classes = [StaffOnlyAccess]
 
 	def get_queryset(self):
 		return USOAEstimateTemplate.objects.all()
@@ -51,7 +63,7 @@ class USOAEstimateTemplateViewSet(viewsets.ModelViewSet):
 
 class AllowanceEstTemplateViewSet(viewsets.ModelViewSet):
 	serializer_class = AllowanceEstTemplateSerializer
-	permission_classes = [DataPermission]
+	permission_classes = [StaffOnlyAccess]
 
 	def get_queryset(self):
 		return AllowanceEstTemplate.objects.all()
@@ -59,7 +71,7 @@ class AllowanceEstTemplateViewSet(viewsets.ModelViewSet):
 
 class IssueEstTemplateViewSet(viewsets.ModelViewSet):
 	serializer_class = IssueEstTemplateSerializer
-	permission_classes = [DataPermission]
+	permission_classes = [StaffOnlyAccess]
 
 	def get_queryset(self):
 		return IssueEstTemplate.objects.all()
@@ -67,7 +79,7 @@ class IssueEstTemplateViewSet(viewsets.ModelViewSet):
 
 class LawFirmEstTemplateViewSet(viewsets.ModelViewSet):
 	serializer_class = LawFirmEstTemplateSerializer
-	permission_classes = [DataPermission]
+	permission_classes = [StaffOnlyAccess]
 
 	def get_queryset(self):
 		return LawFirmEstTemplate.objects.all()
@@ -75,7 +87,7 @@ class LawFirmEstTemplateViewSet(viewsets.ModelViewSet):
 
 class ConditionsViewSet(viewsets.ModelViewSet):
 	serializer_class = ConditionsSerializer
-	permission_classes = [DataPermission]
+	permission_classes = [StaffOnlyAccess]
 
 	def get_queryset(self):
 		return LineEstimationTemplateConditions.objects.all()
@@ -83,7 +95,7 @@ class ConditionsViewSet(viewsets.ModelViewSet):
 
 class ComplexConditionsViewSet(viewsets.ModelViewSet):
 	serializer_class = ComplexConditionsSerializer
-	permission_classes = [DataPermission]
+	permission_classes = [StaffOnlyAccess]
 
 	def get_queryset(self):
 		return ComplexConditions.objects.all()
@@ -91,7 +103,7 @@ class ComplexConditionsViewSet(viewsets.ModelViewSet):
 
 class ComplexTimeConditionsViewSet(viewsets.ModelViewSet):
 	serializer_class = ComplexTimeConditionsSerializer
-	permission_classes = [DataPermission]
+	permission_classes = [StaffOnlyAccess]
 
 	def get_queryset(self):
 		return ComplexTimeConditions.objects.all()

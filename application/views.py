@@ -6,10 +6,13 @@ from application.models import BaseApplication, ApplDetails
 from application.serializers import ApplicationSerializer, ApplDetailSerializer
 from family.models import Family
 
-
 # Create your views here.
+from user.accesspolicies import GetOnlyPolicy
+
+
 class ApplicationViewSet(viewsets.ModelViewSet):
     serializer_class = ApplicationSerializer
+    permission_classes = (GetOnlyPolicy,)
 
     def get_queryset(self):
         queryset = BaseApplication.objects.filter(user=self.request.user)
@@ -24,6 +27,7 @@ class ApplicationViewSet(viewsets.ModelViewSet):
 
 class ApplDetailViewSet(viewsets.ModelViewSet):
     serializer_class = ApplDetailSerializer
+    permission_classes = (GetOnlyPolicy,)
 
     def get_queryset(self):
         queryset = ApplDetails.objects.filter(baseapplication__user=self.request.user)

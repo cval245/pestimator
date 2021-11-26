@@ -23,7 +23,9 @@ class ApplicationSerializer(serializers.ModelSerializer):
 
 
 class ApplDetailSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = ApplDetails
-        fields = ('id', 'num_indep_claims', 'num_pages_description', 'num_claims',
-                  'num_pages_drawings', 'num_pages_claims', 'entity_size')
+        fields = ('id', 'num_indep_claims', 'num_drawings', 'num_pages_description',
+                  'num_claims', 'num_claims_multiple_dependent',
+                  'num_pages_drawings', 'num_pages_claims', 'entity_size', 'language')

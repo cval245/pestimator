@@ -6,11 +6,12 @@ from characteristics.models import EntitySize, Languages
 class ApplDetails(models.Model):
     num_indep_claims = models.IntegerField()
     num_claims = models.IntegerField()
+    num_claims_multiple_dependent = models.IntegerField()
     num_drawings = models.IntegerField()
     num_pages_description = models.IntegerField()
     num_pages_claims = models.IntegerField()
     num_pages_drawings = models.IntegerField()
-    entity_size = models.ForeignKey(EntitySize, on_delete=models.CASCADE)
+    entity_size = models.ForeignKey(EntitySize, on_delete=models.CASCADE, null=True)
     language = models.ForeignKey(Languages, on_delete=models.CASCADE)
 
     @property

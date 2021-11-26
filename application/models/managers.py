@@ -1,6 +1,9 @@
+from copy import deepcopy
+
 from django.db import models
 
 # class ApplManager(PolymorphicManager):
+# from famform.models import PCTApplOptions
 from famform.models import PCTApplOptions
 
 
@@ -10,7 +13,8 @@ class ApplManager(models.Manager):
         return self.create_correct_appl(options, user, family_id)
 
     def generate_appl(self, options, user, family_id):
-        applDetails = options.details
+        applDetails = deepcopy(options.details)
+        print('why', applDetails.__dict__)
         applDetails.pk = None
         applDetails.save()
         prev_appl = None
@@ -48,6 +52,7 @@ class ApplManager(models.Manager):
         return appl
 
     def create_correct_appl(self, options, user, family_id):
+        print('create_correct_appl', options.__dict__, family_id)
 
         if (options.appl_type.application_type == 'prov'):
             # create prov

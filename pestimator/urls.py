@@ -22,7 +22,7 @@ urlpatterns = [
     path('', include('characteristics.urls')),
     path('', include('estimation.urls')),
     path('', include('family.urls')),
-    path('', include('countryform.urls')),
+    # path('', include('countryform.urls')),
     path('', include('transform.urls')),
     path('', include('account.urls')),
     path('', include('user.urls')),

@@ -2,15 +2,46 @@ from django.db import models
 from relativedeltafield import RelativeDeltaField
 
 from characteristics.models import Country, ApplType, Languages
+from transform.managers import TransformManager
+
+
+class TransComplexTime(models.Model):
+    name = models.CharField(max_length=200)
+
+    def calc_complex_time_conditions(self, date_filing, filing_transform, prev_appl_option):
+        if (self.name == 'from priority date'):
+            return self.calc_from_priority_date(prev_appl_option=prev_appl_option,
+                                                date_filing=date_filing,
+                                                filing_transform=filing_transform)
+
+    def calc_from_priority_date(self, prev_appl_option, date_filing, filing_transform):
+        if (prev_appl_option is None):
+            return date_filing + filing_transform.date_diff
+
+        new_date = prev_appl_option.date_filing + filing_transform.date_diff
+        appl = prev_appl_option
+        while (appl != None):
+            prior_appl_option = appl.prev_appl_options
+            if (prior_appl_option == None):
+                # get the date
+                priority_date = appl.date_filing
+                new_date = priority_date + filing_transform.date_diff
+            appl = prior_appl_option
+            # traverse to the top of the tree
+        return new_date
 
 
 class BaseTransform(models.Model):
     date_diff = RelativeDeltaField()
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
+    complex_time_conditions = models.ForeignKey(TransComplexTime,
+                                                on_delete=models.CASCADE,
+                                                null=True, default=None)
+
+    objects = TransformManager()
 
     class Meta:
         abstract = True
-
 
 
 
@@ -34,6 +65,11 @@ class PublicationTransform(BaseTransform):
                 fields=['country'],
                 name='PublicationCountryUniqueConstraint'),
         ]
+
+
+class RequestExaminationTransform(BaseTransform):
+    pass
+
 
 class OATransform(BaseTransform):
     # oa_num = models.IntegerField()
@@ -95,7 +131,13 @@ class BaseDefaultTransform(models.Model):
                 name='ApplTypeUniqueConstraint'),
         ]
 
+
 class DefaultFilingTransform(BaseDefaultTransform):
+    class Meta:
+        abstract = False
+
+
+class DefaultRequestExaminationTransform(BaseDefaultTransform):
     class Meta:
         abstract = False
 
@@ -103,7 +145,6 @@ class DefaultFilingTransform(BaseDefaultTransform):
 class DefaultPublTransform(BaseDefaultTransform):
     class Meta:
         abstract = False
-
 
 
 class DefaultOATransform(BaseDefaultTransform):

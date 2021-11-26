@@ -1,4 +1,3 @@
-#from application.models import BaseApplication
 from application.models.baseApplication import BaseApplication
 
 
@@ -15,9 +14,11 @@ class BaseUtilityApplication(BaseApplication):
 
         # generate publication date and estimates
         publ = self._generate_publication(options.publoptions.date_diff)
+        req = self._generate_request_examination(options.requestexaminationoptions.date_diff)
+
         oas_in = options.oaoptions_set.all()
 
-        oas_out = self._generate_oa(oas_in)
+        oas_out = self._generate_oa(date_request_examination=req.date_request_examination, args=oas_in)
         # calc last oa
         last_date = self.date_filing
         for oa in oas_out:
@@ -41,7 +42,16 @@ class BaseUtilityApplication(BaseApplication):
         return publ
         # create a publication instance
 
-    def _generate_oa(self, args):
+    def _generate_request_examination(self, date_diff_from_filing):
+        from application.models.requestExamination import RequestExamination
+        req = RequestExamination.objects.create(
+            application=self,
+            date_request_examination=self.date_filing + date_diff_from_filing
+        )
+        req.generate_ests()
+        return req
+
+    def _generate_oa(self, date_request_examination, args):
         ordered_oa = []
         oa_first = [x for x in args if x.oa_prev is None]
         ordered_oa.append(oa_first[0])

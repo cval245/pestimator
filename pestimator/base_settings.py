@@ -23,7 +23,7 @@ INSTALLED_APPS = [
     'transform.apps.TransformConfig',
     'lawfirm.apps.LawfirmConfig',
     'user.apps.UserConfig',
-    'countryform.apps.CountryformConfig',
+    # 'countryform.apps.CountryformConfig',
 ]
 
 MIDDLEWARE = [
@@ -118,3 +118,4 @@ MEDIA_ROOT = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static/me
 
 MEDIA_URL = '/media/'
 EXCHANGE_BACKEND = 'djmoney.contrib.exchange.backends.OpenExchangeRatesBackend'
+print('basesettings')

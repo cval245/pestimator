@@ -1,28 +1,47 @@
+from djmoney.settings import CURRENCY_CHOICES
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from .models import ApplType, Country, EntitySize
+from user.accesspolicies import StaffOnlyAccess, StaffOnlyPost
+from .models import ApplType, Country, EntitySize, Languages, EPValidationTranslationRequired, DocFormat
 from .serializers import ApplTypeSerializer, CountrySerializer, EntitySerializer, \
-    CountryAllSerializer
+    CountryAllSerializer, LanguagesSerializer, EPValidationTranslationRequiredSerializer, DocFormatSerializer
 
 
 # Create your views here.
 class ApplTypeViewSet(viewsets.ModelViewSet):
     serializer_class = ApplTypeSerializer
+    # access_policy = StaffOnlyAccess
+    permission_classes = (StaffOnlyPost,)
 
     def get_queryset(self):
+        # from django.conf import settings.djmoney
+
         return ApplType.objects.filter(internal_bool=False)
+
+    # class Meta:
+    #     permission_classes = [DataPermission]
 
 
 class ApplTypeAllViewSet(viewsets.ModelViewSet):
     serializer_class = ApplTypeSerializer
+    permission_classes = (StaffOnlyPost,)
 
     def get_queryset(self):
         return ApplType.objects.all()
 
 
+class EPValidationTranslationRequiredViewSet(viewsets.ModelViewSet):
+    serializer_class = EPValidationTranslationRequiredSerializer
+    permission_classes = (StaffOnlyPost,)
+
+    def get_queryset(self):
+        return EPValidationTranslationRequired.objects.all()
+
 class CountryViewSet(viewsets.ModelViewSet):
+    permission_classes = (StaffOnlyPost,)
     serializer_class = CountrySerializer
 
     def get_queryset(self):
@@ -30,23 +49,47 @@ class CountryViewSet(viewsets.ModelViewSet):
 
 
 class CountryAllViewSet(viewsets.ModelViewSet):
+    permission_classes = (StaffOnlyPost,)
     serializer_class = CountryAllSerializer
 
     def get_queryset(self):
         return Country.objects.all()
 
 
+class LanguageViewSet(viewsets.ModelViewSet):
+    permission_classes = (StaffOnlyPost,)
+    serializer_class = LanguagesSerializer
+
+    def get_queryset(self):
+        return Languages.objects.all()
+
+
+class DocFormatViewSet(viewsets.ModelViewSet):
+    permission_classes = (StaffOnlyPost,)
+    serializer_class = DocFormatSerializer
+
+    def get_queryset(self):
+        return DocFormat.objects.all()
+
+
 @api_view(['GET'])
 def getEntitySize(request):
     entitySize = EntitySize.objects.all()
     entitySizeSerial = []
-    i=0
+    i = 0
     for e in entitySize:
         entitySizeSerial.append(EntitySerializer(entitySize[i]).data)
-        i+=1
-    # return Response(entitySizeSerial)
-    #entitySize = list(entitySize)
-    #bob = EntitySerializer(entitySize)
+        i += 1
     bob = entitySizeSerial
     return Response(bob)
 
+
+@api_view(['GET'])
+def getCurrencyView(request):
+    # Important, the ID is meaningless and subject to change
+    # convert list of tuples to serialized version
+    currencies = []
+    for i, c in enumerate(CURRENCY_CHOICES):
+        currency = {'id': i + 1, 'currency_name': c[0], 'currency_full_name': c[1]}
+        currencies.append(currency)
+    return Response(currencies)
