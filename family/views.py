@@ -107,7 +107,6 @@ def create_excel_data(id):
 
 def create_pdf_report(id):
     output = generate_pdf_report(id)
-    print('ddd\n\n')
     output.seek(0)
     response = HttpResponse(output.read(),
                             content_type="application/pdf"

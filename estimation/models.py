@@ -15,11 +15,14 @@ from application.models.publication import Publication
 from application.models.requestExamination import RequestExamination
 from application.models.usOfficeAction import USOfficeAction
 from application.models.utilityApplication import UtilityApplication
-from characteristics.models import Country, EntitySize, ApplType, Languages, DocFormat
+from characteristics.models import Country, EntitySize, ApplType, Language, DocFormat
 from estimation.managers import EstimateManager, OAEstimateManager, USOAEstimateManager, PublEstimateManager, \
     AllowanceEstimateManager, IssueEstimateManager, ReqExamEstimateManager
 from application import utils as applUtils
-from famform.models import AllowOptions, OAOptions, IssueOptions
+
+
+class FeeCategory(models.Model):
+    name = models.CharField(max_length=200)
 
 
 class ComplexTimeConditions(models.Model):
@@ -196,7 +199,7 @@ class ComplexConditions(models.Model):
                                                               cost):
         # $100 per claim in excess of 20
         # 21 claims will yield a fee of $100
-        if (template_conditions.condition_claims_multiple_dependent):
+        if (template_conditions.condition_claims_multiple_dependent_min):
             num_fee_claims = appl_details.num_claims_multiple_dependent - template_conditions.condition_claims_multiple_dependent_min
         else:
             num_fee_claims = appl_details.num_claims_multiple_dependent
@@ -282,6 +285,7 @@ class LineEstimationTemplateConditions(models.Model):
     prev_appl_date_excl_intermediary_time = models.BooleanField(default=False)
     prior_appl_exists = models.BooleanField(default=None, null=True)
     doc_format = models.ForeignKey(DocFormat, default=None, null=True, on_delete=models.CASCADE)
+    language = models.ForeignKey(Language, default=None, null=True, on_delete=models.CASCADE)
 
 class LawFirmEstTemplate(models.Model):
     law_firm_cost = MoneyField(max_digits=19,
@@ -311,6 +315,7 @@ class BaseEstTemplate(models.Model):
     law_firm_template = models.OneToOneField(LawFirmEstTemplate, on_delete=models.CASCADE)
     description = models.TextField()
     fee_code = models.CharField(max_length=30)
+    fee_category = models.ForeignKey(FeeCategory, on_delete=models.CASCADE)
 
     # objects = TemplateManager()
 
@@ -365,8 +370,8 @@ class IssueEstTemplate(BaseEstTemplate):
 
 
 class TranslationEstTemplate(models.Model):
-    start_language = models.ForeignKey(Languages, on_delete=models.CASCADE, related_name='start_language_est_temp')
-    end_language = models.ForeignKey(Languages, on_delete=models.CASCADE, related_name='end_language_est_temp')
+    start_language = models.ForeignKey(Language, on_delete=models.CASCADE, related_name='start_language_est_temp')
+    end_language = models.ForeignKey(Language, on_delete=models.CASCADE, related_name='end_language_est_temp')
     date_diff = RelativeDeltaField()
     cost_per_word = MoneyField(max_digits=19,
                                decimal_places=4,

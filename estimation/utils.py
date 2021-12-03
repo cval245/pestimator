@@ -30,15 +30,23 @@ def filter_conditions(templates, application):
     temp = _filter_fee_from_prior_appl_filing_date_and_excluding_overlapping_dates(temp, application)
     temp = _filter_fee_if_first_appl(temp, application)
 
+    temp = _filter_languages(temp, appl_details)
     temp = _filter_fee_doc_format(temp, application)
     final_temps = temp
     return final_temps
 
 
 def _filter_fee_doc_format(templates, application):
-    custom_options = application.appl_option.custom_appl_options
+    particulars = application.appl_option.particulars
     templates = templates.filter(
-        Q(conditions__doc_format=custom_options.doc_format) | Q(conditions__doc_format=None)
+        Q(conditions__doc_format=particulars.doc_format) | Q(conditions__doc_format=None)
+    )
+    return templates
+
+
+def _filter_languages(templates, appl_details):
+    templates = templates.filter(
+        Q(conditions__language=appl_details.language) | Q(conditions__language=None)
     )
     return templates
 

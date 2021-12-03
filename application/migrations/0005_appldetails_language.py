@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
             model_name='appldetails',
             name='language',
             field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE,
-                                    to='characteristics.languages'),
+                                    to='characteristics.language'),
             preserve_default=False,
         ),
     ]

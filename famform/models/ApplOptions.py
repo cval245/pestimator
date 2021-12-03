@@ -1,8 +1,9 @@
 from django.db import models
-
 from application.models import ApplDetails
-from characteristics.models import Country, ApplType
-from famform.models.CustomApplOptions import CustomApplOptions
+from characteristics.enums import TranslationRequirements
+from characteristics.models import Country, ApplType, TranslationImplementedPseudoEnum
+from famform.managers import ApplOptionsManager
+from famform.models.ApplOptionsParticulars import ApplOptionsParticulars
 from famform.models.FamOptions import FamOptions
 from transform.models import PublicationTransform, DefaultPublTransform, OATransform, DefaultOATransform, \
     AllowanceTransform, DefaultAllowanceTransform, IssueTransform, DefaultIssueTransform, RequestExaminationTransform, \
@@ -14,11 +15,17 @@ class ApplOptions(models.Model):
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
     appl_type = models.ForeignKey(ApplType, on_delete=models.CASCADE)
     date_filing = models.DateField()
-    translation_full_required = models.BooleanField(default=False)
+    # translation_full_required = models.BooleanField(default=False)
+    translation_implemented = models.ForeignKey(TranslationImplementedPseudoEnum,
+                                                on_delete=models.CASCADE,
+                                                default=TranslationImplementedPseudoEnum.objects.get_name_from_enum(
+                                                    TranslationRequirements.FULL_TRANSLATION).id)
     details = models.ForeignKey(ApplDetails, on_delete=models.CASCADE)
     fam_options = models.ForeignKey(FamOptions, on_delete=models.CASCADE)
     prev_appl_options = models.ForeignKey("self", on_delete=models.SET_NULL, null=True)
-    custom_appl_options = models.ForeignKey(CustomApplOptions, on_delete=models.CASCADE, null=False)
+    particulars = models.OneToOneField(ApplOptionsParticulars, on_delete=models.CASCADE, null=False)
+
+    objects = ApplOptionsManager()
 
     # prosecution_options = models.ForeignKey()
 
@@ -33,7 +40,7 @@ class ApplOptions(models.Model):
                                           appl=self)
 
     def create_examination(self, oa_total):
-        req_option = self.create_request_examination_option()
+        self.create_request_examination_option()
         self.create_all_oa_options(oa_total)
 
     def create_request_examination_option(self):

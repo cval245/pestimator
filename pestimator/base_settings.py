@@ -118,4 +118,3 @@ MEDIA_ROOT = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static/me
 
 MEDIA_URL = '/media/'
 EXCHANGE_BACKEND = 'djmoney.contrib.exchange.backends.OpenExchangeRatesBackend'
-print('basesettings')

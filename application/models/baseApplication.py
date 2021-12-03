@@ -6,6 +6,7 @@ from application import utils as applUtils
 from application.models import ApplDetails
 from application.models.managers import ApplManager
 from application.utils import convert_class_applType
+from characteristics.enums import TranslationRequirements
 from characteristics.models import Country
 from estimation import utils
 from famform.models import ApplOptions
@@ -57,7 +58,7 @@ class BaseApplication(models.Model):
             language = self.details.language
 
             from estimation.models import TranslationEstTemplate
-            if (self.appl_option.translation_full_required):
+            if self.appl_option.translation_implemented.get_enum() is TranslationRequirements.FULL_TRANSLATION:
                 start = TranslationEstTemplate.objects.filter(start_language=prev_language)
                 if start.filter(end_language=language).exists():
                     translation_est = start.get(end_language=language)

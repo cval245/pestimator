@@ -3,13 +3,14 @@ from rest_framework import viewsets
 from user.accesspolicies import StaffOnlyAccess
 from user.permissions import DataPermission
 from .models import BaseEstTemplate, FilingEstimateTemplate, LawFirmEstTemplate, PublicationEstTemplate, \
-	OAEstimateTemplate, AllowanceEstTemplate, IssueEstTemplate, \
-	LineEstimationTemplateConditions, USOAEstimateTemplate, ComplexConditions, ComplexTimeConditions
+    OAEstimateTemplate, AllowanceEstTemplate, IssueEstTemplate, \
+    LineEstimationTemplateConditions, USOAEstimateTemplate, ComplexConditions, ComplexTimeConditions, FeeCategory, \
+    RequestExamEstTemplate
 from .serializers import BaseEstTemplateSerializer, FilingEstimateTemplateSerializer, LawFirmEstTemplateSerializer, \
-	PublicationEstTemplateSerializer, OAEstimateTemplateSerializer, \
-	AllowanceEstTemplateSerializer, IssueEstTemplateSerializer, \
-	ConditionsSerializer, USOAEstimateTemplateSerializer, ComplexConditionsSerializer, ComplexTimeConditionsSerializer, \
-	RequestExamEstTemplateSerializer
+    PublicationEstTemplateSerializer, OAEstimateTemplateSerializer, \
+    AllowanceEstTemplateSerializer, IssueEstTemplateSerializer, \
+    ConditionsSerializer, USOAEstimateTemplateSerializer, ComplexConditionsSerializer, ComplexTimeConditionsSerializer, \
+    RequestExamEstTemplateSerializer, FeeCategorySerializer
 
 
 # Create your views here.
@@ -42,7 +43,7 @@ class RequestExamEstTemplateViewSet(viewsets.ModelViewSet):
 	permission_classes = [StaffOnlyAccess]
 
 	def get_queryset(self):
-		return PublicationEstTemplate.objects.all()
+        return RequestExamEstTemplate.objects.all()
 
 
 class OAEstimateTemplateViewSet(viewsets.ModelViewSet):
@@ -98,12 +99,20 @@ class ComplexConditionsViewSet(viewsets.ModelViewSet):
 	permission_classes = [StaffOnlyAccess]
 
 	def get_queryset(self):
-		return ComplexConditions.objects.all()
+        return ComplexConditions.objects.all()
 
 
 class ComplexTimeConditionsViewSet(viewsets.ModelViewSet):
-	serializer_class = ComplexTimeConditionsSerializer
-	permission_classes = [StaffOnlyAccess]
+    serializer_class = ComplexTimeConditionsSerializer
+    permission_classes = [StaffOnlyAccess]
 
-	def get_queryset(self):
-		return ComplexTimeConditions.objects.all()
+    def get_queryset(self):
+        return ComplexTimeConditions.objects.all()
+
+
+class FeeCategoryViewSet(viewsets.ModelViewSet):
+    serializer_class = FeeCategorySerializer
+    permission_classes = [StaffOnlyAccess]
+
+    def get_queryset(self):
+        return FeeCategory.objects.all()

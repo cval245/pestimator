@@ -17,8 +17,12 @@
       <excludeFolder url="file://$MODULE_DIR$/pestimator-env" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.8 (pestimator)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.10 (pestimator)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+  <component name="PackageRequirementsSettings">
+    <option name="requirementsPath" value="$MODULE_DIR$/requirements.txt" />
+    <option name="versionSpecifier" value="Strong equality (==x.y.z)" />
   </component>
   <component name="PyDocumentationSettings">
     <option name="format" value="PLAIN" />

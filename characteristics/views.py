@@ -5,9 +5,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from user.accesspolicies import StaffOnlyAccess, StaffOnlyPost
-from .models import ApplType, Country, EntitySize, Languages, EPValidationTranslationRequired, DocFormat
+from .models import ApplType, Country, EntitySize, Language, EPValidationTranslationRequired, DocFormat, \
+    DocFormatCountry
 from .serializers import ApplTypeSerializer, CountrySerializer, EntitySerializer, \
-    CountryAllSerializer, LanguagesSerializer, EPValidationTranslationRequiredSerializer, DocFormatSerializer
+    CountryAllSerializer, LanguageSerializer, EPValidationTranslationRequiredSerializer, DocFormatSerializer, \
+    PostDocFormatCountrySerializer, CountryAllPostSerializer
 
 
 # Create your views here.
@@ -40,6 +42,7 @@ class EPValidationTranslationRequiredViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return EPValidationTranslationRequired.objects.all()
 
+
 class CountryViewSet(viewsets.ModelViewSet):
     permission_classes = (StaffOnlyPost,)
     serializer_class = CountrySerializer
@@ -53,15 +56,27 @@ class CountryAllViewSet(viewsets.ModelViewSet):
     serializer_class = CountryAllSerializer
 
     def get_queryset(self):
-        return Country.objects.all()
+        return Country.objects.all()  # .prefetch_related('available_doc_formats')
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        s = CountryAllPostSerializer()
+        country = s.update(instance=instance, validated_data=request.data)
+        # serializer = CountryAllPostSerializer(data=request.data, context=context)
+        # serializer.is_valid(raise_exception=True)
+        # self.perform_update(serializer)
+        # new_object = Country.objects.get(id=serializer.data['id'])
+        resp = CountryAllSerializer(country)
+        # return Response(resp_serializer.data)
+        return Response(resp.data)
 
 
 class LanguageViewSet(viewsets.ModelViewSet):
     permission_classes = (StaffOnlyPost,)
-    serializer_class = LanguagesSerializer
+    serializer_class = LanguageSerializer
 
     def get_queryset(self):
-        return Languages.objects.all()
+        return Language.objects.all()
 
 
 class DocFormatViewSet(viewsets.ModelViewSet):
@@ -70,6 +85,14 @@ class DocFormatViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return DocFormat.objects.all()
+
+
+class DocFormatCountryViewSet(viewsets.ModelViewSet):
+    permission_classes = (StaffOnlyPost,)
+    serializer_class = PostDocFormatCountrySerializer
+
+    def get_queryset(self):
+        return DocFormatCountry.objects.all()
 
 
 @api_view(['GET'])

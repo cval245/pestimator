@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from application.models import ApplDetails
 from application.serializers import ApplDetailSerializer
-from characteristics.models import Country, EntitySize, ApplType, Languages, DocFormat
+from characteristics.models import Country, EntitySize, ApplType, Language, DocFormat
 from family.models import Family
 from .models import FamEstFormData, PCTCountryCustomization, EPCountryCustomization, \
     ParisCountryCustomization, PCTMethodCustomization, EPMethodCustomization
@@ -11,9 +11,9 @@ from .models.CustomApplOptions import CustomApplOptions
 
 
 class CustomApplOptionsSerializer(serializers.Serializer):
-    request_examination_early_bool = serializers.BooleanField(required=False)
+    request_examination_early_bool = serializers.BooleanField(required=True)
     doc_format = serializers.PrimaryKeyRelatedField(
-        required=False,
+        required=True,
         allow_null=True,
         queryset=DocFormat.objects.all())
 
@@ -31,7 +31,7 @@ class CustomApplDetailsSerializer(serializers.Serializer):
                                                      queryset=EntitySize.objects.all())
     language = serializers.PrimaryKeyRelatedField(required=False,
                                                   allow_null=True,
-                                                  queryset=Languages.objects.all())
+                                                  queryset=Language.objects.all())
 
 
 class PCTMethodCustomizationSerializer(serializers.Serializer):
@@ -45,12 +45,11 @@ class EPMethodCustomizationSerializer(serializers.Serializer):
 
 
 class GetPCTCountryCustomizationSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
     fam_est_form_data = serializers.PrimaryKeyRelatedField(read_only=True)
-    id = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all(),
-                                            required=False)
-    country = id
-    custom_appl_details = CustomApplDetailsSerializer(required=False, allow_null=True)
-    custom_appl_options = CustomApplOptionsSerializer(required=False, allow_null=True)
+    country = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all())
+    custom_appl_details = CustomApplDetailsSerializer(required=True, allow_null=False)
+    custom_appl_options = CustomApplOptionsSerializer(required=True, allow_null=False)
 
 
 class PCTCountryCustomizationSerializer(serializers.Serializer):
@@ -62,16 +61,11 @@ class PCTCountryCustomizationSerializer(serializers.Serializer):
 
 
 class GetEPCountryCustomizationSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
     fam_est_form_data = serializers.PrimaryKeyRelatedField(read_only=True)
-    id = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all(),
-                                            required=False)
-    country = id
-    custom_appl_details = CustomApplDetailsSerializer(required=False, allow_null=True)
-    custom_appl_options = CustomApplOptionsSerializer(required=False, allow_null=True)
-
-    class Meta:
-        model = EPCountryCustomization
-        # fields=('country', 'custom_appl_details')
+    country = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all())
+    custom_appl_details = CustomApplDetailsSerializer(required=True, allow_null=False)
+    custom_appl_options = CustomApplOptionsSerializer(required=True, allow_null=False)
 
 
 class EPCountryCustomizationSerializer(serializers.Serializer):
@@ -83,12 +77,11 @@ class EPCountryCustomizationSerializer(serializers.Serializer):
 
 
 class GetParisCountryCustomizationSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
     fam_est_form_data = serializers.PrimaryKeyRelatedField(read_only=True)
-    id = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all(),
-                                            required=False)
-    country = id
-    custom_appl_details = CustomApplDetailsSerializer(required=False, allow_null=True)
-    custom_appl_options = CustomApplOptionsSerializer(required=False, allow_null=True)
+    country = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all())
+    custom_appl_details = CustomApplDetailsSerializer(required=True, allow_null=False)
+    custom_appl_options = CustomApplOptionsSerializer(required=True, allow_null=False)
 
 
 class ParisCountryCustomizationSerializer(serializers.Serializer):
@@ -116,12 +109,13 @@ class FamEstFormDataNetSerializer(serializers.Serializer):
                                                      required=False, allow_null=True)
     isa_country = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all(),
                                                      required=False, allow_null=True)
-    pct_countries = GetPCTCountryCustomizationSerializer(many=True)
+    pct_countries = GetPCTCountryCustomizationSerializer(source='get_pct_countries', many=True, read_only=True)
     ep_method = serializers.BooleanField(default=False, required=False)
     ep_method_customization = EPMethodCustomizationSerializer(allow_null=True)
-    ep_countries = GetEPCountryCustomizationSerializer(many=True)
-    paris_countries = GetParisCountryCustomizationSerializer(many=True)
+    ep_countries = GetEPCountryCustomizationSerializer(source='get_ep_countries', many=True, read_only=True)
+    paris_countries = GetParisCountryCustomizationSerializer(source='get_paris_countries', many=True, read_only=True)
     unique_display_no = serializers.IntegerField()
+
 
 class FamEstFormDataNetPostSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=False)
@@ -154,25 +148,8 @@ class FamEstFormDataNetPostSerializer(serializers.Serializer):
             family_no=validated_data['family_no'],
         )
         fam.save()
-        pct_method_customization = validated_data['pct_method_customization']
-        if pct_method_customization is not None:
-            if pct_method_customization['custom_appl_details'] is not None:
-                pct_method_customization['custom_appl_details'] = CustomApplDetails.objects.create(
-                    **pct_method_customization['custom_appl_details'])
-                pct_method_customization['custom_appl_options'] = CustomApplOptions.objects.create(
-                    **pct_method_customization['custom_appl_options'])
-
-            pct_method_customization = PCTMethodCustomization.objects.create(**pct_method_customization)
-        ep_method_customization = validated_data['ep_method_customization']
-        print('ep', ep_method_customization)
-        if ep_method_customization is not None:
-            if ep_method_customization['custom_appl_details'] is not None:
-                ep_method_customization['custom_appl_details'] = CustomApplDetails.objects.create(
-                    **ep_method_customization['custom_appl_details'])
-                ep_method_customization['custom_appl_options'] = CustomApplOptions.objects.create(
-                    **ep_method_customization['custom_appl_options'])
-            ep_method_customization = EPMethodCustomization.objects.create(**ep_method_customization)
-            print('eee', ep_method_customization.__dict__)
+        pct_method_customization = self.create_pct_method_customization(validated_data['pct_method_customization'])
+        ep_method_customization = self.create_ep_method_customization(validated_data['ep_method_customization'])
 
         init_appl_details = validated_data['init_appl_details']
         init_appl_details = ApplDetails.objects.create(
@@ -201,31 +178,14 @@ class FamEstFormDataNetPostSerializer(serializers.Serializer):
         validate_entity_size(famEstData.init_appl_country, famEstData.init_appl_details)
         if famEstData.pct_country:
             validate_entity_size(famEstData.pct_country, famEstData.pct_method_customization)
-        # validate_entity_size(famEstData.ep_country, famEstData.ep_method_customization)
 
         pct_countries = validated_data.pop('pct_countries')
         for country in pct_countries:
-            country['fam_est_form_data'] = famEstData
-            if country['custom_appl_details'] is not None:
-                country['custom_appl_details'] = CustomApplDetails.objects.create(**country['custom_appl_details'])
-                country['custom_appl_options'] = CustomApplOptions.objects.create(**country['custom_appl_options'])
-                validate_entity_size(country['country'], country['custom_appl_details'])
-            PCTCountryCustomization.objects.create(**country)
+            self.create_pct_country_customization(country, famEstData)
         for country in validated_data.pop('ep_countries'):
-            country['fam_est_form_data'] = famEstData
-            if country['custom_appl_details'] is not None:
-                country['custom_appl_details'] = CustomApplDetails.objects.create(**country['custom_appl_details'])
-                country['custom_appl_options'] = CustomApplOptions.objects.create(**country['custom_appl_options'])
-                validate_entity_size(country['country'], country['custom_appl_details'])
-            EPCountryCustomization.objects.create(**country)
+            self.create_ep_country_customization(country, famEstData)
         for country in validated_data.pop('paris_countries'):
-            country['fam_est_form_data'] = famEstData
-            if country['custom_appl_details'] is not None:
-                country['custom_appl_details'] = CustomApplDetails.objects.create(**country['custom_appl_details'])
-                country['custom_appl_options'] = CustomApplOptions.objects.create(**country['custom_appl_options'])
-                validate_entity_size(country['country'], country['custom_appl_details'])
-            ParisCountryCustomization.objects.create(**country)
-
+            self.create_paris_country_customization(country, famEstData)
         # famEstDataCreateOptions
         self.validate_ep_entrypoint(famEstData)
         self.validate_against_double_patenting(famEstData)
@@ -244,7 +204,6 @@ class FamEstFormDataNetPostSerializer(serializers.Serializer):
 
     def validate_against_double_patenting(self, famEstData):
         # check if a country is repeated
-        # famEstData.pariscountrycustomization_set.filter(country=famEstData.init_appl_country)
         if famEstData.init_appl_type == ApplType.objects.get(application_type='utility'):
             if famEstData.pariscountrycustomization_set.filter(country=famEstData.init_appl_country).exists() \
                     or famEstData.pctcountrycustomization_set.filter(country=famEstData.init_appl_country).exists() \
@@ -268,9 +227,56 @@ class FamEstFormDataNetPostSerializer(serializers.Serializer):
                 raise serializers.ValidationError(
                     'Multiple Utility applications for the same country, can only accept one--ep')
 
+    def create_pct_method_customization(self, pct_method_customization):
+        method_customization = create_generic_customization(pct_method_customization)
+        return PCTMethodCustomization.objects.create(**method_customization)
+
+    def create_ep_method_customization(self, ep_method_customization):
+        method_customization = create_generic_customization(ep_method_customization)
+        return EPMethodCustomization.objects.create(**method_customization)
+
+    def create_pct_country_customization(self, country, famEstData):
+        country = create_generic_customization(country)
+        country['fam_est_form_data'] = famEstData
+        validate_entity_size(country['country'], country['custom_appl_details'])
+        return PCTCountryCustomization.objects.create(**country)
+
+    def create_ep_country_customization(self, country, famEstData):
+        country = create_generic_customization(country)
+        country['fam_est_form_data'] = famEstData
+        validate_entity_size(country['country'], country['custom_appl_details'])
+        return EPCountryCustomization.objects.create(**country)
+
+    def create_paris_country_customization(self, country, famEstData):
+        country = create_generic_customization(country)
+        country['fam_est_form_data'] = famEstData
+        validate_entity_size(country['country'], country['custom_appl_details'])
+        return ParisCountryCustomization.objects.create(**country)
+
 
 def validate_entity_size(country, customApplDetails):
-    if country.entity_size_available == True:
+    if len(country.available_entity_sizes.all()) > 0:
         if customApplDetails.entity_size == None:
             raise serializers.ValidationError('entity size is required for country ',
                                               country.country)
+
+
+def create_generic_customization(method_customization):
+    if method_customization is None:
+        custom_appl_details = CustomApplDetails.objects.create()
+        custom_appl_options = CustomApplOptions.objects.create()
+        PCTMethodCustomization.objects.create(
+            custom_appl_details=custom_appl_details,
+            custom_appl_options=custom_appl_options)
+    else:
+        if method_customization['custom_appl_details'] is None:
+            method_customization['custom_appl_details'] = CustomApplDetails.objects.create()
+        else:
+            method_customization['custom_appl_details'] = CustomApplDetails.objects.create(
+                **method_customization['custom_appl_details'])
+        if method_customization['custom_appl_options'] is None:
+            method_customization['custom_appl_options'] = CustomApplOptions.objects.create()
+        else:
+            method_customization['custom_appl_options'] = CustomApplOptions.objects.create(
+                **method_customization['custom_appl_options'])
+        return method_customization

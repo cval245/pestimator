@@ -20,6 +20,7 @@ router.register(r'countries', views.CountryViewSet, basename='countries')
 router.register(r'countries-all', views.CountryAllViewSet, basename='countriesall')
 router.register(r'languages', views.LanguageViewSet, basename='languages')
 router.register(r'doc-formats', views.DocFormatViewSet, basename='docformat')
+router.register(r'doc-formats-countries', views.DocFormatCountryViewSet, basename='docformatcountry')
 router.register(r'epvalidation-translation-required',
                 views.EPValidationTranslationRequiredViewSet,
                 basename='epvalidationtranslationrequired')

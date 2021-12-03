@@ -1,7 +1,7 @@
 import factory
 from django.utils import timezone
 
-from characteristics.factories import CountryFactory, EntitySizeFactory, LanguagesFactory
+from characteristics.factories import CountryFactory, EntitySizeFactory, LanguageFactory
 from family.factories import FamilyFactory
 from user.factories import UserFactory
 from . import models
@@ -16,7 +16,7 @@ class ApplDetailsFactory(factory.django.DjangoModelFactory):
     num_claims = factory.Faker('random_int', min=1, max=50, step=1)
     num_drawings = factory.Faker('random_int', min=1, max=10, step=1)
     entity_size = factory.SubFactory(EntitySizeFactory)
-    language = factory.SubFactory(LanguagesFactory)
+    language = factory.SubFactory(LanguageFactory)
 
     class Meta:
         model = models.ApplDetails

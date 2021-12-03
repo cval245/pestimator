@@ -123,7 +123,7 @@ class PCTApplication(BaseApplication):
             else:
                 complete = True
 
-        date_prev = self.date_filing
+        date_prev = date_request_examination  # self.date_filing
         oa_array = []
         for oa in ordered_oa:
             date_oa = date_prev + oa.date_diff

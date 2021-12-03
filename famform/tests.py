@@ -7,7 +7,7 @@ from django.test import TestCase
 from account.factories import UserProfileFactory
 from application.factories import ApplDetailsFactory
 from application.models import ApplDetails, BaseApplication, Publication
-from characteristics.factories import ApplTypeFactory, CountryFactory, EntitySizeFactory, LanguagesFactory
+from characteristics.factories import ApplTypeFactory, CountryFactory, EntitySizeFactory, LanguageFactory
 from characteristics.models import ApplType, Country, EntitySize
 from estimation.factories import FilingEstimateTemplateFactory, PublicationEstTemplateFactory, \
     OAEstimateTemplateFactory, AllowanceEstTemplateFactory, IssueEstTemplateFactory, \
@@ -42,10 +42,10 @@ class FamFormApplicationTest(TestCase):
         self.applType_ep = ApplTypeFactory(ep=True)
         self.applType_epvalidation = ApplTypeFactory(epvalidation=True)
         self.applType_nationalphase = ApplTypeFactory(nationalphase=True)
-        self.language_english = LanguagesFactory(english=True)
-        self.language_chinese = LanguagesFactory(chinese=True)
-        self.country_US = CountryFactory(US=True, languages=[self.language_english])
-        self.country_CN = CountryFactory(CN=True, languages=[self.language_chinese])
+        self.language_english = LanguageFactory(english=True)
+        self.language_chinese = LanguageFactory(chinese=True)
+        self.country_US = CountryFactory(US=True, Language=[self.language_english])
+        self.country_CN = CountryFactory(CN=True, Language=[self.language_chinese])
         self.countries = [self.country_US, self.country_CN]
         self.dfltTranslation = DefaultTranslationEstTemplateFactory()
         self.entitySize = EntitySizeFactory()
@@ -124,10 +124,10 @@ class FamOptionsTest(TestCase):
         self.applType_ep = ApplTypeFactory(ep=True)
         self.applType_epvalidation = ApplTypeFactory(epvalidation=True)
         self.applType_nationalphase = ApplTypeFactory(nationalphase=True)
-        self.language_english = LanguagesFactory(english=True)
-        self.language_chinese = LanguagesFactory(chinese=True)
-        self.country_US = CountryFactory(US=True, languages=[self.language_english])
-        self.country_CN = CountryFactory(CN=True, languages=[self.language_chinese])
+        self.language_english = LanguageFactory(english=True)
+        self.language_chinese = LanguageFactory(chinese=True)
+        self.country_US = CountryFactory(US=True, Language=[self.language_english])
+        self.country_CN = CountryFactory(CN=True, Language=[self.language_chinese])
         self.countries = [self.country_US, self.country_CN]
         self.applDetails = ApplDetailsFactory(language=self.language_english)
         self.filing_date = datetime.now()
@@ -294,10 +294,10 @@ class ApplOptionsTest(TestCase):
         self.applType_ep = ApplTypeFactory(ep=True)
         self.applType_epvalidation = ApplTypeFactory(epvalidation=True)
         self.applType_nationalphase = ApplTypeFactory(nationalphase=True)
-        self.language_english = LanguagesFactory(english=True)
-        self.language_chinese = LanguagesFactory(chinese=True)
-        self.country_US = CountryFactory(US=True, languages=[self.language_english])
-        self.country_CN = CountryFactory(CN=True, languages=[self.language_chinese])
+        self.language_english = LanguageFactory(english=True)
+        self.language_chinese = LanguageFactory(chinese=True)
+        self.country_US = CountryFactory(US=True, Language=[self.language_english])
+        self.country_CN = CountryFactory(CN=True, Language=[self.language_chinese])
         self.countries = [self.country_US, self.country_CN]
 
         self.entitySize = EntitySizeFactory()

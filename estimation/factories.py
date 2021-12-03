@@ -6,7 +6,7 @@ from djmoney.money import Money
 from faker.providers import BaseProvider
 
 from application.factories import ApplicationFactory
-from characteristics.factories import EntitySizeFactory, CountryFactory, ApplTypeFactory, LanguagesFactory
+from characteristics.factories import EntitySizeFactory, CountryFactory, ApplTypeFactory, LanguageFactory
 from . import models
 from .models import FilingEstimateTemplate, PublicationEstTemplate, OAEstimateTemplate, USOAEstimateTemplate, \
     AllowanceEstTemplate, IssueEstTemplate, LawFirmEst, BaseEst, FilingEstimate, OAEstimate, USOAEstimate, \
@@ -146,8 +146,8 @@ class LawFirmEstFactory(factory.django.DjangoModelFactory):
 
 
 class TranslationEstTemplateFactory(factory.django.DjangoModelFactory):
-    start_language = factory.SubFactory(LanguagesFactory)
-    end_language = factory.SubFactory(LanguagesFactory)
+    start_language = factory.SubFactory(LanguageFactory)
+    end_language = factory.SubFactory(LanguageFactory)
     date_diff = factory.Faker('diff')
     cost_per_word = factory.Faker('money')
 

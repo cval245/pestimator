@@ -42,23 +42,34 @@ class ApplTypeFactory(factory.django.DjangoModelFactory):
         )
 
 
+class EPValidationTranslationRequiredFactory(factory.django.DjangoModelFactory):
+    name = 'default name'
+    applicable_bool = False
+
+
 class CountryFactory(factory.django.DjangoModelFactory):
     country = 'US'
     active_bool = True
     ep_bool = False
-    pct_analysis_bool = True
+    pct_accept_bool = True
     currency_name = 'USD'
     long_name = 'United States of America'
     color = '#25560'
+    available_appl_types = factory.SubFactory(ApplTypeFactory)
+    # isa_countries = factory.RelatedFactory(CountryFactory)
+    ep_validation_translation_required = ''
+    available_entity_sizes = ''
+    available_doc_formats = ''
+    available_languages = ''
 
-    @factory.post_generation
-    def languages(self, create, extracted, **kwargs):
-        if not create:
-            return
-        if extracted:
-            # self.languages.set(extracted)
-            for lang in extracted:
-                self.languages_set.add(lang)
+    # @factory.post_generation
+    # def Language(self, create, extracted, **kwargs):
+    #     if not create:
+    #         return
+    #     if extracted:
+    #         # self.Language.set(extracted)
+    #         for lang in extracted:
+    #             self.Language_set.add(lang)
 
     class Meta:
         model = models.Country
@@ -139,12 +150,12 @@ class CountryFactory(factory.django.DjangoModelFactory):
         )
 
 
-class LanguagesFactory(factory.django.DjangoModelFactory):
+class LanguageFactory(factory.django.DjangoModelFactory):
     name = 'english'
     words_per_page = 800
 
     class Meta:
-        model = models.Languages
+        model = models.Language
         django_get_or_create = ('name',)
 
     class Params:
@@ -191,3 +202,7 @@ class EntitySizeFactory(factory.django.DjangoModelFactory):
             entity_size='micro',
             description='micro entity desc'
         )
+
+
+class DocFormatFactory(factory.django.DjangoModelFactory):
+    name = 'default name'

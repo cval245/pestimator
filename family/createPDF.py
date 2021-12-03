@@ -195,7 +195,6 @@ def generate_pdf_report(id):
 def createPdfTotalsTable(id):
     family = Family.objects.get(id=id)
     data = get_totals_per_country(id)
-    print('data', data)
     first_row = ['Country', 'Total']
     table_data = [first_row]
     # header row

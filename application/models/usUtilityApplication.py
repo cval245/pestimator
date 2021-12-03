@@ -7,7 +7,7 @@ class USUtilityApplication(BaseUtilityApplication):
         abstract = False
 
 
-    def _generate_oa(self, args):
+    def _generate_oa(self, date_request_examination, args):
         ordered_oa = []
         oa_first = [x for x in args if x.oa_prev is None]
         ordered_oa.append(oa_first[0])
@@ -22,7 +22,7 @@ class USUtilityApplication(BaseUtilityApplication):
             else:
                 complete = True
 
-        date_prev = self.date_filing
+        date_prev = date_request_examination
         oa_array = []
         prev_oa = None
         final_oa_bool = False

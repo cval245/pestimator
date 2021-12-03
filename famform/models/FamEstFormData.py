@@ -30,7 +30,7 @@ class FamEstFormData(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     pct_method = models.BooleanField(default=False)
     pct_method_customization = models.OneToOneField(PCTMethodCustomization,
-                                                    on_delete=models.CASCADE, null=True)
+                                                    on_delete=models.CASCADE)
     pct_country = models.ForeignKey(Country,
                                     on_delete=models.CASCADE,
                                     null=True,
@@ -47,7 +47,7 @@ class FamEstFormData(models.Model):
 
     ep_method = models.BooleanField(default=False)
     ep_method_customization = models.OneToOneField(EPMethodCustomization,
-                                                   on_delete=models.CASCADE, null=True)
+                                                   on_delete=models.CASCADE)
     ep_countries = models.ManyToManyField(Country,
                                           through='EPCountryCustomization',
                                           through_fields=('fam_est_form_data', 'country'),
@@ -57,6 +57,18 @@ class FamEstFormData(models.Model):
                                              through='ParisCountryCustomization',
                                              through_fields=('fam_est_form_data', 'country'),
                                              related_name='paris_countries')  # utility appl countries
+
+    def get_paris_countries(self):
+        from famform.models import ParisCountryCustomization
+        return ParisCountryCustomization.objects.filter(fam_est_form_data=self)
+
+    def get_pct_countries(self):
+        from famform.models import PCTCountryCustomization
+        return PCTCountryCustomization.objects.filter(fam_est_form_data=self)
+
+    def get_ep_countries(self):
+        from famform.models import EPCountryCustomization
+        return EPCountryCustomization.objects.filter(fam_est_form_data=self)
 
     # generate route
     def save(self, *args, **kwargs):
@@ -75,7 +87,7 @@ class FamEstFormData(models.Model):
         # !important the ep application must be added in either first appl
         # or paris appls or pct appls
         # todo handlue multiple instead of just first opitionally add for user
-        language = self.init_appl_country.languages_set.first()
+        # language = self.init_appl_country.available_languages.get(default=True, appl_type=self.init_appl_type)
 
         applDetails = self.init_appl_details
 
@@ -117,6 +129,7 @@ class FamEstFormData(models.Model):
         else:
             first_appl_option = famOptions.generate_appl(details=applDetails,
                                                          custom_details=None,  # by defn same as first
+                                                         custom_options=self.init_appl_options,
                                                          country=self.init_appl_country,
                                                          appl_type=self.init_appl_type,
                                                          prev_appl_type=None,
@@ -137,8 +150,10 @@ class FamEstFormData(models.Model):
             custom_details = None
             if self.pct_method_customization is not None:
                 custom_details = self.pct_method_customization.custom_appl_details
+                custom_options = self.pct_method_customization.custom_appl_options
             pct_appl_option = famOptions.generate_pct_appl(details=applDetails,
                                                            custom_details=custom_details,
+                                                           custom_options=custom_options,
                                                            country=self.pct_country,
                                                            isa_country=self.isa_country,
                                                            prev_appl_type=prevApplType,
@@ -162,8 +177,10 @@ class FamEstFormData(models.Model):
                     from famform.models import PCTCountryCustomization
                     if PCTCountryCustomization.objects.filter(fam_est_form_data=self.family.famestformdata,
                                                               country=c).exists():
-                        custom_details = PCTCountryCustomization.objects.get(
-                            fam_est_form_data=self, country=c).custom_appl_details
+                        pct_country_customization = PCTCountryCustomization.objects.get(
+                            fam_est_form_data=self, country=c)
+                        custom_details = pct_country_customization.custom_appl_details
+                        custom_options = pct_country_customization.custom_options
                     famOptions.generate_appl(details=applDetails,
                                              custom_details=custom_details,
                                              country=c,
@@ -171,7 +188,8 @@ class FamEstFormData(models.Model):
                                              prev_appl_type=pct_valid_type,
                                              prev_date=pct_appl_option.date_filing,
                                              first_appl_bool=False,
-                                             prev_appl_option=pct_appl_option)
+                                             prev_appl_option=pct_appl_option,
+                                             custom_options=custom_options)
             return pct_appl_option
         return prevApplOption
 
@@ -184,8 +202,10 @@ class FamEstFormData(models.Model):
             custom_details = None
             if self.ep_method_customization is not None:
                 custom_details = self.ep_method_customization.custom_appl_details
+                custom_options = self.ep_method_customization.custom_appl_options
             ep_appl_option = famOptions.generate_appl(details=applDetails,
                                                       custom_details=custom_details,
+                                                      custom_options=custom_options,
                                                       country=ep_country,
                                                       appl_type=ep_type,
                                                       prev_appl_type=prev_appl_type,
@@ -211,10 +231,14 @@ class FamEstFormData(models.Model):
             custom_details = None
             if EPCountryCustomization.objects.filter(fam_est_form_data=self,
                                                      country=c).exists():
-                custom_details = EPCountryCustomization.objects.get(fam_est_form_data=self.family.famestformdata,
-                                                                    country=c).custom_appl_details
+                ep_country_customization = EPCountryCustomization.objects.get(
+                    fam_est_form_data=self.family.famestformdata,
+                    country=c)
+                custom_details = ep_country_customization.custom_appl_details
+                custom_options = ep_country_customization.custom_appl_options
             famOptions.generate_appl(details=applDetails,
                                      custom_details=custom_details,
+                                     custom_options=custom_options,
                                      country=c,
                                      appl_type=ep_valid_type,
                                      prev_appl_type=prevApplOption.appl_type,
@@ -229,8 +253,11 @@ class FamEstFormData(models.Model):
         for c in self.paris_countries.all():
             custom_details = None
             if ParisCountryCustomization.objects.filter(fam_est_form_data=self, country=c).exists():
-                custom_details = ParisCountryCustomization.objects.get(fam_est_form_data=self.family.famestformdata,
-                                                                       country=c).custom_appl_details
+                paris_country_customization = ParisCountryCustomization.objects.get(
+                    fam_est_form_data=self.family.famestformdata,
+                    country=c)
+                custom_details = paris_country_customization.custom_appl_details
+                custom_options = paris_country_customization.custom_appl_options
             if (c == Country.objects.get(country='EP')
                     and self.ep_method is True):
                 self.parse_ep_stage(famOptions=famOptions,
@@ -243,6 +270,7 @@ class FamEstFormData(models.Model):
             else:
                 famOptions.generate_appl(details=applDetails,
                                          custom_details=custom_details,
+                                         custom_options=custom_options,
                                          country=c,
                                          appl_type=utility_appl,
                                          prev_appl_type=prevApplOption.appl_type,

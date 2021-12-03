@@ -66,7 +66,8 @@ class BaseUtilityApplication(BaseApplication):
             else:
                 complete = True
 
-        date_prev = self.date_filing
+        # date_prev = self.date_filing
+        date_prev = date_request_examination
         oa_array = []
         for oa in ordered_oa:
             date_oa = date_prev + oa.date_diff
@@ -83,7 +84,7 @@ class BaseUtilityApplication(BaseApplication):
         date_allowance = date_allow_diff + date_last_oa
         from application.models.allowance import Allowance
         allow = Allowance.objects.create(
-            application=self.baseutilityapplication,
+            application=self,
             date_allowance=date_allowance)
         allow.generate_ests()
         return allow
@@ -92,27 +93,9 @@ class BaseUtilityApplication(BaseApplication):
         date_issuance = date_diff + date_allowance
         from application.models.issue import Issue
         issue = Issue.objects.create(
-            application=self.baseutilityapplication,
+            application=self,
             date_issuance=date_issuance,
         )
         issue.generate_ests()
         return issue
 
-    # def _generate_filing_est(self):
-    #
-    #     from estimation.models import FilingEstimateTemplate
-    #     filing_templates = FilingEstimateTemplate.objects.filter(
-    #         country=self.country,
-    #         appl_type=convert_class_applType(self)
-    #     )
-    #     templates = utils.filter_conditions(filing_templates, self.details)
-    #     from estimation.models import FilingEstimate
-    #     ests = [
-    #         FilingEstimate.objects.create(
-    #             application=self,
-    #             date=e.date_diff + self.date_filing,
-    #             official_cost=e.official_cost
-    #         )
-    #         for e in templates
-    #     ]
-    #     return ests
