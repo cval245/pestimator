@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from application.models import ApplDetails
 from application.serializers import ApplDetailSerializer
+from characteristics.enums import ApplTypes
 from characteristics.models import Country, EntitySize, ApplType, Language, DocFormat
 from family.models import Family
 from .models import FamEstFormData, PCTCountryCustomization, EPCountryCustomization, \
@@ -195,7 +196,7 @@ class FamEstFormDataNetPostSerializer(serializers.Serializer):
     def validate_ep_entrypoint(self, famEstData):
         if famEstData.ep_method:
             ep_country = Country.objects.get(country='EP')
-            if famEstData.init_appl_type != ApplType.objects.get(application_type='ep') \
+            if famEstData.init_appl_type.get_enum is not ApplTypes.EP \
                     and not ParisCountryCustomization.objects.filter(fam_est_form_data=famEstData,
                                                                      country=ep_country).exists() \
                     and not PCTCountryCustomization.objects.filter(fam_est_form_data=famEstData,
@@ -204,7 +205,7 @@ class FamEstFormDataNetPostSerializer(serializers.Serializer):
 
     def validate_against_double_patenting(self, famEstData):
         # check if a country is repeated
-        if famEstData.init_appl_type == ApplType.objects.get(application_type='utility'):
+        if famEstData.init_appl_type.get_enum is not ApplTypes.UTILITY:
             if famEstData.pariscountrycustomization_set.filter(country=famEstData.init_appl_country).exists() \
                     or famEstData.pctcountrycustomization_set.filter(country=famEstData.init_appl_country).exists() \
                     or famEstData.epcountrycustomization_set.filter(country=famEstData.init_appl_country).exists():

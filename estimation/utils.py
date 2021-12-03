@@ -2,6 +2,7 @@ from dateutil.relativedelta import relativedelta
 from django.db.models import Q
 from application import utils as appl_utils
 # take templates and then filter using application details
+from characteristics.enums import ApplTypes
 from characteristics.models import ApplType
 from famform.models import OAOptions, AllowOptions, IssueOptions
 
@@ -227,9 +228,9 @@ def _filter_renewal_fee_from_filing_after_grant(templates, application):
 def _filter_prior_appl_pct(templates, application):
     prior_appl = application.prior_appl
     prior_pct = False
-    if (prior_appl):
+    if prior_appl:
         appl_type = appl_utils.convert_class_applType(prior_appl)
-        if (appl_type == ApplType.objects.get(application_type='pct')):
+        if appl_type.get_enum() is ApplTypes.PCT:
             # create us Validation
             prior_pct = True
     templates = templates.filter(
@@ -242,13 +243,13 @@ def _filter_prior_appl_pct_same_country(templates, application):
     # ISA country not Receiving Office
     prior_appl = application.prior_appl
     prior_pct_same_country = False
-    if (prior_appl):
+    if prior_appl:
         appl_type = appl_utils.convert_class_applType(prior_appl)
-        if (appl_type == ApplType.objects.get(application_type='pct')):
+        if appl_type.get_enum() is ApplTypes.PCT:
             # create us Validation
             from application.models import PCTApplication
             prior_pct_appl = PCTApplication.objects.get(baseapplication_ptr=prior_appl)
-            if (prior_pct_appl.isa_country == application.country):
+            if prior_pct_appl.isa_country == application.country:
                 prior_pct_same_country = True
                 # now special conditions apply
     templates = templates.filter(
@@ -261,7 +262,7 @@ def _filter_fee_from_prior_appl_filing_date_and_excluding_overlapping_dates(temp
     # take in templates
     # calculate date from original date filter out anything less than
     prior_appl = application.prior_appl
-    if (prior_appl):
+    if prior_appl:
         date_diff = application.date_filing - prior_appl.date_filing
         templates = templates.filter(
             (Q(date_diff__gt=date_diff)

@@ -1,5 +1,6 @@
 from django.db import models
 
+from characteristics.enums import ApplTypes
 from characteristics.models import ApplType, TranslationImplementedPseudoEnum
 
 
@@ -8,7 +9,7 @@ class PCTApplOptionsManager(models.Manager):
     def create_pct_appl_option(self, date_filing, country, details,
                                oa_total, fam_option, isa_country, particulars,
                                translation_enum, prev_appl_option):
-        pct_appl_type = ApplType.objects.get(application_type='pct')
+        pct_appl_type = ApplType.objects.get_name_from_enum(ApplTypes.PCT)
         pct_appl_option = self.create(title='title', date_filing=date_filing,
                                       country=country, appl_type=pct_appl_type,
                                       isa_country=isa_country,
@@ -34,21 +35,20 @@ class ApplOptionsManager(models.Manager):
             particulars=particulars,
             translation_implemented=TranslationImplementedPseudoEnum.objects.get_name_from_enum(translation_enum),
             prev_appl_options=prev_appl_option, )
-
-        if (appl_option.appl_type == ApplType.objects.get(application_type='prov')):
+        if appl_option.appl_type.get_enum() is ApplTypes.PROV:
             return appl_option
-        elif (appl_option.appl_type == ApplType.objects.get(application_type='utility')):
+        elif appl_option.appl_type.get_enum() is ApplTypes.UTILITY:
             appl_option.create_publ_option()
             appl_option.create_examination(oa_total)
             appl_option.create_allow_option()
             appl_option.create_issue_option()
             return appl_option
-        elif (appl_option.appl_type == ApplType.objects.get(application_type='ep')):
+        elif appl_option.appl_type.get_enum() is ApplTypes.EP:
             appl_option.create_publ_option()
             appl_option.create_examination(oa_total)
             appl_option.create_allow_option()
             return appl_option
-        elif (appl_option.appl_type == ApplType.objects.get(application_type='epvalidation')):
+        elif appl_option.appl_type.get_enum() is ApplTypes.EP_VALIDATION:
             appl_option.create_issue_option()
             return appl_option
 

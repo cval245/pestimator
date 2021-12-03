@@ -1,5 +1,7 @@
 from copy import deepcopy
 from django.db import models
+
+from characteristics.enums import ApplTypes
 from famform.models import PCTApplOptions
 
 
@@ -13,7 +15,7 @@ class ApplManager(models.Manager):
         applDetails.pk = None
         applDetails.save()
         prev_appl = None
-        if (options.prev_appl_options):
+        if options.prev_appl_options:
             prev_appl = options.prev_appl_options.baseapplication
 
         appl = self.create(user=user, title=options.title,
@@ -31,7 +33,7 @@ class ApplManager(models.Manager):
         applDetails.pk = None
         applDetails.save()
         prev_appl = None
-        if (options.prev_appl_options):
+        if options.prev_appl_options:
             prev_appl = options.prev_appl_options.baseapplication
 
         appl = self.create(user=user,
@@ -48,16 +50,18 @@ class ApplManager(models.Manager):
 
     def create_correct_appl(self, options, user, family_id):
 
-        if (options.appl_type.application_type == 'prov'):
+        if options.appl_type.get_enum() is ApplTypes.PROV:
             # create prov
             from application.models import ProvApplication
             return ProvApplication.objects.generate_appl(options=options, user=user, family_id=family_id)
-        elif (options.appl_type.application_type == 'pct'):
+
+        elif options.appl_type.get_enum() is ApplTypes.PCT:
             # create pct
             from application.models import PCTApplication
             pct_options = PCTApplOptions.objects.get(apploptions_ptr_id=options.id)
             return PCTApplication.objects.generate_pct_appl(options=pct_options, user=user, family_id=family_id)
-        elif (options.appl_type.application_type == 'utility'):
+
+        elif options.appl_type.get_enum() is ApplTypes.UTILITY:
             # create utility
             if options.country.country == 'US':
                 # US Utility Application
@@ -67,9 +71,10 @@ class ApplManager(models.Manager):
                 # Generic Utility Application
                 from application.models import BaseUtilityApplication
                 return BaseUtilityApplication.objects.generate_appl(options=options, user=user, family_id=family_id)
-        elif (options.appl_type.application_type == 'ep'):
+
+        elif options.appl_type.get_enum() is ApplTypes.EP:
             from application.models import EPApplication
             return EPApplication.objects.generate_appl(options=options, user=user, family_id=family_id)
-        elif (options.appl_type.application_type == 'epvalidation'):
+        elif options.appl_type.get_enum() is ApplTypes.EP_VALIDATION:
             from application.models.epValidationApplication import EPValidationApplication
             return EPValidationApplication.objects.generate_appl(options=options, user=user, family_id=family_id)

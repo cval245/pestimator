@@ -15,6 +15,7 @@ from application.models.publication import Publication
 from application.models.requestExamination import RequestExamination
 from application.models.usOfficeAction import USOfficeAction
 from application.models.utilityApplication import UtilityApplication
+from characteristics.enums import ApplTypes
 from characteristics.models import Country, EntitySize, ApplType, Language, DocFormat
 from estimation.managers import EstimateManager, OAEstimateManager, USOAEstimateManager, PublEstimateManager, \
     AllowanceEstimateManager, IssueEstimateManager, ReqExamEstimateManager
@@ -85,9 +86,9 @@ class ComplexTimeConditions(models.Model):
     def calc_from_date_of_parent_ep_application(self, application, date_diff):
         new_date = application.date_filing + date_diff
         prior_application = application.prior_appl
-        if (prior_application):
-            if (applUtils.convert_class_applType(prior_application)
-                    == ApplType.objects.get(application_type='ep')):
+        if prior_application:
+            if (applUtils.convert_class_applType(prior_application).get_enum()
+                    is ApplTypes.EP):
                 new_date = prior_application.date_filing + date_diff
 
         return new_date
@@ -99,11 +100,11 @@ class ComplexTimeConditions(models.Model):
         # otherwise implement date_diff from ep filing date
         new_date = application.date_filing + date_diff
         prior_application = application.prior_appl
-        if (prior_application):
-            if (applUtils.convert_class_applType(prior_application)
-                    == ApplType.objects.get(application_type='ep')):
+        if prior_application:
+            if (applUtils.convert_class_applType(prior_application).get_enum()
+                    is ApplTypes.EP):
                 new_date = prior_application.date_filing + date_diff
-                if (new_date < application.date_filing):
+                if new_date < application.date_filing:
                     new_date = application.date_filing
 
         return new_date
@@ -115,11 +116,11 @@ class ComplexTimeConditions(models.Model):
         # otherwise implement date_diff from filing date
         new_date = application.date_filing + date_diff
         issue = application.issue
-        if (issue):
-            if (applUtils.convert_class_applType(issue)
-                    == ApplType.objects.get(application_type='ep')):
+        if issue:
+            if (applUtils.convert_class_applType(issue).get_enum()
+                    is ApplTypes.EP):
                 new_date = application.date_filing + date_diff
-                if (new_date < issue.date_issuance):
+                if new_date < issue.date_issuance:
                     new_date = issue.date_issueance
 
         return new_date
@@ -129,7 +130,7 @@ class ComplexTimeConditions(models.Model):
         # from pct phase
         new_date = application.date_filing + date_diff
         prior_application = application.prior_appl
-        if (prior_application):
+        if prior_application:
             new_date = prior_application.date_filing + date_diff
 
         return new_date
@@ -139,31 +140,31 @@ class ComplexConditions(models.Model):
     name = models.CharField(max_length=200)
 
     def calc_complex_condition(self, appl_details, cost, template_conditions):
-        if (self.name == 'multiply each by template above minimum indep claims'):
+        if self.name == 'multiply each by template above minimum indep claims':
             return self.calc_multiply_each_by_template_above_minimum_indep_claims(appl_details,
                                                                                   template_conditions,
                                                                                   cost)
-        elif (self.name == 'multiply each by template above minimum total claims'):
+        elif self.name == 'multiply each by template above minimum total claims':
             return self.calc_multiply_each_by_template_above_minimum_total_claims(appl_details,
                                                                                   template_conditions,
                                                                                   cost)
-        elif (self.name == 'calc multiply each above min multiple dependent claims'):
+        elif self.name == 'calc multiply each above min multiple dependent claims':
             return self.calc_multiply_each_above_min_multiple_dependent_claim(appl_details,
                                                                               template_conditions,
                                                                               cost)
-        elif (self.name == 'multiply each by template above minimum claims by unit of 5 claims'):
+        elif self.name == 'multiply each by template above minimum claims by unit of 5 claims':
             return self.calc_multiply_each_by_template_above_minimum_claims_by_unit_of_5_claims(appl_details,
                                                                                                 template_conditions,
                                                                                                 cost)
-        elif (self.name == 'multiply each page by unit of fifty pages'):
+        elif self.name == 'multiply each page by unit of fifty pages':
             return self.calc_multiply_each_by_template_above_minimum_total_claims(appl_details,
                                                                                   template_conditions,
                                                                                   cost)
-        elif (self.name == 'multiply each addl page'):
+        elif self.name == 'multiply each addl page':
             return self.calc_multiply_each_additional_page(appl_details,
                                                            template_conditions,
                                                            cost)
-        elif (self.name == 'date_diff from earliest priority_date'):
+        elif self.name == 'date_diff from earliest priority_date':
             return self.calc_multiply_each_additional_page(appl_details,
                                                            template_conditions,
                                                            cost)
@@ -175,7 +176,7 @@ class ComplexConditions(models.Model):
         # $100 per indep claim in excess of 3
         # 5 claims will yield a fee of $200
         # 7 claims will yield a fee of $400
-        if (template_conditions.condition_indep_claims_min):
+        if template_conditions.condition_indep_claims_min:
             num_fee_indep_claims = appl_details.num_indep_claims - template_conditions.condition_indep_claims_min
         else:
             num_fee_indep_claims = appl_details.num_indep_claims - 0
@@ -187,7 +188,7 @@ class ComplexConditions(models.Model):
                                                                   cost):
         # $100 per claim in excess of 20
         # 21 claims will yield a fee of $100
-        if (template_conditions.condition_claims_min):
+        if template_conditions.condition_claims_min:
             num_fee_claims = appl_details.num_claims - template_conditions.condition_claims_min
         else:
             num_fee_claims = appl_details.num_claims
@@ -199,7 +200,7 @@ class ComplexConditions(models.Model):
                                                               cost):
         # $100 per claim in excess of 20
         # 21 claims will yield a fee of $100
-        if (template_conditions.condition_claims_multiple_dependent_min):
+        if template_conditions.condition_claims_multiple_dependent_min:
             num_fee_claims = appl_details.num_claims_multiple_dependent - template_conditions.condition_claims_multiple_dependent_min
         else:
             num_fee_claims = appl_details.num_claims_multiple_dependent
@@ -213,7 +214,7 @@ class ComplexConditions(models.Model):
         # 31 claims will yield a fee of $120
         # 34 claims will yield a fee of $120
         # 43 claims will yield a fee of $360
-        if (template_conditions.condition_claims_min):
+        if template_conditions.condition_claims_min:
             num_fee = math.floor(appl_details.num_claims - template_conditions.condition_claims_min) / 5
         else:
             num_fee = math.floor(appl_details.num_claims) / 5
@@ -225,7 +226,7 @@ class ComplexConditions(models.Model):
                                                        cost):
         # $100 per set of 50 pages in excess of 100
         # 150 pages will yield a fee of $100
-        if (template_conditions.condition_pages_min):
+        if template_conditions.condition_pages_min:
             total_pages = appl_details.total_pages - template_conditions.condition_pages_min
             total_pages = math.floor(total_pages / 50)
         else:
@@ -239,7 +240,7 @@ class ComplexConditions(models.Model):
                                            cost):
         # $100 per set of 50 pages in excess of 100
         # 150 pages will yield a fee of $100
-        if (template_conditions.condition_pages_min):
+        if template_conditions.condition_pages_min:
             total_pages = appl_details.total_pages - template_conditions.condition_pages_min
         else:
             total_pages = appl_details.total_pages - 0
@@ -287,6 +288,7 @@ class LineEstimationTemplateConditions(models.Model):
     doc_format = models.ForeignKey(DocFormat, default=None, null=True, on_delete=models.CASCADE)
     language = models.ForeignKey(Language, default=None, null=True, on_delete=models.CASCADE)
 
+
 class LawFirmEstTemplate(models.Model):
     law_firm_cost = MoneyField(max_digits=19,
                                decimal_places=4,
@@ -298,7 +300,6 @@ class LawFirmEstTemplate(models.Model):
 
     class Meta:
         abstract = False
-
 
 
 class BaseEstTemplate(models.Model):
@@ -429,7 +430,6 @@ class BaseEst(models.Model):
 
 
 class FilingEstimate(BaseEst):
-    
     class Meta:
         abstract = False
 

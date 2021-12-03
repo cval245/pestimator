@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models import Max, Sum
 
 from application.models import ApplDetails
+from characteristics.enums import ApplTypes
 from characteristics.models import Country, ApplType, EntitySize
 # from famform.models import FamOptions, PCTCountryCustomization, OAOptions, AllowOptions, EPCountryCustomization, \
 #     ParisCountryCustomization
@@ -92,8 +93,7 @@ class FamEstFormData(models.Model):
         applDetails = self.init_appl_details
 
         init_appl_option = self.parse_first_appl_stage(famOptions, applDetails)
-        if (self.init_appl_type != ApplType.objects.get(application_type='pct')
-                and self.pct_method is True):
+        if self.init_appl_type.get_enum() is not ApplTypes.PCT and self.pct_method is True:
             self.parse_international_stage(famOptions=famOptions,
                                            applDetails=applDetails,
                                            prevApplOption=init_appl_option,
@@ -109,7 +109,7 @@ class FamEstFormData(models.Model):
         # take in first appl
         # if ep, then commence
         # parse_ep_stage()
-        if self.init_appl_type == ApplType.objects.get(application_type='pct'):
+        if self.init_appl_type.get_enum() is ApplTypes.PCT:
             first_appl_option = self.parse_international_stage(famOptions=famOptions,
                                                                applDetails=applDetails,
                                                                prevApplOption=None,
@@ -117,7 +117,7 @@ class FamEstFormData(models.Model):
                                                                prevApplType=self.init_appl_type,
                                                                firstApplBool=True)
 
-        elif self.init_appl_type == ApplType.objects.get(application_type='ep'):
+        elif self.init_appl_type.get_enum() is ApplTypes.EP:
             first_appl_option = self.parse_ep_stage(famOptions=famOptions,
                                                     applDetails=applDetails,
                                                     prevApplOption=None,
@@ -140,14 +140,15 @@ class FamEstFormData(models.Model):
 
     def parse_international_stage(self, famOptions, applDetails,
                                   prevApplOption, prevDate, prevApplType, firstApplBool):
-        if (self.pct_method is True):
+        if self.pct_method is True:
             # take in pct_countries
             # check if ep stage is also checked
             # check if first appl was ep
             # if yes and then no, create ep option
             # if ep first was checked then get nothing
-            pct_valid_type = ApplType.objects.get(application_type='pct')
+            pct_valid_type = ApplType.objects.get_name_from_enum(ApplTypes.PCT)
             custom_details = None
+            custom_options = None
             if self.pct_method_customization is not None:
                 custom_details = self.pct_method_customization.custom_appl_details
                 custom_options = self.pct_method_customization.custom_appl_options
@@ -161,11 +162,11 @@ class FamEstFormData(models.Model):
                                                            first_appl_bool=firstApplBool,
                                                            prev_appl_option=prevApplOption)
 
-            utility_type = ApplType.objects.get(application_type='utility')
+            utility_type = ApplType.objects.get_name_from_enum(ApplTypes.UTILITY)
             for c in self.pct_countries.all():
                 if (c == Country.objects.get(country='EP')
                         and self.ep_method is True
-                        and self.init_appl_type != ApplType.objects.get(application_type='ep')):
+                        and self.init_appl_type.get_enum() is not ApplTypes.EP):
                     self.parse_ep_stage(famOptions=famOptions,
                                         applDetails=applDetails,
                                         prevApplOption=pct_appl_option,
@@ -196,10 +197,11 @@ class FamEstFormData(models.Model):
     def parse_ep_stage(self, famOptions, applDetails, prevApplOption, firstApplBool, prev_date, prev_appl_type):
         # take in ep_countries
         # check if pct countries apply
-        if (self.ep_method is True):
-            ep_type = ApplType.objects.get(application_type='ep')
+        if self.ep_method is True:
+            ep_type = ApplType.objects.get_name_from_enum(ApplTypes.EP)
             ep_country = Country.objects.get(country='EP')
             custom_details = None
+            custom_options = None
             if self.ep_method_customization is not None:
                 custom_details = self.ep_method_customization.custom_appl_details
                 custom_options = self.ep_method_customization.custom_appl_options
@@ -219,7 +221,7 @@ class FamEstFormData(models.Model):
 
     def parse_ep_validation_stage(self, famOptions, applDetails, prevApplOption):
 
-        ep_valid_type = ApplType.objects.get(application_type='epvalidation')
+        ep_valid_type = ApplType.objects.get_name_from_enum(ApplTypes.EP_VALIDATION)
         from famform.models import OAOptions
         oa_diff = OAOptions.objects.filter(appl=prevApplOption).aggregate(date_diff=Sum('date_diff'))['date_diff']
         from famform.models import AllowOptions
@@ -229,6 +231,7 @@ class FamEstFormData(models.Model):
         from famform.models import EPCountryCustomization
         for c in self.ep_countries.all():
             custom_details = None
+            custom_options = None
             if EPCountryCustomization.objects.filter(fam_est_form_data=self,
                                                      country=c).exists():
                 ep_country_customization = EPCountryCustomization.objects.get(
@@ -249,7 +252,7 @@ class FamEstFormData(models.Model):
     def parse_paris_stage(self, famOptions, applDetails, prevApplOption):
         # take in paris_countries
         from famform.models import ParisCountryCustomization
-        utility_appl = ApplType.objects.get(application_type='utility')
+        utility_appl = ApplType.objects.get_name_from_enum(ApplTypes.UTILITY)
         for c in self.paris_countries.all():
             custom_details = None
             if ParisCountryCustomization.objects.filter(fam_est_form_data=self, country=c).exists():

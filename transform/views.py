@@ -4,6 +4,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
+from characteristics.enums import ApplTypes
 from characteristics.models import ApplType, Country
 from user.accesspolicies import StaffOnlyAccess
 from user.permissions import DataPermission
@@ -102,12 +103,12 @@ def get_needed(request):
 def requiredFilingTransforms(country):
     missingPairs = []
     cstmFilTrans = CustomFilingTransform.objects.filter(country=country)
-    ep_appl_type = ApplType.objects.get(application_type='ep')
-    epvalid_appl_type = ApplType.objects.get(application_type='epvalidation')
-    pct_appl_type = ApplType.objects.get(application_type='pct')
-    natphase_appl_type = ApplType.objects.get(application_type='nationalphase')
-    prov_appl_type = ApplType.objects.get(application_type='prov')
-    utility_appl_type = ApplType.objects.get(application_type='utility')
+    ep_appl_type = ApplType.objects.get_name_from_enum(ApplTypes.EP)
+    epvalid_appl_type = ApplType.objects.get_name_from_enum(ApplTypes.EP_VALIDATION)
+    pct_appl_type = ApplType.objects.get_name_from_enum(ApplTypes.PCT)
+    natphase_appl_type = ApplType.objects.get_name_from_enum(ApplTypes.PCT_NATIONAL_PHASE)
+    prov_appl_type = ApplType.objects.get_name_from_enum(ApplTypes.PROV)
+    utility_appl_type = ApplType.objects.get_name_from_enum(ApplTypes.UTILITY)
 
     available_appl_types = country.available_appl_types.all()
 

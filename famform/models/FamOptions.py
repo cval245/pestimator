@@ -3,7 +3,7 @@ from copy import deepcopy
 from django.db import models
 
 from application.models import ApplDetails
-from characteristics.enums import TranslationRequirements
+from characteristics.enums import TranslationRequirements, ApplTypes
 from characteristics.models import ApplType
 # from famform.models import PCTApplOptions, ApplOptions
 from famform.models.ApplOptionsParticulars import ApplOptionsParticulars
@@ -54,7 +54,7 @@ class FamOptions(models.Model):
 
     def generate_pct_appl(self, details, custom_details, country, isa_country, prev_appl_type, prev_date,
                           first_appl_bool, prev_appl_option, custom_options):
-        pct_appl_type = ApplType.objects.get(application_type='pct')
+        pct_appl_type = ApplType.objects.get_name_from_enum(ApplTypes.PCT)
         particulars = ApplOptionsParticulars.objects.create_appl_options_particulars(
             custom_options=custom_options,
             country=country, appl_type=pct_appl_type)
@@ -211,7 +211,7 @@ class FamOptions(models.Model):
         # determine if translations are required.
         if old_language == new_language:
             return TranslationRequirements.NO_TRANSLATION
-        if appl_type.application_type == 'epvalidation':
+        if appl_type.get_enum() is ApplTypes.EP_VALIDATION:
             if old_language.ep_official_language_bool:
                 if country.ep_validation_translation_required.name == 'no translation required if official language':
                     return TranslationRequirements.NO_TRANSLATION
