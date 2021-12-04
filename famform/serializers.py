@@ -256,10 +256,9 @@ class FamEstFormDataNetPostSerializer(serializers.Serializer):
 
 
 def validate_entity_size(country, customApplDetails):
-    if len(country.available_entity_sizes.all()) > 0:
-        if customApplDetails.entity_size == None:
-            raise serializers.ValidationError('entity size is required for country ',
-                                              country.country)
+    if len(country.entitysize_set.all()) > 0:
+        if customApplDetails.entity_size is None:
+            raise serializers.ValidationError('entity size is required for {}'.format(country.country))
 
 
 def create_generic_customization(method_customization):

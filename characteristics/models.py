@@ -1,7 +1,7 @@
 from django.db import models
 
 # Create your models here.
-from django.db.models import Q
+from django.db.models import Q, Count, F
 
 from characteristics.managers import TranslationImplementedPseudoEnumManager, ApplTypesEnumManager
 from characteristics.enums import TranslationRequirements, ApplTypes
@@ -61,19 +61,6 @@ class TranslationImplementedPseudoEnum(models.Model):
             return TranslationRequirements.FULL_TRANSLATION
 
 
-class EntitySize(models.Model):
-    entity_size = models.CharField(max_length=30)
-    description = models.CharField(max_length=200)
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=['entity_size'],
-                name='entitySizeUniqueConstraint'),
-            # models.UniqueConstraint(fields='currency_name', name='unique_currency_name')
-        ]
-
-
 class DocFormat(models.Model):
     name = models.CharField(default='', max_length=100)
 
@@ -94,7 +81,7 @@ class Country(models.Model):
         EPValidationTranslationRequired,
         on_delete=models.CASCADE)  # London Agreement
     # entity_size_available = models.BooleanField(default=False)
-    available_entity_sizes = models.ManyToManyField(EntitySize)
+    # available_entity_sizes = models.ManyToManyField(EntitySize)
     available_doc_formats = models.ManyToManyField(DocFormat,
                                                    through='DocFormatCountry',
                                                    through_fields=('country', 'doc_format', 'appl_type'),
@@ -119,6 +106,25 @@ class Country(models.Model):
         return LanguageCountry.objects.filter(country=self)
 
     # def get_paris_country_customization(self,):
+
+
+class EntitySize(models.Model):
+    entity_size = models.CharField(max_length=30)
+    description = models.CharField(max_length=200)
+    default_bool = models.BooleanField(default=False)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['entity_size', 'country'],
+                name='entitySizeCountryUniqueConstraint'),
+            models.UniqueConstraint(
+                fields=['country'],
+                condition=Q(default_bool=True),
+                name='DefaultEntitySizeCountryUniqueConstraint'),
+
+        ]
 
 
 class DocFormatCountry(models.Model):

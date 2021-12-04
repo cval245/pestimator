@@ -58,7 +58,7 @@ class CountryFactory(factory.django.DjangoModelFactory):
     available_appl_types = factory.SubFactory(ApplTypeFactory)
     # isa_countries = factory.RelatedFactory(CountryFactory)
     ep_validation_translation_required = ''
-    available_entity_sizes = ''
+    # available_entity_sizes = ''
     available_doc_formats = ''
     available_languages = ''
 

@@ -3,7 +3,6 @@ from django.db.models import Q
 from application import utils as appl_utils
 # take templates and then filter using application details
 from characteristics.enums import ApplTypes
-from characteristics.models import ApplType
 from famform.models import OAOptions, AllowOptions, IssueOptions
 
 
@@ -159,11 +158,11 @@ def _filter_annual_prosecution_fee(templates, application):
     # sum Delta Time between filing and allowance_option
     delta_t = relativedelta(days=0)
 
-    if (AllowOptions.objects.filter(appl=appl_option).exists()):
+    if AllowOptions.objects.filter(appl=appl_option).exists():
         allow_option = AllowOptions.objects.get(appl=appl_option)
         delta_t += allow_option.date_diff
 
-    if (OAOptions.objects.filter(appl=appl_option).exists()):
+    if OAOptions.objects.filter(appl=appl_option).exists():
         oa_options = OAOptions.objects.filter(appl=appl_option)
         for oa in oa_options:
             delta_t += oa.date_diff
@@ -180,15 +179,15 @@ def _filter_annual_prosecution_fee_until_grant(templates, application):
     # sum Delta Time between filing and allowance_option
     delta_t = relativedelta(days=0)
 
-    if (IssueOptions.objects.filter(appl=appl_option).exists()):
+    if IssueOptions.objects.filter(appl=appl_option).exists():
         issue_option = IssueOptions.objects.get(appl=appl_option)
         delta_t += issue_option.date_diff
 
-    if (AllowOptions.objects.filter(appl=appl_option).exists()):
+    if AllowOptions.objects.filter(appl=appl_option).exists():
         allow_option = AllowOptions.objects.get(appl=appl_option)
         delta_t += allow_option.date_diff
 
-    if (OAOptions.objects.filter(appl=appl_option).exists()):
+    if OAOptions.objects.filter(appl=appl_option).exists():
         oa_options = OAOptions.objects.filter(appl=appl_option)
         for oa in oa_options:
             delta_t += oa.date_diff
@@ -206,15 +205,15 @@ def _filter_renewal_fee_from_filing_after_grant(templates, application):
     # sum Delta Time between filing and allowance_option
     delta_t = relativedelta(days=0)
 
-    if (IssueOptions.objects.filter(appl=appl_option).exists()):
+    if IssueOptions.objects.filter(appl=appl_option).exists():
         issue_option = IssueOptions.objects.get(appl=appl_option)
         delta_t += issue_option.date_diff
 
-    if (AllowOptions.objects.filter(appl=appl_option).exists()):
+    if AllowOptions.objects.filter(appl=appl_option).exists():
         allow_option = AllowOptions.objects.get(appl=appl_option)
         delta_t += allow_option.date_diff
 
-    if (OAOptions.objects.filter(appl=appl_option).exists()):
+    if OAOptions.objects.filter(appl=appl_option).exists():
         oa_options = OAOptions.objects.filter(appl=appl_option)
         for oa in oa_options:
             delta_t += oa.date_diff
