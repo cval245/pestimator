@@ -203,15 +203,6 @@ def generate_overview_page(flowables, family, totals_data, famestformdata, init_
     paragraph_11 = Paragraph("Num Pages DescriptionT: %s" % famestformdata.init_appl_details.num_pages_description,
                              item_style)
     paragraph_12 = Paragraph("Num Pages Claims: %s" % famestformdata.init_appl_details.num_pages_drawings, item_style)
-    if init_details.entity_size:
-        paragraph_13 = Paragraph("Entity Size: %s" % init_details.entity_size.entity_size, item_style)
-    paragraph_14 = Paragraph("Language: %s" % init_details.language.name, item_style)
-    paragraph_15 = Paragraph("Details on International Filing: ", header_style)
-    paragraph_16 = Paragraph("Using PCT Method: %s" % famestformdata.pct_method, item_style)
-    paragraph_17 = Paragraph("PCT Receiving Office : %s" % famestformdata.pct_country.long_name, item_style)
-    paragraph_18 = Paragraph("PCT International Search Authority: %s" % famestformdata.isa_country.long_name,
-                             item_style)
-    paragraph_19 = Paragraph("Using EP Method: %s" % famestformdata.ep_method, item_style)
 
     flowables.append(paragraph_0)
     flowables.append(paragraph_1)
@@ -226,12 +217,22 @@ def generate_overview_page(flowables, family, totals_data, famestformdata, init_
     flowables.append(paragraph_11)
     flowables.append(paragraph_12)
     if init_details.entity_size:
+        paragraph_13 = Paragraph("Entity Size: %s" % init_details.entity_size.entity_size, item_style)
         flowables.append(paragraph_13)
+    paragraph_14 = Paragraph("Language: %s" % init_details.language.name, item_style)
     flowables.append(paragraph_14)
+    paragraph_15 = Paragraph("Details on International Filing: ", header_style)
     flowables.append(paragraph_15)
+    paragraph_16 = Paragraph("Using PCT Method: %s" % famestformdata.pct_method, item_style)
     flowables.append(paragraph_16)
-    flowables.append(paragraph_17)
-    flowables.append(paragraph_18)
+    if famestformdata.pct_country:
+        paragraph_17 = Paragraph("PCT Receiving Office : %s" % famestformdata.pct_country.long_name, item_style)
+        flowables.append(paragraph_17)
+    if famestformdata.isa_country:
+        paragraph_18 = Paragraph("PCT International Search Authority: %s" % famestformdata.isa_country.long_name,
+                                 item_style)
+        flowables.append(paragraph_18)
+    paragraph_19 = Paragraph("Using EP Method: %s" % famestformdata.ep_method, item_style)
     flowables.append(paragraph_19)
 
     if famestformdata.paris_countries.all().count() > 0:

@@ -34,20 +34,8 @@ class FamilyViewSet(viewsets.ModelViewSet):
 
 @api_view(['GET'])
 def fam_est_all(request):
-    families = Family.objects.filter(user=request.user)
-
-    s = families.values('id', 'famestformdata').annotate(
-        official_cost=ExpressionWrapper(
-            Coalesce(Sum('baseapplication__baseest__official_cost'), Value(0)),
-            output_field=MoneyField()),
-        law_firm_cost=ExpressionWrapper(
-            Coalesce(Sum('baseapplication__baseest__law_firm_est__law_firm_cost'),
-                     Value(0)),
-            output_field=MoneyField()),
-        date_created=F('famestformdata__date_created'))
-    s = s.annotate(total_cost=F('official_cost') + F('law_firm_cost'))
-    # TODO: this is missing Translation costs in total cost calc
-    return Response(s)
+    famEsts = utils.getFamEstAll(request.user)
+    return Response(famEsts)
 
 
 @api_view(['GET'])

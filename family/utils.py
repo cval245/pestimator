@@ -5,6 +5,26 @@ from estimation.models import BaseEst
 
 import uuid
 
+from family.models import Family
+
+
+def getFamEstAll(user):
+    famEsts = Family.objects.filter(user=user).values('id', 'famestformdata').annotate(
+        official_cost=ExpressionWrapper(
+            Coalesce(Sum(Round('baseapplication__baseest__official_cost'),
+                         filter=Q(baseapplication__baseest__translation_bool=False)), Value(0)),
+            output_field=MoneyField()),
+        law_firm_cost=ExpressionWrapper(
+            Coalesce(Sum(Round('baseapplication__baseest__law_firm_est__law_firm_cost')), Value(0)),
+            output_field=MoneyField()),
+        translation_cost=ExpressionWrapper(
+            Coalesce(Sum(Round('baseapplication__baseest__official_cost'),
+                         filter=Q(baseapplication__baseest__translation_bool=True)), Value(0)),
+            output_field=MoneyField()),
+        total_cost=F('official_cost') + F('law_firm_cost') + F('translation_cost'),
+    )
+    return famEsts
+
 
 def createFamEstDetails(id):
     bob = BaseEst.objects.filter(application__family=id).order_by('date__year', 'application__country')
