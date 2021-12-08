@@ -82,11 +82,12 @@ class PCTApplication(BaseApplication):
 
         # generate publication date and estimates
         publ = self._generate_publication(options.publoptions.date_diff)
-        req = self._generate_request_examination(options.requestexaminationoptions.date_diff)
-
-        if req:
-            oas_in = options.oaoptions_set.all()
-            oas_out = self._generate_oa(date_request_examination=req.date_request_examination, args=oas_in)
+        # TODO
+        # req = self._generate_request_examination(options.requestexaminationoptions.date_diff)
+        #
+        # if req:
+        #     oas_in = options.oaoptions_set.all()
+        #     oas_out = self._generate_oa(date_request_examination=req.date_request_examination, args=oas_in)
         # calc last oa
 
     def _generate_publication(self, publication_diff_from_filing):

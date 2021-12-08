@@ -182,7 +182,11 @@ class FamOptions(models.Model):
         )
         old_language = None
         if prev_appl_option:
-            old_language = prev_appl_option.details.language
+            print('makes no sense', prev_appl_option.details.language_id)
+            print('makes no sense', prev_appl_option.details)
+            prev_details = ApplDetails.objects.get(id=prev_appl_option.details.id)
+            # old_language = prev_appl_option.details.language
+            old_language = prev_details.language
         translate_enum = self.determine_translation_full_required(
             country=country, appl_type=appl_type,
             old_language=old_language, new_language=desired_language)

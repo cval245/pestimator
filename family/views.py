@@ -88,11 +88,8 @@ def get_pdf_report_fam_est_detail(request):
 
 def create_excel_data(id):
     output = io.BytesIO()
-    workbook = xlsxwriter.Workbook(output, {'in_memory': True})
-    createXLSX.create_totals_sheet(id, workbook)
-    createXLSX.create_parameters_sheet(id, workbook)
-    createXLSX.create_synopsis_sheet(id, workbook)
-    workbook.close()
+
+    createXLSX.create_workbook(output, id)
     output.seek(0)
     response = HttpResponse(output.read(),
                             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"

@@ -205,7 +205,7 @@ class FamEstFormDataNetPostSerializer(serializers.Serializer):
 
     def validate_against_double_patenting(self, famEstData):
         # check if a country is repeated
-        if famEstData.init_appl_type.get_enum is not ApplTypes.UTILITY:
+        if famEstData.init_appl_type.get_enum is ApplTypes.UTILITY:
             if famEstData.pariscountrycustomization_set.filter(country=famEstData.init_appl_country).exists() \
                     or famEstData.pctcountrycustomization_set.filter(country=famEstData.init_appl_country).exists() \
                     or famEstData.epcountrycustomization_set.filter(country=famEstData.init_appl_country).exists():

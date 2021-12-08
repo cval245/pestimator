@@ -181,7 +181,7 @@ class FamEstFormData(models.Model):
                         pct_country_customization = PCTCountryCustomization.objects.get(
                             fam_est_form_data=self, country=c)
                         custom_details = pct_country_customization.custom_appl_details
-                        custom_options = pct_country_customization.custom_options
+                        custom_options = pct_country_customization.custom_appl_options
                     famOptions.generate_appl(details=applDetails,
                                              custom_details=custom_details,
                                              country=c,
