@@ -115,7 +115,8 @@ def generate_pdf_report(id):
     body_template = generate_basic_template(my_doc, family)
     my_doc.addPageTemplates([title_template, body_template, overview_template])
     flowables = []
-    countries = Country.objects.filter(baseapplication__family=family).distinct()  # .values('long_name', 'color', 'id')
+    countries = Country.objects.filter(baseapplication__family=family).distinct().order_by(
+        'long_name')  # .values('long_name', 'color', 'id')
 
     flowables = generate_title_page(flowables, family)
     flowables.append(NextPageTemplate(['overview']))
@@ -343,6 +344,7 @@ def generate_country_page(country, flowables, query_list, baseEsts, min_year, ma
     country_col.append([color_trans, country.id, 'Translation Fees', row_trans_data])
     data = sorted(country_col, key=lambda x: x[2], reverse=True)
     create_country_chart_using_plt(data, empty_data, label_data, flowables, chart_buffer, country)
+
     new_data = sorted(country_col, key=lambda x: x[2], reverse=False)
     label_data.append('Total')
 

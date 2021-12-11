@@ -127,14 +127,17 @@ def create_parameters_sheet(id, workbook):
             # worksheet.write(lastDetRow, 1, 'Custom PCT Details', merge_format)
             # pct_country = ['PCT Receiving Office', (famFormData.pct_country.long_name)]
             worksheet.write(firstDetRow, 0, 'PCT Receiving Office', merge_format)
-            worksheet.write(firstDetRow, 1, famFormData.pct_country.long_name, merge_format)
+            if famFormData.pct_country:
+                worksheet.write(firstDetRow, 1, famFormData.pct_country.long_name, merge_format)
         else:
             # worksheet.merge_range(firstDetRow, 1, lastDetRow, 1, 'Custom PCT Details', merge_format)
-            worksheet.merge_range(firstDetRow, 1, lastDetRow, 1, famFormData.pct_country.long_name)
+            if famFormData.pct_country:
+                worksheet.merge_range(firstDetRow, 1, lastDetRow, 1, famFormData.pct_country.long_name)
             worksheet.merge_range(firstDetRow, 0, lastDetRow, 0, 'PCT Receiving Office')
         lastDfRow = lastDetRow
-        isa_country = ['ISA Office', (famFormData.isa_country.long_name)]
-        worksheet.write_row(lastDfRow + 1, 0, isa_country)
+        if famFormData.isa_country:
+            isa_country = ['ISA Office', (famFormData.isa_country.long_name)]
+            worksheet.write_row(lastDfRow + 1, 0, isa_country)
         firstDfRow = lastDfRow + 3
         pctCountriesCustomization = famFormData.pctcountrycustomization_set.all()
         lastDfRow = create_custom_details(worksheet, pctCountriesCustomization, firstDfRow, merge_format)
@@ -264,8 +267,12 @@ def create_totals_sheet(workbook, arr, min_year, max_year, countries,
     chart.set_y_axis({'name': 'Total Cost (USD)'})
     chart.set_title({'name': 'Total Cost Estimate for Patent Family ' + family.family_name})
     worksheet.insert_chart(num_country + 3, 1, chart)
-    row_index = 1  # skip header row
-    while row_index <= num_country:
+
+    # ************************************
+    # Reverse order to keep chart looking similar across platforms
+    # ************************************
+    row_index = num_country
+    while row_index >= 1:
         country_color = Country.objects.get(id=country_lookup_arr[row_index]).color
         chart.add_series({
             'categories': ['Totals', 0, 1, 0, max_year - min_year + 1],
@@ -274,7 +281,7 @@ def create_totals_sheet(workbook, arr, min_year, max_year, countries,
             'fill': {'color': country_color},
             'gap': 30,
         })
-        row_index += 1
+        row_index -= 1
 
 
 def createCustomApplDetails(worksheet, custom_appl_details, row):
@@ -434,7 +441,7 @@ def create_workbook(output, id):
     arr = utils.createFamEstDetails(id)
     family = Family.objects.get(id=id)
     baseEsts = BaseEst.objects.filter(application__family=id)
-    countries = baseEsts.order_by('-application__country__long_name') \
+    countries = baseEsts.order_by('application__country__long_name') \
         .distinct('application__country__long_name') \
         .values(country=F('application__country__long_name'),
                 country_short=F('application__country__country'),
