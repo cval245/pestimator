@@ -15,7 +15,11 @@ class Family(models.Model):
     # objects = FamilyManager()
 
     def __str__(self):
-        return self.family_name
+        return self.family_nama
+
+    @property
+    def get_fam_est_form_data_udn(self):
+        return self.famestformdata.unique_display_no
 
     def save(self, *args, **kwargs):
         if self.pk == None:
