@@ -9,7 +9,8 @@ from family.models import Family
 
 
 def getFamEstAll(user):
-    famEsts = Family.objects.filter(user=user).values('id', 'famestformdata').annotate(
+    famEsts = Family.objects.filter(user=user).values('id', 'famestformdata', 'famestformdata__date_created') \
+        .order_by('-famestformdata__date_created').annotate(
         official_cost=ExpressionWrapper(
             Coalesce(Sum(Round('baseapplication__baseest__official_cost'),
                          filter=Q(baseapplication__baseest__translation_bool=False)), Value(0)),

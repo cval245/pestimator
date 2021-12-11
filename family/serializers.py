@@ -14,5 +14,5 @@ class FamilySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Family
-        fields = ('id', 'family_no', 'family_name',
+        fields = ('id', 'family_no', 'family_name', 'famestformdata',
                   'user', 'unique_display_no', 'fam_est_form_data_udn')
