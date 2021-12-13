@@ -1,5 +1,5 @@
-from django.db.models import F, ExpressionWrapper, Sum, Q, Value
-from django.db.models.functions import Coalesce, Round
+from django.db.models import F, ExpressionWrapper, Sum, Q, Value, DateTimeField
+from django.db.models.functions import Coalesce, Round, Cast
 from djmoney.models.fields import MoneyField
 from estimation.models import BaseEst
 
@@ -9,8 +9,11 @@ from family.models import Family
 
 
 def getFamEstAll(user):
-    famEsts = Family.objects.filter(user=user).values('id', 'famestformdata', 'famestformdata__date_created') \
+    famEsts = Family.objects.filter(user=user).values(
+        'id', 'famestformdata', 'famestformdata__unique_display_no',
+        'family_name', 'family_no', ) \
         .order_by('-famestformdata__date_created').annotate(
+        date_created=Cast('famestformdata__date_created', output_field=DateTimeField()),
         official_cost=ExpressionWrapper(
             Coalesce(Sum(Round('baseapplication__baseest__official_cost'),
                          filter=Q(baseapplication__baseest__translation_bool=False)), Value(0)),

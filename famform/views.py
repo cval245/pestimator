@@ -3,6 +3,7 @@ from rest_framework import viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
+from user.accesspolicies import FamFormPostAccess
 from user.permissions import PostFamFormPermission
 from .models import FamEstFormData
 from .serializers import FamEstFormDataNetSerializer, FamEstFormDataNetPostSerializer
@@ -12,7 +13,8 @@ from .serializers import FamEstFormDataNetSerializer, FamEstFormDataNetPostSeria
 
 class FamEstFormDataViewSet(viewsets.ViewSet):
     serializer_class = FamEstFormDataNetSerializer
-    permission_classes = [PostFamFormPermission]
+    # permission_classes = [PostFamFormPermission] # separate from normal access policies
+    permission_classes = [FamFormPostAccess]  # separate from normal access policies
 
     def get_queryset(self):
         udn = self.request.query_params.get('UDN')

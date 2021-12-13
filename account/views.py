@@ -1,10 +1,10 @@
 from django.http import JsonResponse
 from rest_framework import viewsets
 
-from user.accesspolicies import AllAccess
+from user.accesspolicies import AllAccess, StaffOnlyAccess, AuthenticatedAllAccess
 from user.models import User
 from .models import UserProfile, PurchaseOrder, LineItem, ProductPrice
-from .serializers import UserProfileSerializer
+from .serializers import UserProfileSerializer, UserProfileAdminSerializer
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
@@ -16,7 +16,16 @@ from django.conf import settings
 stripe.api_key = settings.STRIPE_PRIVATE_KEY
 
 
-# Create your views here.
+class UserProfileAdminViewSet(viewsets.ModelViewSet):
+    serializer_class = UserProfileAdminSerializer
+    permission_classes = [StaffOnlyAccess]
+
+    def get_queryset(self):
+        user_id = self.request.query_params.get('user_id')
+        print('user_id', user_id)
+        return UserProfile.objects.filter(user_id=user_id)
+
+
 class UserProfileViewSet(viewsets.ModelViewSet):
     serializer_class = UserProfileSerializer
     permission_classes = (AllAccess,)
@@ -32,7 +41,7 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([AllAccess])
 def retrieveUsername(request):
     if models.User.objects.get(email=request.data['email']):
         username = models.User.objects.get(email=request.data['email']).username
@@ -47,7 +56,7 @@ def retrieveUsername(request):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([AllAccess])
 def webhook_stripe_add_estimate(request):
     event = None
     payload = request.data
@@ -99,7 +108,7 @@ def webhook_stripe_add_estimate(request):
 
 # stripe views
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AuthenticatedAllAccess])
 def create_checkout_session(request):
     try:
         price_item = ProductPrice.objects.get(price_description="estimate-normal-price")

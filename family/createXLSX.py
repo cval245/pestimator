@@ -83,7 +83,8 @@ def create_parameters_sheet(id, workbook):
     worksheet.write_row(1, 0, familyNameArr, main_format)
     familyNoArr = ['Family No.', family.family_no]
     worksheet.write_row(2, 0, familyNoArr)
-
+    worksheet.write(2, 2, 'famform_udn')
+    worksheet.write(2, 3, famFormData.unique_display_no)
     # init applDetails
     initIndepClaims = ['Indep Claims', famFormData.init_appl_details.num_indep_claims]
     worksheet.write_row(3, 0, initIndepClaims)

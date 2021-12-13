@@ -1,10 +1,10 @@
 from djmoney.settings import CURRENCY_CHOICES
 from rest_framework import viewsets
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from user.accesspolicies import StaffOnlyAccess, StaffOnlyPost
+from user.accesspolicies import StaffOnlyAccess, StaffOnlyPost, AuthenticatedGetAccess
 from .models import ApplType, Country, EntitySize, Language, EPValidationTranslationRequired, DocFormat, \
     DocFormatCountry
 from .serializers import ApplTypeSerializer, CountrySerializer, EntitySerializer, \
@@ -96,6 +96,7 @@ class DocFormatCountryViewSet(viewsets.ModelViewSet):
 
 
 @api_view(['GET'])
+@permission_classes([AuthenticatedGetAccess])
 def getEntitySize(request):
     entitySize = EntitySize.objects.all()
     entitySizeSerial = []
@@ -108,6 +109,7 @@ def getEntitySize(request):
 
 
 @api_view(['GET'])
+@permission_classes([AuthenticatedGetAccess])
 def getCurrencyView(request):
     # Important, the ID is meaningless and subject to change
     # convert list of tuples to serialized version

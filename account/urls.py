@@ -13,6 +13,7 @@ class OptionalSlashRouter(routers.SimpleRouter):
 
 router = OptionalSlashRouter()
 router.register(r'account/?', views.UserProfileViewSet, basename='account')
+router.register(r'account-admin/?', views.UserProfileAdminViewSet, basename='account-admin')
 b = [path(r'retrieve-username/', csrf_exempt(views.retrieveUsername))]
 c = [path(r'checkout/', csrf_exempt(views.create_checkout_session))]
 d = [path(r'webhooks/', csrf_exempt(views.webhook_stripe_add_estimate))]
