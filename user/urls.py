@@ -1,7 +1,6 @@
 from rest_framework import routers
 from user import views
 
-
 # router = routers.SimpleRouter()
 class OptionalSlashRouter(routers.SimpleRouter):
     def __init__(self):
