@@ -74,8 +74,7 @@ AUTHENTICATION_BACKENDS = [
 
 SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer'),
-    # 'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=3),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
     'REFRESH_TOKEN_LIFETIME': timedelta(minutes=600),
 }
 
