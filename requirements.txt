@@ -1,6 +1,6 @@
-amqp @ file:///tmp/build/80754af9/amqp_1617383340978/work
-asgiref @ file:///tmp/build/80754af9/asgiref_1625643473416/work
-Babel @ file:///tmp/build/80754af9/babel_1620871417480/work
+amqp==5.0.6
+asgiref==3.4.1
+Babel==2.9.1
 billiard==3.6.4.0
 celery==5.2.1
 certifi==2021.10.8
@@ -8,14 +8,14 @@ cffi==1.15.0
 chardet==4.0.0
 charset-normalizer==2.0.8
 click==8.0.3
-click-didyoumean @ file:///Users/ktietz/demo/mc3/conda-bld/click-didyoumean_1630665959756/work
-click-plugins @ file:///Users/ktietz/demo/mc3/conda-bld/click-plugins_1630665883852/work
-click-repl @ file:///tmp/build/80754af9/click-repl_1622540786278/work
+click-didyoumean==0.0.3
+click-plugins==1.1.1
+click-repl==0.2.0
 coreapi==2.3.3
 coreschema==0.0.4
 cryptography==36.0.0
 cycler==0.11.0
-defusedxml @ file:///tmp/build/80754af9/defusedxml_1615228127516/work
+defusedxml==0.7.1
 Django==3.2.9
 django-appconf==1.0.5
 django-celery-email==3.0.0
@@ -47,32 +47,35 @@ packaging==21.3
 pandas==1.3.4
 pika==1.2.0
 Pillow==8.4.0
-prompt-toolkit @ file:///tmp/build/80754af9/prompt-toolkit_1633440160888/work
+pip==21.2.4
+prompt-toolkit==3.0.20
 psycopg2-binary==2.9.2
 py-moneyed==1.2
-pycparser @ file:///tmp/build/80754af9/pycparser_1636541352034/work
+pycparser==2.21
 PyJWT==2.1.0
 pyparsing==3.0.6
-python-dateutil @ file:///tmp/build/80754af9/python-dateutil_1626374649649/work
-python3-openid @ file:///tmp/build/80754af9/python3-openid_1614366121783/work
+python-dateutil==2.8.2
+python3-openid==3.2.0
 pytz==2021.3
 reportlab==3.6.3
 requests==2.26.0
 requests-oauthlib==1.3.0
+setuptools==58.0.4
 setuptools-scm==6.3.2
 simplejson==3.17.6
-six @ file:///tmp/build/80754af9/six_1623709665295/work
+six==1.16.0
 social-auth-app-django==4.0.0
 social-auth-core==4.1.0
-sqlparse @ file:///tmp/build/80754af9/sqlparse_1602184451250/work
+sqlparse==0.4.1
 stripe==2.63.0
-text-unidecode @ file:///Users/ktietz/demo/mc3/conda-bld/text-unidecode_1629401354553/work
+text-unidecode==1.3
 tomli==1.2.2
 toolz==0.11.2
-typing-extensions @ file:///tmp/build/80754af9/typing_extensions_1631814937681/work
+typing-extensions==3.10.0.2
 uritemplate==4.1.1
 urllib3==1.26.7
-vine @ file:///Users/ktietz/demo/mc3/conda-bld/vine_1630579390042/work
-wcwidth @ file:///Users/ktietz/demo/mc3/conda-bld/wcwidth_1629357192024/work
+vine==5.0.0
+wcwidth==0.2.5
+wheel==0.37.0
 whitenoise==5.3.0
 XlsxWriter==3.0.2
