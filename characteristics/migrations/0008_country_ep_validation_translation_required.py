@@ -6,7 +6,7 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('characteristics', '0007_auto_20211022_2031'),
+        ('characteristics', '0008_1_country_ep_validation_translation_required_run_python'),
     ]
 
     operations = [

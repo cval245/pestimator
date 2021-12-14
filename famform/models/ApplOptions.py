@@ -16,10 +16,13 @@ class ApplOptions(models.Model):
     appl_type = models.ForeignKey(ApplType, on_delete=models.CASCADE)
     date_filing = models.DateField()
     # translation_full_required = models.BooleanField(default=False)
-    translation_implemented = models.ForeignKey(TranslationImplementedPseudoEnum,
-                                                on_delete=models.CASCADE,
-                                                default=TranslationImplementedPseudoEnum.objects.get_name_from_enum(
-                                                    TranslationRequirements.FULL_TRANSLATION).id)
+    translation_implemented = models.ForeignKey(
+        TranslationImplementedPseudoEnum,
+        on_delete=models.CASCADE,
+        default=2,
+        # default=TranslationImplementedPseudoEnum.objects.get_name_from_enum(
+        #     TranslationRequirements.FULL_TRANSLATION).id
+    )
     details = models.ForeignKey(ApplDetails, on_delete=models.CASCADE)
     fam_options = models.ForeignKey(FamOptions, on_delete=models.CASCADE)
     prev_appl_options = models.ForeignKey("self", on_delete=models.SET_NULL, null=True)

@@ -14,7 +14,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='customapploptions',
             name='doc_format',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE,
+            field=models.ForeignKey(null=True,
+                                    on_delete=django.db.models.deletion.CASCADE,
                                     to='characteristics.docformat'),
         ),
     ]

@@ -6,6 +6,7 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
     dependencies = [
+
         ('application', '0012_alter_appldetails_entity_size'),
         ('famform', '0022_auto_20211023_2258'),
     ]

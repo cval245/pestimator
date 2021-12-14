@@ -26,9 +26,5 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(set_defaults, reverse_func),
-        # migrations.AlterField(
-        #     model_name='famestformdata',
-        #     name='init_appl_details',
-        #     field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='application.appldetails'),
-        # ),
+
     ]

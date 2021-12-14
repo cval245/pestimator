@@ -6,7 +6,7 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('estimation', '0032_feecategory'),
+        ('estimation', '0032_feecategory_run_python'),
     ]
 
     operations = [

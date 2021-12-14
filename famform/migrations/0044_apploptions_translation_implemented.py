@@ -6,7 +6,7 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('characteristics', '0021_translationimplementedpseudoenum'),
+        ('characteristics', '0022_1_epvalidationtranslationrequired_run_python'),
         ('famform', '0043_auto_20211201_0444'),
     ]
 

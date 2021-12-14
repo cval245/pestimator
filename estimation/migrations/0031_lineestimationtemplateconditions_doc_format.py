@@ -6,7 +6,7 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('characteristics', '0011_docformat'),
+        ('characteristics', '0011_1_docformat_run_python'),
         ('estimation', '0030_requestexamest'),
     ]
 
