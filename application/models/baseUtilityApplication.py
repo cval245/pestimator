@@ -18,11 +18,11 @@ class BaseUtilityApplication(BaseApplication):
 
         oas_in = options.oaoptions_set.all()
 
-        oas_out = self._generate_oa(date_request_examination=req.date_request_examination, args=oas_in)
+        oas_out = self._generate_oa(date_request_examination=req.date_request_examination, oas_in=oas_in)
         # calc last oa
         last_date = self.date_filing
         for oa in oas_out:
-            if (oa.date_office_action > last_date):
+            if oa.date_office_action > last_date:
                 last_date = oa.date_office_action
 
         allow_date_diff = options.allowoptions.date_diff
@@ -51,15 +51,15 @@ class BaseUtilityApplication(BaseApplication):
         req.generate_ests()
         return req
 
-    def _generate_oa(self, date_request_examination, args):
+    def _generate_oa(self, date_request_examination, oas_in):
         ordered_oa = []
-        oa_first = [x for x in args if x.oa_prev is None]
+        oa_first = [x for x in oas_in if x.oa_prev is None]
         ordered_oa.append(oa_first[0])
         prev_oa = oa_first[0]
         # order array
         complete = False
         while complete is False:
-            oa_x = [x for x in args if x.oa_prev == prev_oa]
+            oa_x = [x for x in oas_in if x.oa_prev == prev_oa]
             if len(oa_x) != 0:
                 prev_oa = oa_x[0]
                 ordered_oa.append(oa_x[0])

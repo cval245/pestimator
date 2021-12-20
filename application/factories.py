@@ -10,6 +10,7 @@ from . import models
 
 class ApplDetailsFactory(factory.django.DjangoModelFactory):
     num_indep_claims = factory.Faker('random_int', min=1, max=50, step=1)
+    num_claims_multiple_dependent = factory.Faker('random_int', min=1, max=50, step=1)
     num_pages_description = factory.Faker('random_int', min=1, max=50, step=1)
     num_pages_claims = factory.Faker('random_int', min=1, max=4, step=1)
     num_pages_drawings = factory.Faker('random_int', min=1, max=10, step=1)
@@ -80,14 +81,14 @@ class OfficeActionFactory(factory.django.DjangoModelFactory):
 
 class USOfficeActionFactory(factory.django.DjangoModelFactory):
     date_office_action = factory.Faker('date_object')
-    application = factory.SubFactory(BaseUtilityApplicationFactory)
+    application = factory.SubFactory(USUtilityApplicationFactory)
 
     class Meta:
         model = models.USOfficeAction
 
 
 class AllowanceFactory(factory.django.DjangoModelFactory):
-    application = factory.SubFactory(ApplicationFactory)
+    application = factory.SubFactory(BaseUtilityApplicationFactory)
     date_allowance = factory.Faker('date_object')
 
     class Meta:
@@ -95,7 +96,7 @@ class AllowanceFactory(factory.django.DjangoModelFactory):
 
 class IssuanceFactory(factory.django.DjangoModelFactory):
     date_issuance = factory.Faker('date_object')
-    application = factory.SubFactory(ApplicationFactory)
+    application = factory.SubFactory(BaseUtilityApplicationFactory)
 
     class Meta:
         model = models.Issue

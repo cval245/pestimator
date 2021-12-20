@@ -160,7 +160,7 @@ class LanguageCountry(models.Model):
                 name='LanguageCountryUniqueConstraint',
             ),
             models.UniqueConstraint(
-                fields=['language', 'appl_type'],
+                fields=['language', 'country', 'appl_type'],
                 condition=Q(default=True),
                 name='LanguageCountryUniqueDefaultConstraint',
             )
@@ -183,3 +183,7 @@ class OANumPerCountry(models.Model):
                 fields=['country'],
                 name='countryOANumUniqueConstraint'),
         ]
+
+
+class FeeCategory(models.Model):
+    name = models.CharField(max_length=200)

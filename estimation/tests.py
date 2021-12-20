@@ -1,24 +1,25 @@
 from django.test import TestCase
-
-from characteristics.models import Country
-from famform.factories import FamEstFormDataFactory
-from family.factories import FamilyFactory
-from user.factories import UserFactory
-from . import models
 from . import factories
-
 
 class TestLawFirmEst(TestCase):
 
     def test_func(self):
         lawfirmEst = factories.LawFirmEstFactory()
-        family = FamilyFactory()
-        user = UserFactory()
-        appl = factories.ApplicationFactory()
-        country_US = factories.CountryFactory(US=True)
-        country_CN = factories.CountryFactory(CN=True)
-        lawFirmEst = factories.LawFirmEstFactory()
-        famform = FamEstFormDataFactory.create(countries=[country_US, country_CN])
+        self.lineTemp = factories.LineEstimationTemplateConditionsFactory()
+        self.LawFirmEstTemp = factories.LawFirmEstTemplateFactory()
+        self.filing = factories.FilingEstimateTemplateFactory()
+        self.publ = factories.PublicationEstTemplateFactory()
+        self.oa = factories.OAEstimateTemplateFactory()
+        self.usoa = factories.USOAEstimateTemplateFactory()
+        self.allow = factories.AllowanceEstTemplateFactory()
+        self.issue = factories.IssueEstTemplateFactory()
+        self.transEstTemp = factories.TranslationEstTemplateFactory()
+        self.dfltTransEstTemp = factories.DefaultTranslationEstTemplateFactory()
 
-
-        # appl_two = factories.ApplicationFactory(prior_appl=appl)
+        self.BaseEst = factories.BaseEstFactory()
+        self.FilEst = factories.FilingEstimateFactory()
+        self.oaEst = factories.OAEstimateFactory()
+        self.usoaEst = factories.USOAEstimateFactory()
+        self.publEst = factories.PublicationEstFactory()
+        self.allowEst = factories.AllowanceEstFactory()
+        self.issueEst = factories.IssueEstFactory()

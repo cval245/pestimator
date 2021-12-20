@@ -1,6 +1,5 @@
 import math
 
-from dateutil.relativedelta import relativedelta
 from django.db import models
 from djmoney.contrib.exchange.models import convert_money
 from djmoney.models.fields import MoneyField
@@ -16,14 +15,10 @@ from application.models.requestExamination import RequestExamination
 from application.models.usOfficeAction import USOfficeAction
 from application.models.utilityApplication import UtilityApplication
 from characteristics.enums import ApplTypes
-from characteristics.models import Country, EntitySize, ApplType, Language, DocFormat
+from characteristics.models import Country, EntitySize, ApplType, Language, DocFormat, FeeCategory
 from estimation.managers import EstimateManager, OAEstimateManager, USOAEstimateManager, PublEstimateManager, \
     AllowanceEstimateManager, IssueEstimateManager, ReqExamEstimateManager
 from application import utils as applUtils
-
-
-class FeeCategory(models.Model):
-    name = models.CharField(max_length=200)
 
 
 class ComplexTimeConditions(models.Model):

@@ -33,9 +33,8 @@ class Family(models.Model):
 
     def create_appls(self, famOptions):
         from application.models import BaseApplication
-        bob = famOptions.apploptions_set.all()
-        for x in bob:
-            BaseApplication.objects.create_full(options=x, user=self.user,
+        for appl_option in famOptions.apploptions_set.all():
+            BaseApplication.objects.create_full(options=appl_option, user=self.user,
                                                 family_id=self.id)
 
         # subtract one from user accounts

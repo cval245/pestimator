@@ -4,8 +4,9 @@ from user.accesspolicies import StaffOnlyAccess
 from user.permissions import DataPermission
 from .models import BaseEstTemplate, FilingEstimateTemplate, LawFirmEstTemplate, PublicationEstTemplate, \
     OAEstimateTemplate, AllowanceEstTemplate, IssueEstTemplate, \
-    LineEstimationTemplateConditions, USOAEstimateTemplate, ComplexConditions, ComplexTimeConditions, FeeCategory, \
+    LineEstimationTemplateConditions, USOAEstimateTemplate, ComplexConditions, ComplexTimeConditions, \
     RequestExamEstTemplate
+from characteristics.models import FeeCategory
 from .serializers import BaseEstTemplateSerializer, FilingEstimateTemplateSerializer, LawFirmEstTemplateSerializer, \
     PublicationEstTemplateSerializer, OAEstimateTemplateSerializer, \
     AllowanceEstTemplateSerializer, IssueEstTemplateSerializer, \

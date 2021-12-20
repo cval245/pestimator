@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from math import trunc
 
 from dateutil.relativedelta import relativedelta
@@ -18,17 +18,18 @@ from estimation.models import \
     USOAEstimate, FilingEstimate, LawFirmEst, LawFirmEstTemplate, IssueEstTemplate, AllowanceEstTemplate, \
     FilingEstimateTemplate
 from famform.factories import ApplOptionsFactory, PublOptionFactory, AllowOptionsFactory, OAOptionsFactory, \
-    IssueOptionsFactory
-from famform.models import OAOptions
+    IssueOptionsFactory, ApplOptionsParticularsFactory, RequestExaminationOptionFactory
+from famform.models import OAOptions, RequestExaminationOptions
 from family.factories import FamilyFactory
 from transform.factories import DefaultFilingTransformFactory, CustomFilingTransformFactory, IssueTransformFactory, \
     AllowanceTransformFactory, OATransformFactory, PublicationTransformFactory, CountryOANumFactory, \
     DefaultCountryOANumFactory, DefaultPublTransformFactory, DefaultOATransformFactory, \
-    DefaultAllowanceTransformFactory, DefaultIssueTransformFactory
+    DefaultAllowanceTransformFactory, DefaultIssueTransformFactory, RequestExaminationTransformFactory
 from user.factories import UserFactory
 from .factories import USUtilityApplicationFactory, USOfficeActionFactory, IssuanceFactory, \
     AllowanceFactory, PublicationFactory, BaseUtilityApplicationFactory, OfficeActionFactory, ApplDetailsFactory
-from .models import BaseApplication
+from . import factories
+from .models import BaseApplication, OfficeAction
 from .models.allowance import Allowance
 from .models.issue import Issue
 from .models.publication import Publication
@@ -37,6 +38,7 @@ from .models.utilityApplication import UtilityApplication
 
 
 # Create your tests here.
+
 
 class UtilityApplicationTest(TestCase):
 
@@ -67,6 +69,7 @@ class UtilityApplicationTest(TestCase):
                                                            country=self.country_US)
         self.issTrans = IssueTransformFactory(country=self.country_US)
         self.allowTrans = AllowanceTransformFactory(country=self.country_US)
+        self.requestExamTrans = RequestExaminationTransformFactory(country=self.country_US)
         self.oaTrans = OATransformFactory(country=self.country_US)
         self.publTrans = PublicationTransformFactory(country=self.country_US)
         self.countryOANum = CountryOANumFactory(country=self.country_US)
@@ -82,6 +85,7 @@ class UtilityApplicationTest(TestCase):
 
         self.applOption = ApplOptionsFactory(country=self.country_US, appl_type=self.applType_utility)
         self.publOption = PublOptionFactory(appl=self.applOption)
+        self.reqExamOption = RequestExaminationOptionFactory(appl=self.applOption)
         self.oaOption = OAOptionsFactory(appl=self.applOption)
         self.allowOption = AllowOptionsFactory(appl=self.applOption)
         self.issueOption = IssueOptionsFactory(appl=self.applOption)
@@ -101,8 +105,9 @@ class UtilityApplicationTest(TestCase):
                                                family_id=self.family.id)
 
         uAppl = BaseApplication.objects.get(user=self.user)
+        req_diff = self.reqExamOption.date_diff
         # relativedelta is calced by combining options in Setup
-        date_allowance = uAppl.date_filing + relativedelta(years=1)
+        date_allowance = uAppl.date_filing + req_diff + self.oaOption.date_diff
         self.assertEquals(date_allowance, USOfficeAction.objects.first().date_office_action)
 
     def test_create_full_creates_allowance(self):
@@ -111,9 +116,10 @@ class UtilityApplicationTest(TestCase):
                                                family_id=self.family.id)
         uAppl = BaseApplication.objects.get(user=self.user)
         # relativedelta is calced by combining options in Setup
+        req_diff = self.reqExamOption.date_diff
         oa_agg = self.applOption.oaoptions_set.all().aggregate(date_diff=Sum('date_diff'))
         allow_diff = self.applOption.allowoptions.date_diff
-        date_allowance = uAppl.date_filing + oa_agg['date_diff'] + allow_diff
+        date_allowance = uAppl.date_filing + req_diff + oa_agg['date_diff'] + allow_diff
         self.assertEquals(date_allowance, Allowance.objects.first().date_allowance)
 
     def test_create_full_creates_issue(self):
@@ -121,10 +127,11 @@ class UtilityApplicationTest(TestCase):
                                                user=self.user,
                                                family_id=self.family.id)
         uAppl = BaseApplication.objects.get(user=self.user)
+        req_diff = self.reqExamOption.date_diff
         oa_agg = self.applOption.oaoptions_set.all().aggregate(date_diff=Sum('date_diff'))
         allow_diff = self.applOption.allowoptions.date_diff
         issue_diff = self.applOption.issueoptions.date_diff
-        date_issuance = uAppl.date_filing + oa_agg['date_diff'] + allow_diff + issue_diff
+        date_issuance = uAppl.date_filing + req_diff + oa_agg['date_diff'] + allow_diff + issue_diff
         self.assertEquals(date_issuance, Issue.objects.first().date_issuance)
 
     def test_generate_filing_est(self):
@@ -164,6 +171,36 @@ class UtilityApplicationTest(TestCase):
                           IssueEst.objects.all().first().official_cost
                           )
 
+    def test_oa_dates_calculated(self):
+        application = BaseUtilityApplicationFactory(country=self.country_CN)
+        req_options = RequestExaminationOptions.objects.get(appl=self.applOption)
+        applOption = ApplOptionsFactory(country=self.country_CN, appl_type=self.applType_utility)
+        oaOption_one = OAOptionsFactory(appl=applOption, oa_prev=None)
+        oaOption_two = OAOptionsFactory(appl=applOption, oa_prev=oaOption_one)
+        oaOption_three = OAOptionsFactory(appl=applOption, oa_prev=oaOption_two)
+        oaOption_four = OAOptionsFactory(appl=applOption, oa_prev=oaOption_three)
+        oa_options = OAOptions.objects.filter(appl=applOption)
+        date_request_examination = application.date_filing + req_options.date_diff
+        application._generate_oa(date_request_examination=date_request_examination, oas_in=oa_options)
+        oas = OfficeAction.objects.all()
+
+        oa_first = [x for x in oas if x.oa_prev is None][0]
+        oa_option_first = [y for y in oa_options if y.oa_prev is None][0]
+        self.assertEquals(oa_first.date_office_action,
+                          (oa_option_first.date_diff + application.date_filing + req_options.date_diff))
+        oa_second = [x for x in oas if x.oa_prev == oa_first][0]
+        oa_option_second = [y for y in oa_options if y.oa_prev == oa_option_first][0]
+        self.assertEquals(oa_second.date_office_action,
+                          (oa_option_second.date_diff + oa_first.date_office_action))
+        oa_third = [x for x in oas if x.oa_prev == oa_second][0]
+        oa_option_third = [y for y in oa_options if y.oa_prev == oa_option_second][0]
+        self.assertEquals(oa_third.date_office_action,
+                          (oa_option_third.date_diff + oa_second.date_office_action))
+        oa_fourth = [x for x in oas if x.oa_prev == oa_third][0]
+        oa_option_fourth = [y for y in oa_options if y.oa_prev == oa_option_third][0]
+        self.assertEquals(oa_fourth.date_office_action,
+                          (oa_option_fourth.date_diff + oa_third.date_office_action))
+
 
 class USUtilityApplicationTest(TestCase):
 
@@ -183,6 +220,7 @@ class USUtilityApplicationTest(TestCase):
         self.defaultCountryOANum = DefaultCountryOANumFactory()
         self.dfltPublTrans_pct = DefaultPublTransformFactory(appl_type=self.applType_pct)
         self.dfltPublTrans_utility = DefaultPublTransformFactory(appl_type=self.applType_utility)
+        self.requestExamTrans = RequestExaminationTransformFactory(country=self.country_US)
         self.dfltOATrans = DefaultOATransformFactory(appl_type=self.applType_utility)
         self.allowTrans = DefaultAllowanceTransformFactory(appl_type=self.applType_utility)
         self.IssueTrans = DefaultIssueTransformFactory(appl_type=self.applType_utility)
@@ -207,6 +245,7 @@ class USUtilityApplicationTest(TestCase):
 
         self.applOption = ApplOptionsFactory(country=self.country_US, appl_type=self.applType_utility)
         self.publOption = PublOptionFactory(appl=self.applOption)
+        self.reqExamOption = RequestExaminationOptionFactory(appl=self.applOption)
         self.oaOption = OAOptionsFactory(appl=self.applOption)
         self.oaOption_two = OAOptionsFactory(appl=self.applOption, oa_prev=self.oaOption)
         self.oaOption_three = OAOptionsFactory(appl=self.applOption, oa_prev=self.oaOption_two)
@@ -216,15 +255,19 @@ class USUtilityApplicationTest(TestCase):
 
     def test_creates_only_one_primary_oas(self):
         application = USUtilityApplicationFactory(country=self.country_US)
+        req_options = RequestExaminationOptions.objects.get(appl=self.applOption)
         oa_options = OAOptions.objects.filter(appl=self.applOption)
-        application._generate_oa(oa_options)
+        date_request_examination = application.date_filing + req_options.date_diff
+        application._generate_oa(date_request_examination=date_request_examination, oas_in=oa_options)
         oas = USOfficeAction.objects.all()
         self.assertTrue(oas.filter(oa_prev=None).count() == 1)
 
     def test_create_multiple_oas_nfoa_foa_nfoa_foa(self):
         application = USUtilityApplicationFactory(country=self.country_US)
-        oa_options=OAOptions.objects.filter(appl=self.applOption)
-        application._generate_oa(oa_options)
+        oa_options = OAOptions.objects.filter(appl=self.applOption)
+        req_options = RequestExaminationOptions.objects.get(appl=self.applOption)
+        date_request_examination = application.date_filing + req_options.date_diff
+        application._generate_oa(date_request_examination=date_request_examination, oas_in=oa_options)
         oas = USOfficeAction.objects.all()
         self.assertTrue(oas.filter(oa_prev=None).count() == 1)
         oa_first = [x for x in oas if x.oa_prev is None]
@@ -238,14 +281,16 @@ class USUtilityApplicationTest(TestCase):
 
     def test_oa_dates_calculated(self):
         application = USUtilityApplicationFactory(country=self.country_US)
+        req_options = RequestExaminationOptions.objects.get(appl=self.applOption)
         oa_options = OAOptions.objects.filter(appl=self.applOption)
-        application._generate_oa(oa_options)
+        date_request_examination = application.date_filing + req_options.date_diff
+        application._generate_oa(date_request_examination=date_request_examination, oas_in=oa_options)
         oas = USOfficeAction.objects.all()
 
         oa_first = [x for x in oas if x.oa_prev is None][0]
         oa_option_first = [y for y in oa_options if y.oa_prev is None][0]
         self.assertEquals(oa_first.date_office_action,
-                          (oa_option_first.date_diff + application.date_filing))
+                          (oa_option_first.date_diff + application.date_filing + req_options.date_diff))
         oa_second = [x for x in oas if x.oa_prev == oa_first][0]
         oa_option_second = [y for y in oa_options if y.oa_prev == oa_option_first][0]
         self.assertEquals(oa_second.date_office_action,
@@ -557,7 +602,7 @@ class USOfficeActionTest(TestCase):
                                            conditions=conditions)
         entitySize = EntitySizeFactory(small=True)
         USUtilityApplicationFactory(country=self.country_us,
-                                                    details=ApplDetailsFactory(entity_size=entitySize))
+                                    details=ApplDetailsFactory(entity_size=entitySize))
         usOfficeAction = USOfficeActionFactory(application=self.application)
         usOfficeAction.generate_ests()
         self.assertEquals(USOAEstimate.objects.all().first().date,
