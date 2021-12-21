@@ -1,15 +1,17 @@
 import math
-from copy import deepcopy, copy
+from copy import copy, deepcopy
 
 from django.db import models
 
 from application.models import ApplDetails
-from characteristics.enums import TranslationRequirements, ApplTypes
+from characteristics.enums import ApplTypes, TranslationRequirements
 from characteristics.models import ApplType
+from famform.models.ApplOptions import ApplOptions
 from famform.models.ApplOptionsParticulars import ApplOptionsParticulars
+from famform.models.PCTApplOptions import PCTApplOptions
 from family.models import Family
 from pestimator.exceptions import ApplTypeNotAvailableForCountry, ISACountryNotAvailableForCountry
-from transform.models import CustomFilingTransform, CountryOANum, DefaultCountryOANum
+from transform.models import CountryOANum, CustomFilingTransform, DefaultCountryOANum
 
 
 class FamOptions(models.Model):
@@ -82,7 +84,6 @@ class FamOptions(models.Model):
             # have defaults
             # ie transform multiple dependent claims into sets of single dependent claims
 
-            from famform.models import PCTApplOptions
             pct_appl_option = PCTApplOptions.objects.create_pct_appl_option(
                 date_filing=date_filing, country=country, details=final_details,
                 oa_total=oa_total, fam_option=self, isa_country=isa_country,
@@ -120,7 +121,6 @@ class FamOptions(models.Model):
                 custom_details=custom_details)
 
 
-            from famform.models import ApplOptions
             appl_option = ApplOptions.objects.create_appl_option(
                 country=country,
                 date_filing=date_filing,

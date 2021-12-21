@@ -1,5 +1,7 @@
 from application.models import BaseUtilityApplication
 
+from application.models.requestExamination import RequestExamination
+
 
 class EPApplication(BaseUtilityApplication):
     class Meta:
@@ -27,7 +29,6 @@ class EPApplication(BaseUtilityApplication):
         # generate issue date and estimates
 
     def _generate_request_examination(self, date_diff_from_filing):
-        from application.models.requestExamination import RequestExamination
         req = RequestExamination.objects.create(
             application=self,
             date_request_examination=self.date_filing + date_diff_from_filing

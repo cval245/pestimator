@@ -13,7 +13,8 @@ from characteristics.factories import CountryFactory, ApplTypeFactory, EntitySiz
 from characteristics.models import DocFormat
 from family.factories import FamilyFactory
 from user.factories import UserFactory
-from .models import FamEstFormData, FamOptions, ApplOptions, BaseOptions, PublOptions, OAOptions, AllowOptions, \
+from .models import FamEstFormData, FamOptions, ApplOptions, BaseOptions, PCTApplOptions, PublOptions, OAOptions, \
+    AllowOptions, \
     IssueOptions, ApplOptionsParticulars, PCTCountryCustomization, EPMethodCustomization, PCTMethodCustomization, \
     CustomApplOptions, CustomApplDetails, EPCountryCustomization, ParisCountryCustomization, RequestExaminationOptions
 
@@ -214,6 +215,13 @@ class ApplOptionsFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = ApplOptions
+
+
+class PCTApplOptionsFactory(ApplOptionsFactory):
+    isa_country = factory.SubFactory(CountryFactory)
+
+    class Meta:
+        model = PCTApplOptions
 
 
 class BaseOptionsFactory(factory.django.DjangoModelFactory):

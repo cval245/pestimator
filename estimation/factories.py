@@ -19,8 +19,11 @@ import random
 
 class MoneyProvider(BaseProvider):
 
-   def money(self):
-       return Money(random.random()*1000, 'USD')
+    def money(self):
+        return Money(random.random() * 1000, 'USD')
+
+    def moneyCN(self):
+        return Money(random.random() * 1000, 'CNY')
 
 
 class DiffProvider(BaseProvider):
@@ -68,7 +71,7 @@ class LineEstimationTemplateConditionsFactory(factory.django.DjangoModelFactory)
 
     condition_drawings_min = None
     condition_drawings_max = None
-    condition_entity_size = factory.SubFactory(EntitySizeFactory)
+    condition_entity_size = None
 
     condition_annual_prosecution_fee = False
     condition_annual_prosecution_fee_until_grant = False
@@ -79,8 +82,8 @@ class LineEstimationTemplateConditionsFactory(factory.django.DjangoModelFactory)
     prior_pct_same_country = None
     prev_appl_date_excl_intermediary_time = False
     prior_appl_exists = False
-    doc_format = factory.SubFactory(DocFormatFactory)
-    language = factory.SubFactory(LanguageFactory)
+    doc_format = None
+    language = None
 
     class Meta:
         model = models.LineEstimationTemplateConditions
@@ -99,14 +102,15 @@ class LineEstimationTemplateConditionsFactory(factory.django.DjangoModelFactory)
         )
 
 
-
 class LawFirmEstTemplateFactory(factory.django.DjangoModelFactory):
     law_firm_cost = factory.Faker('money')
-    date_diff = 'P1Y'
+    date_diff = factory.Faker('diff')
 
     class Meta:
         model = models.LawFirmEstTemplate
 
+    class Params:
+        CN = factory.Trait(law_firm_cost=factory.Faker('moneyCN'))
 
 class BaseEstTemplateFactory(factory.django.DjangoModelFactory):
     official_cost = factory.Faker('money')
@@ -123,6 +127,13 @@ class BaseEstTemplateFactory(factory.django.DjangoModelFactory):
     class Meta:
         abstract = True
 
+    class Params:
+        CN = factory.Trait(
+            official_cost=factory.Faker('moneyCN'),
+            law_firm_template=factory.SubFactory(LawFirmEstTemplateFactory, CN=True),
+            country=factory.SubFactory(CountryFactory, CN=True),
+        )
+
 
 class FilingEstimateTemplateFactory(BaseEstTemplateFactory):
     class Meta:
@@ -134,7 +145,8 @@ class PublicationEstTemplateFactory(BaseEstTemplateFactory):
     class Meta:
         model = PublicationEstTemplate
         abstract = False
-        #django_get_or_create = ('appl_type',)
+        # django_get_or_create = ('appl_type',)
+
 
 class OAEstimateTemplateFactory(BaseEstTemplateFactory):
     class Meta:
@@ -216,12 +228,15 @@ class BaseEstFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = BaseEst
 
+
 class FilingEstimateFactory(BaseEstFactory):
     class Meta:
         model = FilingEstimate
 
+
 class OAEstimateFactory(BaseEstFactory):
     office_action = factory.SubFactory(OfficeActionFactory)
+
     class Meta:
         model = OAEstimate
 
@@ -235,17 +250,20 @@ class USOAEstimateFactory(BaseEstFactory):
 
 class PublicationEstFactory(BaseEstFactory):
     publication = factory.SubFactory(PublicationFactory)
+
     class Meta:
         model = PublicationEst
 
 
 class AllowanceEstFactory(BaseEstFactory):
     allowance = factory.SubFactory(AllowanceFactory)
+
     class Meta:
         model = AllowanceEst
 
 
 class IssueEstFactory(BaseEstFactory):
     issue = factory.SubFactory(IssuanceFactory)
+
     class Meta:
         model = IssueEst

@@ -3,11 +3,13 @@ from django.db.models import Q
 from application import utils as appl_utils
 # take templates and then filter using application details
 from characteristics.enums import ApplTypes
-from famform.models import OAOptions, AllowOptions, IssueOptions
+from famform.models import OAOptions, AllowOptions, IssueOptions, RequestExaminationOptions
 
 
 def filter_conditions(templates, application):
     appl_details = application.details
+    particulars = application.appl_option.particulars
+    appl_option = application.appl_option
 
     # filter claims
     temp = _filter_claims(templates, appl_details)
@@ -26,18 +28,17 @@ def filter_conditions(templates, application):
     temp = _filter_annual_prosecution_fee_until_grant(temp, application)
     temp = _filter_renewal_fee_from_filing_after_grant(temp, application)
     temp = _filter_prior_appl_pct(temp, application)
-    temp = _filter_prior_appl_pct_same_country(temp, application)
+    temp = _filter_prior_appl_pct_isa_same_country(temp, application)
     temp = _filter_fee_from_prior_appl_filing_date_and_excluding_overlapping_dates(temp, application)
     temp = _filter_fee_if_first_appl(temp, application)
 
     temp = _filter_languages(temp, appl_details)
-    temp = _filter_fee_doc_format(temp, application)
+    temp = _filter_fee_doc_format(temp, particulars)
     final_temps = temp
     return final_temps
 
 
-def _filter_fee_doc_format(templates, application):
-    particulars = application.appl_option.particulars
+def _filter_fee_doc_format(templates, particulars):
     templates = templates.filter(
         Q(conditions__doc_format=particulars.doc_format) | Q(conditions__doc_format=None)
     )
@@ -54,11 +55,11 @@ def _filter_languages(templates, appl_details):
 def _filter_claims(templates, appl_details):
     # remove templates that exceed conditions
     templates = templates.exclude(
-        conditions__condition_claims_min__gte=
+        conditions__condition_claims_min__gt=
         appl_details.num_claims)
 
     templates = templates.exclude(
-        conditions__condition_claims_max__lte=
+        conditions__condition_claims_max__lt=
         appl_details.num_claims)
     return templates
 
@@ -66,11 +67,11 @@ def _filter_claims(templates, appl_details):
 def _filter_indep_claims(templates, appl_details):
     # remove templates that exceed conditions
     templates = templates.exclude(
-        conditions__condition_indep_claims_min__gte=
+        conditions__condition_indep_claims_min__gt=
         appl_details.num_indep_claims)
 
     templates = templates.exclude(
-        conditions__condition_indep_claims_max__lte=
+        conditions__condition_indep_claims_max__lt=
         appl_details.num_indep_claims)
     return templates
 
@@ -78,33 +79,33 @@ def _filter_indep_claims(templates, appl_details):
 def _filter_claims_multiple_dependent(templates, appl_details):
     # remove templates that exceed conditions
     templates = templates.exclude(
-        conditions__condition_claims_multiple_dependent_min__gte=
+        conditions__condition_claims_multiple_dependent_min__gt=
         appl_details.num_claims_multiple_dependent)
 
     templates = templates.exclude(
-        conditions__condition_claims_multiple_dependent_max__lte=
+        conditions__condition_claims_multiple_dependent_max__lt=
         appl_details.num_claims_multiple_dependent)
     return templates
 
 
 def _filter_total_pages(templates, appl_details):
     templates = templates.exclude(
-        conditions__condition_pages_total_min__gte=
+        conditions__condition_pages_total_min__gt=
         appl_details.total_pages)
 
     templates = templates.exclude(
-        conditions__condition_pages_total_max__lte=
+        conditions__condition_pages_total_max__lt=
         appl_details.total_pages)
     return templates
 
 
 def _filter_desc_pages(templates, appl_details):
     templates = templates.exclude(
-        conditions__condition_pages_desc_min__gte=
+        conditions__condition_pages_desc_min__gt=
         appl_details.num_pages_description)
 
     templates = templates.exclude(
-        conditions__condition_pages_desc_max__lte=
+        conditions__condition_pages_desc_max__lt=
         appl_details.num_pages_description)
 
     return templates
@@ -112,11 +113,11 @@ def _filter_desc_pages(templates, appl_details):
 
 def _filter_claims_pages(templates, appl_details):
     templates = templates.exclude(
-        conditions__condition_pages_claims_min__gte=
+        conditions__condition_pages_claims_min__gt=
         appl_details.num_pages_claims)
 
     templates = templates.exclude(
-        conditions__condition_pages_claims_max__lte=
+        conditions__condition_pages_claims_max__lt=
         appl_details.num_pages_claims)
 
     return templates
@@ -124,11 +125,11 @@ def _filter_claims_pages(templates, appl_details):
 
 def _filter_drawings_pages(templates, appl_details):
     templates = templates.exclude(
-        conditions__condition_pages_drawings_min__gte=
+        conditions__condition_pages_drawings_min__gt=
         appl_details.num_pages_drawings)
 
     templates = templates.exclude(
-        conditions__condition_pages_drawings_max__lte=
+        conditions__condition_pages_drawings_max__lt=
         appl_details.num_pages_drawings)
 
     return templates
@@ -136,11 +137,11 @@ def _filter_drawings_pages(templates, appl_details):
 
 def _filter_drawings(templates, appl_details):
     templates = templates.exclude(
-        conditions__condition_drawings_min__gte=
+        conditions__condition_drawings_min__gt=
         appl_details.num_drawings)
 
     templates = templates.exclude(
-        conditions__condition_drawings_max__lte=
+        conditions__condition_drawings_max__lt=
         appl_details.num_drawings)
     return templates
 
@@ -153,19 +154,12 @@ def _filter_entity_size(templates, appl_details):
 
 
 def _filter_annual_prosecution_fee(templates, application):
-    # use applOption to retrieve allowance_option
-    appl_option = application.appl_option
     # sum Delta Time between filing and allowance_option
     delta_t = relativedelta(days=0)
 
-    if AllowOptions.objects.filter(appl=appl_option).exists():
-        allow_option = AllowOptions.objects.get(appl=appl_option)
-        delta_t += allow_option.date_diff
-
-    if OAOptions.objects.filter(appl=appl_option).exists():
-        oa_options = OAOptions.objects.filter(appl=appl_option)
-        for oa in oa_options:
-            delta_t += oa.date_diff
+    if application.allowance:
+        date_allowance = application.allowance.date_allowance
+        delta_t = date_allowance - application.date_filing
 
     templates = templates.exclude(
         Q(conditions__condition_annual_prosecution_fee=True)
@@ -175,51 +169,27 @@ def _filter_annual_prosecution_fee(templates, application):
 
 def _filter_annual_prosecution_fee_until_grant(templates, application):
     # use applOption to retrieve allowance_option
-    appl_option = application.appl_option
     # sum Delta Time between filing and allowance_option
     delta_t = relativedelta(days=0)
-
-    if IssueOptions.objects.filter(appl=appl_option).exists():
-        issue_option = IssueOptions.objects.get(appl=appl_option)
-        delta_t += issue_option.date_diff
-
-    if AllowOptions.objects.filter(appl=appl_option).exists():
-        allow_option = AllowOptions.objects.get(appl=appl_option)
-        delta_t += allow_option.date_diff
-
-    if OAOptions.objects.filter(appl=appl_option).exists():
-        oa_options = OAOptions.objects.filter(appl=appl_option)
-        for oa in oa_options:
-            delta_t += oa.date_diff
+    if application.issue:
+        delta_t = application.issue.date_issuance - application.date_filing
 
     templates = templates.exclude(
-        Q(conditions__condition_annual_prosecution_fee=True)
+        Q(conditions__condition_annual_prosecution_fee_until_grant=True)
         & Q(date_diff__gt=delta_t))
     return templates
 
 
 def _filter_renewal_fee_from_filing_after_grant(templates, application):
     # remove all that are less than the issue date
-    # use applOption to retrieve allowance_option
-    appl_option = application.appl_option
-    # sum Delta Time between filing and allowance_option
+    # sum Delta Time between filing and issuance_date
+
     delta_t = relativedelta(days=0)
-
-    if IssueOptions.objects.filter(appl=appl_option).exists():
-        issue_option = IssueOptions.objects.get(appl=appl_option)
-        delta_t += issue_option.date_diff
-
-    if AllowOptions.objects.filter(appl=appl_option).exists():
-        allow_option = AllowOptions.objects.get(appl=appl_option)
-        delta_t += allow_option.date_diff
-
-    if OAOptions.objects.filter(appl=appl_option).exists():
-        oa_options = OAOptions.objects.filter(appl=appl_option)
-        for oa in oa_options:
-            delta_t += oa.date_diff
+    if application.issue:
+        delta_t = application.issue.date_issuance - application.date_filing
 
     templates = templates.exclude(
-        Q(conditions__condition_annual_prosecution_fee=True)
+        Q(conditions__condition_renewal_fee_from_filing_after_grant=True)
         & Q(date_diff__lt=delta_t))
     return templates
 
@@ -238,7 +208,7 @@ def _filter_prior_appl_pct(templates, application):
     return templates
 
 
-def _filter_prior_appl_pct_same_country(templates, application):
+def _filter_prior_appl_pct_isa_same_country(templates, application):
     # ISA country not Receiving Office
     prior_appl = application.prior_appl
     prior_pct_same_country = False
@@ -267,7 +237,7 @@ def _filter_fee_from_prior_appl_filing_date_and_excluding_overlapping_dates(temp
             (Q(date_diff__gt=date_diff)
              & Q(conditions__prev_appl_date_excl_intermediary_time=True))
             | (Q(conditions__prev_appl_date_excl_intermediary_time=False)
-               | Q(conditions__prev_appl_date_excl_intermediary_time=None))
+               )
         )
     return templates
 

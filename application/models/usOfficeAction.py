@@ -1,14 +1,16 @@
 from django.db import models
 
-from application.models import BaseOfficeAction, USUtilityApplication
+from application.models import BaseOfficeAction
 from application.utils import convert_class_applType
 from estimation import utils
+from estimation.models import LawFirmEst, USOAEstimate, USOAEstimateTemplate
+
 
 class USOfficeAction(BaseOfficeAction):
     oa_final_bool = models.BooleanField(default=False)
     # override foreign key
     application = models.ForeignKey(
-        USUtilityApplication, on_delete=models.CASCADE,
+        'USUtilityApplication', on_delete=models.CASCADE,
     )
 
     class Meta:
@@ -25,7 +27,6 @@ class USOfficeAction(BaseOfficeAction):
         # check for the pct examining authority
         # prior_pct_same_country = self._check_prior_appl_pct_same_country()
 
-        from estimation.models import USOAEstimateTemplate
         oa_templates = USOAEstimateTemplate.objects.filter(
             country=self.application.country,
             appl_type=convert_class_applType(self.application),
@@ -40,13 +41,11 @@ class USOfficeAction(BaseOfficeAction):
         for e in templates:
             lawFirmEst = None
             if e.law_firm_template is not None:
-                from estimation.models import LawFirmEst
                 lawFirmEst = LawFirmEst.objects.create(
                     date=e.law_firm_template.date_diff + self.date_office_action,
                     law_firm_cost=e.law_firm_template.law_firm_cost
                 )
 
-            from estimation.models import USOAEstimate
             est = USOAEstimate.objects.create_complex_and_simple_est(
                 application=self.application,
                 law_firm_est=lawFirmEst,

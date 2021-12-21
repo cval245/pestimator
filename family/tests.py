@@ -14,6 +14,7 @@ class FamilyTest(TestCase):
         user = UserFactory()
         init_estimates_num = 3
         user_profile = UserProfileFactory(user=user, company_name='eeeee')
+        user_profile.estimates_remaining = init_estimates_num
         family = FamilyFactory(user=user)
         language_cn = LanguageFactory(Chinese=True)
         country_cn = CountryFactory(CN=True)

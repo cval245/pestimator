@@ -6,7 +6,9 @@ from django.db.models import Max, Sum
 
 from application.models import ApplDetails
 from characteristics.enums import ApplTypes
-from characteristics.models import Country, ApplType, EntitySize
+from characteristics.models import ApplType, Country
+from famform.models import AllowOptions, EPCountryCustomization, FamOptions, OAOptions, PCTCountryCustomization, \
+    ParisCountryCustomization
 from famform.models.CustomApplOptions import CustomApplOptions
 from famform.models.EPMethodCustomization import EPMethodCustomization
 from famform.models.PCTMethodCustomization import PCTMethodCustomization
@@ -58,15 +60,12 @@ class FamEstFormData(models.Model):
                                              related_name='paris_countries')  # utility appl countries
 
     def get_paris_countries(self):
-        from famform.models import ParisCountryCustomization
         return ParisCountryCustomization.objects.filter(fam_est_form_data=self)
 
     def get_pct_countries(self):
-        from famform.models import PCTCountryCustomization
         return PCTCountryCustomization.objects.filter(fam_est_form_data=self)
 
     def get_ep_countries(self):
-        from famform.models import EPCountryCustomization
         return EPCountryCustomization.objects.filter(fam_est_form_data=self)
 
     # generate route
@@ -81,7 +80,6 @@ class FamEstFormData(models.Model):
         return super(FamEstFormData, self).save(*args, **kwargs)
 
     def generate_family_options(self):
-        from famform.models import FamOptions
         famOptions = FamOptions.objects.create(family=self.family)
         # !important the ep application must be added in either first appl
         # or paris appls or pct appls
@@ -189,8 +187,6 @@ class FamEstFormData(models.Model):
     def parse_ep_stage(self, famOptions, applDetails, prevApplOption, firstApplBool, prev_date, prev_appl_type):
         # take in ep_countries
         # check if pct countries apply
-        # print('why', self.__dict__)
-        # print('ddd', self.ep_method)
         if self.ep_method is True:
             ep_type = ApplType.objects.get_name_from_enum(ApplTypes.EP)
             ep_country = Country.objects.get(country='EP')
@@ -216,9 +212,7 @@ class FamEstFormData(models.Model):
     def parse_ep_validation_stage(self, famOptions, applDetails, prevApplOption):
 
         ep_valid_type = ApplType.objects.get_name_from_enum(ApplTypes.EP_VALIDATION)
-        from famform.models import OAOptions
         oa_diff = OAOptions.objects.filter(appl=prevApplOption).aggregate(date_diff=Sum('date_diff'))['date_diff']
-        from famform.models import AllowOptions
         allow_diff = AllowOptions.objects.get(appl=prevApplOption).date_diff
         ep_prev_date = prevApplOption.date_filing + oa_diff + allow_diff
         for ep_country_customization in self.ep_countries.through.objects.all():
@@ -237,7 +231,6 @@ class FamEstFormData(models.Model):
 
     def parse_paris_stage(self, famOptions, applDetails, prevApplOption):
         # take in paris_countries
-        # from famform.models import ParisCountryCustomization
         utility_appl = ApplType.objects.get_name_from_enum(ApplTypes.UTILITY)
         for paris_country_customization in self.paris_countries.through.objects.all():
             custom_details = paris_country_customization.custom_appl_details

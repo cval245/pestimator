@@ -18,7 +18,6 @@ class CharacteristicsTest(TestCase):
         self.country_US = TotalCountryFactoryUS()
         self.ep_country = EntitySizeFactory()
 
-        print('suer', self.country_US.entitysize_set.all())
 
     def test_set_up(self):
         pass

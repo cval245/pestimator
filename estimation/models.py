@@ -6,14 +6,14 @@ from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 from relativedeltafield import RelativeDeltaField
 
-from application.models import BaseApplication, BaseUtilityApplication, USUtilityApplication
-from application.models.allowance import Allowance
-from application.models.issue import Issue
-from application.models.officeAction import OfficeAction
-from application.models.publication import Publication
-from application.models.requestExamination import RequestExamination
-from application.models.usOfficeAction import USOfficeAction
-from application.models.utilityApplication import UtilityApplication
+# from application.models import BaseApplication, BaseUtilityApplication, USUtilityApplication
+# from application.models.allowance import Allowance
+# from application.models.issue import Issue
+# from application.models.officeAction import OfficeAction
+# from application.models.publication import Publication
+# from application.models.requestExamination import RequestExamination
+# from application.models.usOfficeAction import USOfficeAction
+# from application.models.utilityApplication import UtilityApplication
 from characteristics.enums import ApplTypes
 from characteristics.models import Country, EntitySize, ApplType, Language, DocFormat, FeeCategory
 from estimation.managers import EstimateManager, OAEstimateManager, USOAEstimateManager, PublEstimateManager, \
@@ -408,8 +408,8 @@ class BaseEst(models.Model):
     date = models.DateField()
     description = models.TextField()
     fee_code = models.CharField(max_length=30)
-    law_firm_est = models.OneToOneField(LawFirmEst, on_delete=models.CASCADE, null=True)
-    application = models.ForeignKey(BaseApplication,
+    law_firm_est = models.OneToOneField('LawFirmEst', on_delete=models.CASCADE, null=True)
+    application = models.ForeignKey('application.BaseApplication',
                                     on_delete=models.CASCADE)
     translation_bool = models.BooleanField(default=False)
 
@@ -430,7 +430,7 @@ class FilingEstimate(BaseEst):
 
 
 class OAEstimate(BaseEst):
-    office_action = models.ForeignKey(OfficeAction,
+    office_action = models.ForeignKey('application.OfficeAction',
                                       on_delete=models.CASCADE)
 
     objects = OAEstimateManager()
@@ -440,13 +440,13 @@ class OAEstimate(BaseEst):
 
 
 class USOAEstimate(BaseEst):
-    office_action = models.ForeignKey(USOfficeAction,
+    office_action = models.ForeignKey('application.USOfficeAction',
                                       on_delete=models.CASCADE)
     objects = USOAEstimateManager()
 
 
 class RequestExamEst(BaseEst):
-    exam_request = models.ForeignKey(RequestExamination, on_delete=models.CASCADE)
+    exam_request = models.ForeignKey('application.RequestExamination', on_delete=models.CASCADE)
 
     objects = ReqExamEstimateManager()
 
@@ -455,7 +455,7 @@ class RequestExamEst(BaseEst):
 
 
 class PublicationEst(BaseEst):
-    publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
+    publication = models.ForeignKey('application.Publication', on_delete=models.CASCADE)
 
     objects = PublEstimateManager()
 
@@ -464,7 +464,7 @@ class PublicationEst(BaseEst):
 
 
 class AllowanceEst(BaseEst):
-    allowance = models.ForeignKey(Allowance, on_delete=models.CASCADE)
+    allowance = models.ForeignKey('application.Allowance', on_delete=models.CASCADE)
 
     objects = AllowanceEstimateManager()
 
@@ -473,7 +473,7 @@ class AllowanceEst(BaseEst):
 
 
 class IssueEst(BaseEst):
-    issue = models.ForeignKey(Issue, on_delete=models.CASCADE)
+    issue = models.ForeignKey('application.Issue', on_delete=models.CASCADE)
 
     objects = IssueEstimateManager()
 
