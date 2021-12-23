@@ -2,6 +2,7 @@ from dateutil.relativedelta import relativedelta
 from django.db.models import Q
 from application import utils as appl_utils
 # take templates and then filter using application details
+from application.utils import convert_class_to_base_application
 from characteristics.enums import ApplTypes
 from famform.models import OAOptions, AllowOptions, IssueOptions, RequestExaminationOptions
 
@@ -9,7 +10,6 @@ from famform.models import OAOptions, AllowOptions, IssueOptions, RequestExamina
 def filter_conditions(templates, application):
     appl_details = application.details
     particulars = application.appl_option.particulars
-    appl_option = application.appl_option
 
     # filter claims
     temp = _filter_claims(templates, appl_details)
@@ -156,8 +156,7 @@ def _filter_entity_size(templates, appl_details):
 def _filter_annual_prosecution_fee(templates, application):
     # sum Delta Time between filing and allowance_option
     delta_t = relativedelta(days=0)
-
-    if application.allowance:
+    if hasattr(application, 'allowance'):
         date_allowance = application.allowance.date_allowance
         delta_t = date_allowance - application.date_filing
 
@@ -171,7 +170,7 @@ def _filter_annual_prosecution_fee_until_grant(templates, application):
     # use applOption to retrieve allowance_option
     # sum Delta Time between filing and allowance_option
     delta_t = relativedelta(days=0)
-    if application.issue:
+    if hasattr(application, 'issue'):
         delta_t = application.issue.date_issuance - application.date_filing
 
     templates = templates.exclude(
@@ -185,7 +184,7 @@ def _filter_renewal_fee_from_filing_after_grant(templates, application):
     # sum Delta Time between filing and issuance_date
 
     delta_t = relativedelta(days=0)
-    if application.issue:
+    if hasattr(application, 'issue'):
         delta_t = application.issue.date_issuance - application.date_filing
 
     templates = templates.exclude(

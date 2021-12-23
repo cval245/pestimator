@@ -25,15 +25,15 @@ class ComplexTimeConditions(models.Model):
     name = models.CharField(max_length=200)
 
     def calc_complex_time_condition(self, application, date_diff, template_conditions):
-        if (self.name == 'from priority date'):
+        if self.name == 'from priority date':
             return self.calc_from_priority_date(application, date_diff)
-        elif (self.name == 'from ep filing date'):
+        elif self.name == 'from ep filing date':
             return self.calc_from_date_of_parent_ep_application(application, date_diff)
-        elif (self.name == 'from date of parent ep appl acc fees'):
+        elif self.name == 'from date of parent ep appl acc fees':
             return self.calc_from_date_of_parent_ep_appl_acc_fees(application, date_diff)
-        elif (self.name == 'from date of filing and issue acc fees'):
+        elif self.name == 'from date of filing and issue acc fees':
             return self.calc_acc_fees_from_filing_to_issue(application, date_diff)
-        elif (self.name == 'from inter filing date or filing date'):
+        elif self.name == 'from inter filing date or filing date':
             return self.calc_from_international_filing_date_or_filing_date()
         # elif (self.name == 'from 4th anniversary of filing date until grant'):
         #     return self.calc_from_4th_anniversary_of_filing_date_until_grant()
@@ -67,9 +67,9 @@ class ComplexTimeConditions(models.Model):
     def calc_from_priority_date(self, application, date_diff):
         appl = application
         new_date = application.date_filing + date_diff
-        while (appl != None):
+        while appl != None:
             prior_appl = appl.prior_appl
-            if (prior_appl == None):
+            if prior_appl == None:
                 # get the date
                 priority_date = appl.date_filing
                 new_date = priority_date + date_diff
@@ -112,11 +112,9 @@ class ComplexTimeConditions(models.Model):
         new_date = application.date_filing + date_diff
         issue = application.issue
         if issue:
-            if (applUtils.convert_class_applType(issue).get_enum()
-                    is ApplTypes.EP):
-                new_date = application.date_filing + date_diff
-                if new_date < issue.date_issuance:
-                    new_date = issue.date_issueance
+            new_date = application.date_filing + date_diff
+            if new_date < issue.date_issuance:
+                new_date = issue.date_issuance
 
         return new_date
 
@@ -171,11 +169,22 @@ class ComplexConditions(models.Model):
         # $100 per indep claim in excess of 3
         # 5 claims will yield a fee of $200
         # 7 claims will yield a fee of $400
-        if template_conditions.condition_indep_claims_min:
-            num_fee_indep_claims = appl_details.num_indep_claims - template_conditions.condition_indep_claims_min
+        # and stops calculation at max
+        fee = Money(0, cost.currency)
+        condition_min = template_conditions.condition_indep_claims_min
+        condition_max = template_conditions.condition_indep_claims_max
+        if condition_min:
+            num_fee_claims = appl_details.num_indep_claims - condition_min
         else:
-            num_fee_indep_claims = appl_details.num_indep_claims - 0
-        fee = num_fee_indep_claims * cost
+            num_fee_claims = appl_details.num_indep_claims
+
+        if condition_max:
+            min_max_diff = condition_max
+            if condition_min:
+                min_max_diff = condition_max - condition_min
+            num_fee_claims = min(min_max_diff, num_fee_claims)
+        if num_fee_claims > 0:
+            fee = num_fee_claims * cost
         return fee
 
     def calc_multiply_each_by_template_above_minimum_total_claims(self, appl_details,
@@ -183,11 +192,21 @@ class ComplexConditions(models.Model):
                                                                   cost):
         # $100 per claim in excess of 20
         # 21 claims will yield a fee of $100
-        if template_conditions.condition_claims_min:
-            num_fee_claims = appl_details.num_claims - template_conditions.condition_claims_min
+        fee = Money(0, cost.currency)
+        condition_min = template_conditions.condition_claims_min
+        condition_max = template_conditions.condition_claims_max
+        if condition_min:
+            num_fee_claims = appl_details.num_claims - condition_min
         else:
             num_fee_claims = appl_details.num_claims
-        fee = num_fee_claims * cost
+
+        if condition_max:
+            min_max_diff = condition_max
+            if condition_min:
+                min_max_diff = condition_max - condition_min
+            num_fee_claims = min(min_max_diff, num_fee_claims)
+        if num_fee_claims > 0:
+            fee = num_fee_claims * cost
         return fee
 
     def calc_multiply_each_above_min_multiple_dependent_claim(self, appl_details,
@@ -195,11 +214,21 @@ class ComplexConditions(models.Model):
                                                               cost):
         # $100 per claim in excess of 20
         # 21 claims will yield a fee of $100
-        if template_conditions.condition_claims_multiple_dependent_min:
-            num_fee_claims = appl_details.num_claims_multiple_dependent - template_conditions.condition_claims_multiple_dependent_min
+        fee = Money(0, cost.currency)
+        condition_min = template_conditions.condition_claims_multiple_dependent_min
+        condition_max = template_conditions.condition_claims_multiple_dependent_max
+        if condition_min:
+            num_fee_claims = appl_details.num_claims_multiple_dependent - condition_min
         else:
             num_fee_claims = appl_details.num_claims_multiple_dependent
-        fee = num_fee_claims * cost
+
+        if condition_max:
+            min_max_diff = condition_max
+            if condition_min:
+                min_max_diff = condition_max - condition_min
+            num_fee_claims = min(min_max_diff, num_fee_claims)
+        if num_fee_claims > 0:
+            fee = num_fee_claims * cost
         return fee
 
     def calc_multiply_each_by_template_above_minimum_claims_by_unit_of_5_claims(self, appl_details,
@@ -209,25 +238,50 @@ class ComplexConditions(models.Model):
         # 31 claims will yield a fee of $120
         # 34 claims will yield a fee of $120
         # 43 claims will yield a fee of $360
-        if template_conditions.condition_claims_min:
-            num_fee = math.floor(appl_details.num_claims - template_conditions.condition_claims_min) / 5
+        fee = Money(0, cost.currency)
+        condition_min = template_conditions.condition_claims_min
+        condition_max = template_conditions.condition_claims_max
+        if condition_min:
+            num_fee = math.floor((appl_details.num_claims - template_conditions.condition_claims_min) / 5)
+            # num_fee_claims = appl_details.num_claims - condition_min
         else:
-            num_fee = math.floor(appl_details.num_claims) / 5
-        fee = num_fee * cost
+            num_fee = math.floor(appl_details.num_claims / 5)
+            # num_fee_claims = appl_details.num_claims
+
+        if condition_max:
+            min_max_diff = math.floor(condition_max / 5)
+            if condition_min:
+                min_max_diff = math.floor((condition_max - condition_min) / 5)
+            # num_fee_claims = min(min_max_diff, num_fee_claims)
+            num_fee = min(min_max_diff, num_fee)
+        if num_fee > 0:
+            fee = num_fee * cost
         return fee
+
 
     def calc_multiply_each_page_by_unit_of_fifty_pages(self, appl_details,
                                                        template_conditions,
                                                        cost):
         # $100 per set of 50 pages in excess of 100
         # 150 pages will yield a fee of $100
-        if template_conditions.condition_pages_min:
-            total_pages = appl_details.total_pages - template_conditions.condition_pages_min
-            total_pages = math.floor(total_pages / 50)
+        fee = Money(0, cost.currency)
+        condition_min = template_conditions.condition_pages_total_min
+        condition_max = template_conditions.condition_pages_total_max
+        if condition_min:
+            num_fee = math.floor((appl_details.total_pages - template_conditions.condition_pages_total_min) / 50)
+            # num_fee_claims = appl_details.num_claims - condition_min
         else:
-            total_pages = appl_details.total_pages - 0
-            total_pages = math.floor(total_pages / 50)
-        fee = total_pages * cost
+            num_fee = math.floor(appl_details.total_pages / 50)
+            # num_fee_claims = appl_details.num_claims
+
+        if condition_max:
+            min_max_diff = math.floor(condition_max / 50)
+            if condition_min:
+                min_max_diff = math.floor((condition_max - condition_min) / 50)
+            # num_fee_claims = min(min_max_diff, num_fee_claims)
+            num_fee = min(min_max_diff, num_fee)
+        if num_fee > 0:
+            fee = num_fee * cost
         return fee
 
     def calc_multiply_each_additional_page(self, appl_details,
@@ -235,11 +289,21 @@ class ComplexConditions(models.Model):
                                            cost):
         # $100 per set of 50 pages in excess of 100
         # 150 pages will yield a fee of $100
-        if template_conditions.condition_pages_min:
-            total_pages = appl_details.total_pages - template_conditions.condition_pages_min
+        fee = Money(0, cost.currency)
+        condition_min = template_conditions.condition_pages_total_min
+        condition_max = template_conditions.condition_pages_total_max
+        if condition_min:
+            num_fee_claims = appl_details.total_pages - condition_min
         else:
-            total_pages = appl_details.total_pages - 0
-        fee = total_pages * cost
+            num_fee_claims = appl_details.total_pages
+
+        if condition_max:
+            min_max_diff = condition_max
+            if condition_min:
+                min_max_diff = condition_max - condition_min
+            num_fee_claims = min(min_max_diff, num_fee_claims)
+        if num_fee_claims > 0:
+            fee = num_fee_claims * cost
         return fee
 
 

@@ -21,6 +21,13 @@ def convert_class_applType(appl):
         return ApplType.objects.get_name_from_enum(ApplTypes.EP_VALIDATION)
 
 
+def convert_class_to_base_application(appl):
+    if hasattr(appl, 'baseapplication'):
+        return appl
+    else:
+        return appl.baseapplication_ptr
+
+
 def get_date_of_expiry(application):
     appl = application
     date_of_origin = application.date_filing

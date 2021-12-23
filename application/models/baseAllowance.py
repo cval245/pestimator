@@ -7,7 +7,9 @@ from estimation.models import AllowanceEst, AllowanceEstTemplate, LawFirmEst
 
 class BaseAllowance(models.Model):
     application = models.OneToOneField(
-        "application.BaseUtilityApplication", on_delete=models.CASCADE, null=True
+        "application.BaseUtilityApplication", on_delete=models.CASCADE, null=True,
+        related_name='allowance'
+
     )
     date_allowance = models.DateField()
 

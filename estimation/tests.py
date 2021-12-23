@@ -1,8 +1,11 @@
 from datetime import date
 
+from dateutil.relativedelta import relativedelta
 from django.test import TestCase
+from djmoney.money import Money
 
-from application.factories import AllowanceFactory, ApplDetailsFactory, BaseUtilityApplicationFactory, IssuanceFactory, \
+from application.factories import AllowanceFactory, ApplDetailsFactory, BaseUtilityApplicationFactory, \
+    EPApplicationFactory, IssuanceFactory, \
     OfficeActionFactory, PCTApplicationFactory, PublicationFactory, RequestExaminationFactory
 from application.models import RequestExamination
 from characteristics.factories import ApplTypeFactory, CountryFactory, DocFormatFactory, EntitySizeFactory, \
@@ -12,31 +15,339 @@ from famform.factories import AllowOptionsFactory, ApplOptionsFactory, ApplOptio
     PublOptionFactory, RequestExaminationOptionFactory
 from . import factories
 from . import utils
-from .models import FilingEstimateTemplate
+from .factories import ComplexConditionsFactory, ComplexTimeConditionsFactory
+from .models import FilingEstimateTemplate, LineEstimationTemplateConditions
 
 
-class TestLawFirmEst(TestCase):
+class ComplexTimeConditionsTest(TestCase):
 
-    def test_func(self):
-        lawfirmEst = factories.LawFirmEstFactory()
-        self.lineTemp = factories.LineEstimationTemplateConditionsFactory()
-        self.LawFirmEstTemp = factories.LawFirmEstTemplateFactory()
-        self.filing = factories.FilingEstimateTemplateFactory()
-        self.publ = factories.PublicationEstTemplateFactory()
-        self.oa = factories.OAEstimateTemplateFactory()
-        self.usoa = factories.USOAEstimateTemplateFactory()
-        self.allow = factories.AllowanceEstTemplateFactory()
-        self.issue = factories.IssueEstTemplateFactory()
-        self.transEstTemp = factories.TranslationEstTemplateFactory()
-        self.dfltTransEstTemp = factories.DefaultTranslationEstTemplateFactory()
+    def test_calc_from_priority_date_with_one_priority_appl(self):
+        prior_application = BaseUtilityApplicationFactory(prior_appl=None, date_filing=date(2023, 5, 8))
+        application = BaseUtilityApplicationFactory(prior_appl=prior_application, date_filing=date(2024, 4, 3))
+        cmplxTimeConds = ComplexTimeConditionsFactory()
+        new_date = cmplxTimeConds.calc_from_priority_date(application=application,
+                                                          date_diff=relativedelta(months=16))
+        self.assertEquals(new_date, date(2024, 9, 8))
 
-        self.BaseEst = factories.BaseEstFactory()
-        self.FilEst = factories.FilingEstimateFactory()
-        self.oaEst = factories.OAEstimateFactory()
-        self.usoaEst = factories.USOAEstimateFactory()
-        self.publEst = factories.PublicationEstFactory()
-        self.allowEst = factories.AllowanceEstFactory()
-        self.issueEst = factories.IssueEstFactory()
+    def test_calc_from_priority_date_with_two_priority_appl(self):
+        prior_application_1 = BaseUtilityApplicationFactory(prior_appl=None, date_filing=date(2020, 2, 4))
+        prior_application = BaseUtilityApplicationFactory(prior_appl=prior_application_1, date_filing=date(2023, 5, 8))
+        application = BaseUtilityApplicationFactory(prior_appl=prior_application, date_filing=date(2024, 4, 3))
+        cmplxTimeConds = ComplexTimeConditionsFactory()
+        new_date = cmplxTimeConds.calc_from_priority_date(application=application,
+                                                          date_diff=relativedelta(months=16))
+        self.assertEquals(new_date, date(2021, 6, 4))
+
+    def test_calc_from_priority_date_with_no_priority_appl(self):
+        application = BaseUtilityApplicationFactory(prior_appl=None, date_filing=date(2024, 4, 3))
+        cmplxTimeConds = ComplexTimeConditionsFactory()
+        new_date = cmplxTimeConds.calc_from_priority_date(application=application,
+                                                          date_diff=relativedelta(months=16))
+        self.assertEquals(new_date, date(2025, 8, 3))
+
+    def test_calc_from_date_of_parent_ep_application_parent_is_ep(self):
+        appl_type_ep = ApplTypeFactory(ep=True)
+        prior_application_1 = BaseUtilityApplicationFactory(prior_appl=None, date_filing=date(2020, 2, 4))
+        prior_application = EPApplicationFactory(prior_appl=prior_application_1, date_filing=date(2023, 5, 8))
+        application = BaseUtilityApplicationFactory(prior_appl=prior_application, date_filing=date(2024, 4, 3))
+        cmplxTimeConds = ComplexTimeConditionsFactory()
+        new_date = cmplxTimeConds.calc_from_date_of_parent_ep_application(application=application,
+                                                                          date_diff=relativedelta(months=16))
+        self.assertEquals(new_date, date(2024, 9, 8))
+
+    def test_calc_from_date_of_parent_ep_application_but_no_ep_application(self):
+        appl_type_ep = ApplTypeFactory(ep=True)
+        prior_application_1 = BaseUtilityApplicationFactory(prior_appl=None, date_filing=date(2020, 2, 4))
+        prior_application = BaseUtilityApplicationFactory(prior_appl=prior_application_1, date_filing=date(2023, 5, 8))
+        application = BaseUtilityApplicationFactory(prior_appl=prior_application, date_filing=date(2024, 4, 3))
+        cmplxTimeConds = ComplexTimeConditionsFactory()
+        new_date = cmplxTimeConds.calc_from_date_of_parent_ep_application(application=application,
+                                                                          date_diff=relativedelta(months=16))
+        self.assertEquals(new_date, date(2025, 8, 3))
+
+    def test_calc_from_date_of_parent_ep_appl_acc_fees_accumulating(self):
+        appl_type_ep = ApplTypeFactory(ep=True)
+        prior_application_1 = BaseUtilityApplicationFactory(prior_appl=None, date_filing=date(2020, 2, 4))
+        prior_application = EPApplicationFactory(prior_appl=prior_application_1, date_filing=date(2023, 5, 8))
+        application = BaseUtilityApplicationFactory(prior_appl=prior_application, date_filing=date(2024, 4, 3))
+        cmplxTimeConds = ComplexTimeConditionsFactory()
+        new_date = cmplxTimeConds.calc_from_date_of_parent_ep_appl_acc_fees(application=application,
+                                                                            date_diff=relativedelta(months=3))
+        self.assertEquals(new_date, date(2024, 4, 3))
+
+    def test_calc_from_date_of_parent_ep_appl_acc_fees_beyond_accumulating(self):
+        appl_type_ep = ApplTypeFactory(ep=True)
+        prior_application_1 = BaseUtilityApplicationFactory(prior_appl=None, date_filing=date(2020, 2, 4))
+        prior_application = EPApplicationFactory(prior_appl=prior_application_1, date_filing=date(2023, 5, 8))
+        application = BaseUtilityApplicationFactory(prior_appl=prior_application, date_filing=date(2024, 4, 3))
+        cmplxTimeConds = ComplexTimeConditionsFactory()
+        new_date = cmplxTimeConds.calc_from_date_of_parent_ep_appl_acc_fees(application=application,
+                                                                            date_diff=relativedelta(months=16))
+        self.assertEquals(new_date, date(2024, 9, 8))
+
+    def test_calc_acc_fees_from_filing_to_issue_accumulating(self):
+        application = BaseUtilityApplicationFactory(prior_appl=None, date_filing=date(2024, 4, 3))
+        issue = IssuanceFactory(application=application, date_issuance=date(2028, 2, 5))
+        cmplxTimeConds = ComplexTimeConditionsFactory()
+        new_date = cmplxTimeConds.calc_acc_fees_from_filing_to_issue(application=application,
+                                                                     date_diff=relativedelta(months=6))
+        self.assertEquals(new_date, date(2028, 2, 5))
+
+    def test_calc_acc_fees_from_filing_to_issue_beyond_accumulating(self):
+        application = BaseUtilityApplicationFactory(prior_appl=None, date_filing=date(2024, 4, 3))
+        issue = IssuanceFactory(application=application, date_issuance=date(2028, 2, 5))
+        cmplxTimeConds = ComplexTimeConditionsFactory()
+        new_date = cmplxTimeConds.calc_acc_fees_from_filing_to_issue(application=application,
+                                                                     date_diff=relativedelta(years=6))
+        self.assertEquals(new_date, date(2030, 4, 3))
+
+    def test_calc_from_international_filing_date_of_filing_date_one_priority(self):
+        prior_application = PCTApplicationFactory(prior_appl=None, date_filing=date(2023, 5, 8))
+        application = BaseUtilityApplicationFactory(prior_appl=prior_application, date_filing=date(2024, 4, 3))
+        cmplxTimeConds = ComplexTimeConditionsFactory()
+        new_date = cmplxTimeConds.calc_from_international_filing_date_or_filing_date(application=application,
+                                                                                     date_diff=relativedelta(months=16))
+        self.assertEquals(new_date, date(2024, 9, 8))
+
+    def test_calc_from_international_filing_date_of_filing_date_two_priority(self):
+        prior_application_1 = BaseUtilityApplicationFactory(prior_appl=None, date_filing=date(2020, 2, 4))
+        prior_application = PCTApplicationFactory(prior_appl=prior_application_1, date_filing=date(2023, 5, 8))
+        application = BaseUtilityApplicationFactory(prior_appl=prior_application, date_filing=date(2024, 4, 3))
+        cmplxTimeConds = ComplexTimeConditionsFactory()
+        new_date = cmplxTimeConds.calc_from_international_filing_date_or_filing_date(application=application,
+                                                                                     date_diff=relativedelta(months=16))
+        self.assertEquals(new_date, date(2024, 9, 8))
+
+    def test_calc_from_international_filing_date_of_filing_date_no_priority(self):
+        application = BaseUtilityApplicationFactory(prior_appl=None, date_filing=date(2024, 4, 3))
+        cmplxTimeConds = ComplexTimeConditionsFactory()
+        new_date = cmplxTimeConds.calc_from_international_filing_date_or_filing_date(application=application,
+                                                                                     date_diff=relativedelta(months=16))
+        self.assertEquals(new_date, date(2025, 8, 3))
+
+
+class ComplexConditionsTest(TestCase):
+
+    def test_calc_multiple_each_by_template_above_minimum_indep_claims_returns_zero(self):
+        details = ApplDetailsFactory(num_indep_claims=5)
+        conditions = LineEstimationTemplateConditions(condition_indep_claims_min=10)
+        cmplxConds = ComplexConditionsFactory()
+        cost = Money(100, 'USD')
+        fee = cmplxConds.calc_multiply_each_by_template_above_minimum_indep_claims(
+            appl_details=details, template_conditions=conditions, cost=cost)
+        self.assertEquals(fee.amount, 0)
+
+    def test_calc_multiple_each_by_template_above_minimum_indep_claims(self):
+        details = ApplDetailsFactory(num_indep_claims=5)
+        conditions = LineEstimationTemplateConditions(condition_indep_claims_min=2)
+        cmplxConds = ComplexConditionsFactory()
+        cost = Money(100, 'USD')
+        fee = cmplxConds.calc_multiply_each_by_template_above_minimum_indep_claims(
+            appl_details=details, template_conditions=conditions, cost=cost)
+        self.assertEquals(fee.amount, 300)
+
+    def test_calc_multiple_each_by_template_above_minimum_indep_claims_up_to_max(self):
+        details = ApplDetailsFactory(num_indep_claims=7)
+        conditions = LineEstimationTemplateConditions(condition_indep_claims_min=2, condition_indep_claims_max=5)
+        cmplxConds = ComplexConditionsFactory()
+        cost = Money(100, 'USD')
+        fee = cmplxConds.calc_multiply_each_by_template_above_minimum_indep_claims(
+            appl_details=details, template_conditions=conditions, cost=cost)
+        self.assertEquals(fee.amount, 300)
+
+    def test_calc_multiply_each_by_template_above_minimum_indep_claims_dependent_no_min(self):
+        details = ApplDetailsFactory(num_indep_claims=7)
+        conditions = LineEstimationTemplateConditions(condition_indep_claims_max=5)
+        cmplxConds = ComplexConditionsFactory()
+        cost = Money(100, 'USD')
+        fee = cmplxConds.calc_multiply_each_by_template_above_minimum_indep_claims(
+            appl_details=details, template_conditions=conditions, cost=cost)
+        self.assertEquals(fee.amount, 500)
+
+    def test_calc_multiply_each_by_template_above_minimum_total_claims_returns_zero(self):
+        details = ApplDetailsFactory(num_claims=5)
+        conditions = LineEstimationTemplateConditions(condition_claims_min=10)
+        cmplxConds = ComplexConditionsFactory()
+        cost = Money(100, 'USD')
+        fee = cmplxConds.calc_multiply_each_by_template_above_minimum_total_claims(
+            appl_details=details, template_conditions=conditions, cost=cost)
+        self.assertEquals(fee.amount, 0)
+
+    def test_calc_multiply_each_by_template_above_minimum_total_claims(self):
+        details = ApplDetailsFactory(num_claims=5)
+        conditions = LineEstimationTemplateConditions(condition_claims_min=2)
+        cmplxConds = ComplexConditionsFactory()
+        cost = Money(100, 'USD')
+        fee = cmplxConds.calc_multiply_each_by_template_above_minimum_total_claims(
+            appl_details=details, template_conditions=conditions, cost=cost)
+        self.assertEquals(fee.amount, 300)
+
+    def test_calc_multiply_each_by_template_above_minimum_total_claims_up_to_max(self):
+        details = ApplDetailsFactory(num_claims=7)
+        conditions = LineEstimationTemplateConditions(condition_claims_min=2, condition_claims_max=5)
+        cmplxConds = ComplexConditionsFactory()
+        cost = Money(100, 'USD')
+        fee = cmplxConds.calc_multiply_each_by_template_above_minimum_total_claims(
+            appl_details=details, template_conditions=conditions, cost=cost)
+        self.assertEquals(fee.amount, 300)
+
+    def test_calc_multiply_each_by_template_above_minimum_total_claims_dependent_no_min(self):
+        details = ApplDetailsFactory(num_claims=7)
+        conditions = LineEstimationTemplateConditions(condition_claims_max=5)
+        cmplxConds = ComplexConditionsFactory()
+        cost = Money(100, 'USD')
+        fee = cmplxConds.calc_multiply_each_by_template_above_minimum_total_claims(
+            appl_details=details, template_conditions=conditions, cost=cost)
+        self.assertEquals(fee.amount, 500)
+
+    def test_calc_multiply_each_by_template_above_minimum_multiple_dependent_returns_zero(self):
+        details = ApplDetailsFactory(num_claims_multiple_dependent=5)
+        conditions = LineEstimationTemplateConditions(condition_claims_multiple_dependent_min=10)
+        cmplxConds = ComplexConditionsFactory()
+        cost = Money(100, 'USD')
+        fee = cmplxConds.calc_multiply_each_above_min_multiple_dependent_claim(
+            appl_details=details, template_conditions=conditions, cost=cost)
+        self.assertEquals(fee.amount, 0)
+
+    def test_calc_multiply_each_by_template_above_minimum_multiple_dependent(self):
+        details = ApplDetailsFactory(num_claims_multiple_dependent=5)
+        conditions = LineEstimationTemplateConditions(condition_claims_multiple_dependent_min=2)
+        cmplxConds = ComplexConditionsFactory()
+        cost = Money(100, 'USD')
+        fee = cmplxConds.calc_multiply_each_above_min_multiple_dependent_claim(
+            appl_details=details, template_conditions=conditions, cost=cost)
+        self.assertEquals(fee.amount, 300)
+
+    def test_calc_multiply_each_by_template_above_minimum_multiple_dependent_up_to_max(self):
+        details = ApplDetailsFactory(num_claims_multiple_dependent=7)
+        conditions = LineEstimationTemplateConditions(condition_claims_multiple_dependent_min=2,
+                                                      condition_claims_multiple_dependent_max=5)
+        cmplxConds = ComplexConditionsFactory()
+        cost = Money(100, 'USD')
+        fee = cmplxConds.calc_multiply_each_above_min_multiple_dependent_claim(
+            appl_details=details, template_conditions=conditions, cost=cost)
+        self.assertEquals(fee.amount, 300)
+
+    def test_calc_multiply_each_by_template_above_minimum_multiple_dependent_no_min(self):
+        details = ApplDetailsFactory(num_claims_multiple_dependent=7)
+        conditions = LineEstimationTemplateConditions(condition_claims_multiple_dependent_max=5)
+        cmplxConds = ComplexConditionsFactory()
+        cost = Money(100, 'USD')
+        fee = cmplxConds.calc_multiply_each_above_min_multiple_dependent_claim(
+            appl_details=details, template_conditions=conditions, cost=cost)
+        self.assertEquals(fee.amount, 500)
+
+    def test_calc_multiply_each_additional_page_returns_zero(self):
+        details = ApplDetailsFactory(num_pages_drawings=1, num_pages_claims=1, num_pages_description=3)
+        conditions = LineEstimationTemplateConditions(condition_pages_total_min=10)
+        cmplxConds = ComplexConditionsFactory()
+        cost = Money(100, 'USD')
+        fee = cmplxConds.calc_multiply_each_additional_page(
+            appl_details=details, template_conditions=conditions, cost=cost)
+        self.assertEquals(fee.amount, 0)
+
+    def test_calc_multiple_each_additional_page(self):
+        details = ApplDetailsFactory(num_pages_drawings=1, num_pages_claims=1, num_pages_description=3)
+        conditions = LineEstimationTemplateConditions(condition_pages_total_min=2)
+        cmplxConds = ComplexConditionsFactory()
+        cost = Money(100, 'USD')
+        fee = cmplxConds.calc_multiply_each_additional_page(
+            appl_details=details, template_conditions=conditions, cost=cost)
+        self.assertEquals(fee.amount, 300)
+
+    def test_calc_multiple_each_additional_page_up_to_max(self):
+        details = ApplDetailsFactory(num_pages_drawings=1, num_pages_claims=1, num_pages_description=3)
+        conditions = LineEstimationTemplateConditions(condition_pages_total_min=2,
+                                                      condition_pages_total_max=5)
+        cmplxConds = ComplexConditionsFactory()
+        cost = Money(100, 'USD')
+        fee = cmplxConds.calc_multiply_each_additional_page(
+            appl_details=details, template_conditions=conditions, cost=cost)
+        self.assertEquals(fee.amount, 300)
+
+    def test_calc_multiple_each_additional_page_no_min(self):
+        details = ApplDetailsFactory(num_pages_drawings=1, num_pages_claims=1, num_pages_description=3)
+        conditions = LineEstimationTemplateConditions(condition_pages_total_max=5)
+        cmplxConds = ComplexConditionsFactory()
+        cost = Money(100, 'USD')
+        fee = cmplxConds.calc_multiply_each_additional_page(
+            appl_details=details, template_conditions=conditions, cost=cost)
+        self.assertEquals(fee.amount, 500)
+
+    def test_calc_multiply_each_by_template_above_minimum_claims_by_unit_of_5_claims_returns_zero_fee(self):
+        details = ApplDetailsFactory(num_claims=15)
+        conditions = LineEstimationTemplateConditions(condition_claims_min=20)
+        cmplxConds = ComplexConditionsFactory()
+        cost = Money(100, 'USD')
+        fee = cmplxConds.calc_multiply_each_by_template_above_minimum_claims_by_unit_of_5_claims(
+            appl_details=details, template_conditions=conditions, cost=cost)
+        self.assertEquals(fee.amount, 0)
+
+    def test_calc_multiply_each_by_template_above_minimum_claims_by_unit_of_5_claims_returns_(self):
+        details = ApplDetailsFactory(num_claims=25)
+        conditions = LineEstimationTemplateConditions(condition_claims_min=20)
+        cmplxConds = ComplexConditionsFactory()
+        cost = Money(100, 'USD')
+        fee = cmplxConds.calc_multiply_each_by_template_above_minimum_claims_by_unit_of_5_claims(
+            appl_details=details, template_conditions=conditions, cost=cost)
+        self.assertEquals(fee.amount, 100)
+
+    def test_calc_multiply_each_by_template_above_minimum_claims_by_unit_of_5_claims_returns_two(self):
+        details = ApplDetailsFactory(num_claims=35)
+        conditions = LineEstimationTemplateConditions(condition_claims_min=20, condition_claims_max=30)
+        cmplxConds = ComplexConditionsFactory()
+        cost = Money(100, 'USD')
+        fee = cmplxConds.calc_multiply_each_by_template_above_minimum_claims_by_unit_of_5_claims(
+            appl_details=details, template_conditions=conditions, cost=cost)
+        self.assertEquals(fee.amount, 200)
+
+    def test_calc_multiply_each_by_template_above_minimum_claims_by_unit_of_5_claims_returns_six(self):
+        details = ApplDetailsFactory(num_claims=35)
+        conditions = LineEstimationTemplateConditions(condition_claims_max=30)
+        cmplxConds = ComplexConditionsFactory()
+        cost = Money(100, 'USD')
+        fee = cmplxConds.calc_multiply_each_by_template_above_minimum_claims_by_unit_of_5_claims(
+            appl_details=details, template_conditions=conditions, cost=cost)
+        self.assertEquals(fee.amount, 600)
+
+    def test_calc_multiply_each_page_by_unit_of_fifty_pages_returns_zero_fee(self):
+        details = ApplDetailsFactory(num_pages_drawings=1, num_pages_claims=1, num_pages_description=53)
+        conditions = LineEstimationTemplateConditions(condition_pages_total_min=20)
+        cmplxConds = ComplexConditionsFactory()
+        cost = Money(100, 'USD')
+        fee = cmplxConds.calc_multiply_each_page_by_unit_of_fifty_pages(
+            appl_details=details, template_conditions=conditions, cost=cost)
+        self.assertEquals(fee.amount, 0)
+
+    def test_calc_multiply_each_page_by_unit_of_fifty_pages_returns_(self):
+        details = ApplDetailsFactory(num_pages_drawings=1, num_pages_claims=1, num_pages_description=153)
+        conditions = LineEstimationTemplateConditions(condition_pages_total_min=100)
+        cmplxConds = ComplexConditionsFactory()
+        cost = Money(100, 'USD')
+        fee = cmplxConds.calc_multiply_each_page_by_unit_of_fifty_pages(
+            appl_details=details, template_conditions=conditions, cost=cost)
+        self.assertEquals(fee.amount, 100)
+
+    def test_calc_multiply_each_page_by_unit_of_fifty_pages_returns_two(self):
+        details = ApplDetailsFactory(num_pages_drawings=1, num_pages_claims=1, num_pages_description=300)
+        conditions = LineEstimationTemplateConditions(condition_pages_total_min=20, condition_pages_total_max=120)
+        cmplxConds = ComplexConditionsFactory()
+        cost = Money(100, 'USD')
+        fee = cmplxConds.calc_multiply_each_page_by_unit_of_fifty_pages(
+            appl_details=details, template_conditions=conditions, cost=cost)
+        self.assertEquals(fee.amount, 200)
+
+    def test_calc_multiply_each_page_by_unit_of_fifty_pages_returns_six(self):
+        details = ApplDetailsFactory(num_pages_drawings=1, num_pages_claims=1, num_pages_description=350)
+        conditions = LineEstimationTemplateConditions(condition_pages_total_max=300)
+        cmplxConds = ComplexConditionsFactory()
+        cost = Money(100, 'USD')
+        fee = cmplxConds.calc_multiply_each_page_by_unit_of_fifty_pages(
+            appl_details=details, template_conditions=conditions, cost=cost)
+        self.assertEquals(fee.amount, 600)
+
+
+class TestEstimationUtils(TestCase):
 
     def test_utils__filter_fee_entity_size_includes_correct_and_null_entity_size(self):
         entity_size_small = EntitySizeFactory(us_small=True)
