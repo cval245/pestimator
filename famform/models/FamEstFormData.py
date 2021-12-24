@@ -164,7 +164,7 @@ class FamEstFormData(models.Model):
                                                            prev_appl_option=prevApplOption)
 
             utility_type = ApplType.objects.get_name_from_enum(ApplTypes.UTILITY)
-            for pct_country_customization in self.pct_countries.through.objects.all():
+            for pct_country_customization in self.pct_countries.through.objects.filter(fam_est_form_data_id=self.id):
                 if (pct_country_customization.country == Country.objects.get(country='EP')
                         and self.ep_method is True
                         and self.init_appl_type.get_enum() is not ApplTypes.EP):
@@ -220,7 +220,7 @@ class FamEstFormData(models.Model):
         oa_diff = OAOptions.objects.filter(appl=prevApplOption).aggregate(date_diff=Sum('date_diff'))['date_diff']
         allow_diff = AllowOptions.objects.get(appl=prevApplOption).date_diff
         ep_prev_date = prevApplOption.date_filing + oa_diff + allow_diff
-        for ep_country_customization in self.ep_countries.through.objects.all():
+        for ep_country_customization in self.ep_countries.through.objects.filter(fam_est_form_data_id=self.id):
             custom_details = ep_country_customization.custom_appl_details
             custom_options = ep_country_customization.custom_appl_options
             famOptions.generate_appl(details=applDetails,
@@ -237,7 +237,7 @@ class FamEstFormData(models.Model):
     def parse_paris_stage(self, famOptions, applDetails, prevApplOption):
         # take in paris_countries
         utility_appl = ApplType.objects.get_name_from_enum(ApplTypes.UTILITY)
-        for paris_country_customization in self.paris_countries.through.objects.all():
+        for paris_country_customization in self.paris_countries.through.objects.filter(fam_est_form_data_id=self.id):
             custom_details = paris_country_customization.custom_appl_details
             custom_options = paris_country_customization.custom_appl_options
             if (paris_country_customization.country == Country.objects.get(country='EP')
