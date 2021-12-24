@@ -48,13 +48,14 @@ DATABASES = {
 
 CORS_ALLOWED_ORIGINS = [
     "https://patport.cc",
-    "https://www.patport.cc"
+    "https://www.patport.cc",
+    "https://www.estpat.com",
+    "https://estpat.com",
 ]
 
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
 
 EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
 EMAIL_HOST = env('EMAIL_HOST')
@@ -65,9 +66,13 @@ EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
 
-DOMAIN = 'patport.cc'
-DOMAIN_FULL = 'https://patport.cc'
-SITE_NAME = 'PatPort'
+DOMAIN = 'estpat.com'
+DOMAIN_FULL = 'https://estpat.com'
+SITE_NAME = 'EstPat'
+
+# DOMAIN = 'patport.cc'
+# DOMAIN_FULL = 'https://patport.cc'
+# SITE_NAME = 'PatPort'
 
 OPEN_EXCHANGE_RATES_APP_ID = env('OPEN_EXCHANGE_RATES_APP_ID')
 
