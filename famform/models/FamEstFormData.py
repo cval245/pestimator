@@ -7,8 +7,13 @@ from django.db.models import Max, Sum
 from application.models import ApplDetails
 from characteristics.enums import ApplTypes
 from characteristics.models import ApplType, Country
-from famform.models import AllowOptions, EPCountryCustomization, FamOptions, OAOptions, PCTCountryCustomization, \
-    ParisCountryCustomization
+
+from famform.models.PCTCountryCustomization import PCTCountryCustomization
+from famform.models.AllowOptions import AllowOptions
+from famform.models.EPCountryCustomization import EPCountryCustomization
+from famform.models.FamOptions import FamOptions
+from famform.models.OAOptions import OAOptions
+from famform.models.ParisCountryCustomization import ParisCountryCustomization
 from famform.models.CustomApplOptions import CustomApplOptions
 from famform.models.EPMethodCustomization import EPMethodCustomization
 from famform.models.PCTMethodCustomization import PCTMethodCustomization
@@ -70,7 +75,7 @@ class FamEstFormData(models.Model):
 
     # generate route
     def save(self, *args, **kwargs):
-        if self.pk == None:
+        if self.pk is None:
             # get all pervious families by user
             max_udn = FamEstFormData.objects.filter(user=self.user).aggregate(max_udn=Max('unique_display_no'))
             if max_udn['max_udn'] is not None:

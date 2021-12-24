@@ -48,7 +48,9 @@ DATABASES = {
 
 CORS_ALLOWED_ORIGINS = [
     "https://patport.cc",
-    "https://www.patport.cc"
+    "https://www.patport.cc",
+    "https://www.estpat.com",
+    "https://estpat.com",
 ]
 
 
