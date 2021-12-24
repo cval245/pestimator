@@ -1,11 +1,11 @@
 from django.db import models
 
-from application.models import BaseIssue, EPValidationApplication
+from application.models import BaseIssue
 
 
 class EPValidationIssue(BaseIssue):
     application = models.OneToOneField(
-        EPValidationApplication, on_delete=models.CASCADE,
+        'EPValidationApplication', on_delete=models.CASCADE,
     )
 
     class Meta:

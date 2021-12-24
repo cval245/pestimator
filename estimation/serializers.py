@@ -3,13 +3,14 @@ from rest_framework import serializers
 from .models import BaseEstTemplate, FilingEstimateTemplate, LawFirmEstTemplate, LineEstimationTemplateConditions, \
     PublicationEstTemplate, \
     OAEstimateTemplate, AllowanceEstTemplate, IssueEstTemplate, USOAEstimateTemplate, ComplexConditions, \
-    ComplexTimeConditions, RequestExamEstTemplate, FeeCategory
+    ComplexTimeConditions, RequestExamEstTemplate
+from characteristics.models import FeeCategory
 
 
 class BaseEstTemplateSerializer(serializers.ModelSerializer):
-	class Meta:
-		model = BaseEstTemplate
-		fields = ('id', 'official_cost', 'official_cost_currency', 'date_diff', 'country',
+    class Meta:
+        model = BaseEstTemplate
+        fields = ('id', 'official_cost', 'official_cost_currency', 'date_diff', 'country',
                   'isa_country_fee_only', 'fee_category',
                   'appl_type', 'conditions', 'law_firm_template',
                   'description', 'fee_code'

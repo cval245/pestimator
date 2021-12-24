@@ -1,21 +1,23 @@
-from copy import deepcopy
+import math
+from copy import copy, deepcopy
 
 from django.db import models
 
 from application.models import ApplDetails
-from characteristics.enums import TranslationRequirements, ApplTypes
+from characteristics.enums import ApplTypes, TranslationRequirements
 from characteristics.models import ApplType
-# from famform.models import PCTApplOptions, ApplOptions
+from famform.models.ApplOptions import ApplOptions
 from famform.models.ApplOptionsParticulars import ApplOptionsParticulars
+from famform.models.PCTApplOptions import PCTApplOptions
 from family.models import Family
-from transform.models import CustomFilingTransform, CountryOANum, DefaultCountryOANum
+from pestimator.exceptions import ApplTypeNotAvailableForCountry, ISACountryNotAvailableForCountry
+from transform.models import CountryOANum, CustomFilingTransform, DefaultCountryOANum
 
 
 class FamOptions(models.Model):
     family = models.ForeignKey(Family, on_delete=models.CASCADE)
 
-    def _calc_filing_date(self, appl_type, country, prev_appl_type,
-                          prev_date, first_appl_bool, prev_appl_option):
+    def _calc_filing_date(self, appl_type, country, prev_appl_type, prev_date, prev_appl_option):
 
         date_filing = CustomFilingTransform.objects \
             .calc_filing_date_for_appl_option(appl_type=appl_type,
@@ -37,7 +39,7 @@ class FamOptions(models.Model):
     def translate_details_new_language(self, details, current_language, desired_language):
         # convert current language to english ex. French to English
         num_words = current_language.words_per_page * details.num_pages_description
-        new_pages = num_words / desired_language.words_per_page
+        new_pages = math.ceil(num_words / desired_language.words_per_page)
 
         new_details = ApplDetails.objects.create(
             num_indep_claims=details.num_indep_claims,
@@ -59,12 +61,11 @@ class FamOptions(models.Model):
             custom_options=custom_options,
             country=country, appl_type=pct_appl_type)
 
-        if (isa_country not in country.isa_countries.all()):
-            raise 'isa country needs to be available for country'
+        if isa_country not in country.isa_countries.all():
+            raise ISACountryNotAvailableForCountry
         if pct_appl_type in country.available_appl_types.all():
             # select transform and get date_diff
-            date_filing = self._calc_filing_date(pct_appl_type, country,
-                                                 prev_appl_type, prev_date, first_appl_bool, prev_appl_option)
+            date_filing = self._calc_filing_date(pct_appl_type, country, prev_appl_type, prev_date, prev_appl_option)
             # get oa_total
             oa_total = self._calc_oa_num(country)
 
@@ -83,7 +84,6 @@ class FamOptions(models.Model):
             # have defaults
             # ie transform multiple dependent claims into sets of single dependent claims
 
-            from famform.models import PCTApplOptions
             pct_appl_option = PCTApplOptions.objects.create_pct_appl_option(
                 date_filing=date_filing, country=country, details=final_details,
                 oa_total=oa_total, fam_option=self, isa_country=isa_country,
@@ -93,9 +93,8 @@ class FamOptions(models.Model):
             )
             return pct_appl_option
 
-
         else:
-            raise 'Error: ApplType not available for country'
+            raise ApplTypeNotAvailableForCountry
 
     def generate_appl(self, details, custom_details, country, appl_type, custom_options,
                       prev_appl_type, prev_date, first_appl_bool, prev_appl_option):
@@ -105,10 +104,10 @@ class FamOptions(models.Model):
             custom_options=custom_options,
             country=country, appl_type=appl_type)
         # see if appl_type is valid for that country
-        if (appl_type in country.available_appl_types.all()):
+        if appl_type in country.available_appl_types.all():
             # select transform and get date_diff
-            date_filing = self._calc_filing_date(appl_type, country,
-                                                 prev_appl_type, prev_date, first_appl_bool, prev_appl_option)
+            date_filing = self._calc_filing_date(appl_type, country, prev_appl_type,
+                                                 prev_date, prev_appl_option)
             # get oa_total
             oa_total = self._calc_oa_num(country)
 
@@ -121,14 +120,7 @@ class FamOptions(models.Model):
                 translated_details=translated_details,
                 custom_details=custom_details)
 
-            # apply transmutation transformations
-            # these transmutations convert to local patent office guidelines
-            # need user inpu
-            # have defaults
-            # ie transform multiple dependent claims into sets of single dependent claims
-            # particulars =
 
-            from famform.models import ApplOptions
             appl_option = ApplOptions.objects.create_appl_option(
                 country=country,
                 date_filing=date_filing,
@@ -143,11 +135,10 @@ class FamOptions(models.Model):
             return appl_option
 
         else:
-            raise 'Error: ApplType not available for country'
-
+            raise ApplTypeNotAvailableForCountry
 
     def apply_custom_details(self, translated_details, custom_details):
-        final_details = translated_details
+        final_details = copy(translated_details)
         # replace with custom details user provided on a key by key basis
         if custom_details is not None:
             for attr, value in custom_details.__dict__.items():
@@ -182,12 +173,10 @@ class FamOptions(models.Model):
         )
         old_language = None
         if prev_appl_option:
-            print('makes no sense', prev_appl_option.details.language_id)
-            print('makes no sense', prev_appl_option.details)
             prev_details = ApplDetails.objects.get(id=prev_appl_option.details.id)
             # old_language = prev_appl_option.details.language
             old_language = prev_details.language
-        translate_enum = self.determine_translation_full_required(
+        translate_enum = self.determine_extent_of_translation_required(
             country=country, appl_type=appl_type,
             old_language=old_language, new_language=desired_language)
 
@@ -210,8 +199,8 @@ class FamOptions(models.Model):
 
         return {'translated_details': new_details, 'translation_enum': translate_enum}
 
-    def determine_translation_full_required(self, country, appl_type, old_language,
-                                            new_language):
+    def determine_extent_of_translation_required(self, country, appl_type, old_language,
+                                                 new_language):
         # determine if translations are required.
         if old_language == new_language:
             return TranslationRequirements.NO_TRANSLATION
@@ -221,9 +210,4 @@ class FamOptions(models.Model):
                     return TranslationRequirements.NO_TRANSLATION
                 elif country.ep_validation_translation_required.name == 'full translation required':
                     return TranslationRequirements.FULL_TRANSLATION
-                else:
-                    return TranslationRequirements.FULL_TRANSLATION
-            else:
-                return TranslationRequirements.FULL_TRANSLATION
-        else:
-            return TranslationRequirements.FULL_TRANSLATION
+        return TranslationRequirements.FULL_TRANSLATION

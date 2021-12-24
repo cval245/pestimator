@@ -2,6 +2,10 @@ from django.db import models
 
 from characteristics.enums import ApplTypes
 from characteristics.models import ApplType, TranslationImplementedPseudoEnum
+from pestimator.exceptions import ApplTypePCTNotSupportedException, ApplTypePCTNationalPhaseNotSupportedException
+from transform.models import PublicationTransform, DefaultPublTransform, AllowanceTransform, DefaultAllowanceTransform, \
+    IssueTransform, DefaultIssueTransform, RequestExaminationTransform, DefaultRequestExaminationTransform, OATransform, \
+    DefaultOATransform
 
 
 class PCTApplOptionsManager(models.Manager):
@@ -34,7 +38,7 @@ class ApplOptionsManager(models.Manager):
             details=details, fam_options=fam_option,
             particulars=particulars,
             translation_implemented=TranslationImplementedPseudoEnum.objects.get_name_from_enum(translation_enum),
-            prev_appl_options=prev_appl_option, )
+            prev_appl_options=prev_appl_option)
         if appl_option.appl_type.get_enum() is ApplTypes.PROV:
             return appl_option
         elif appl_option.appl_type.get_enum() is ApplTypes.UTILITY:
@@ -51,17 +55,93 @@ class ApplOptionsManager(models.Manager):
         elif appl_option.appl_type.get_enum() is ApplTypes.EP_VALIDATION:
             appl_option.create_issue_option()
             return appl_option
-
+        elif appl_option.appl_type.get_enum() is ApplTypes.PCT:
+            raise ApplTypePCTNotSupportedException
+            # raise ('PCT appltype cannot be used with ApplOptions, pass to PCTApplOptions Instead')
+        elif appl_option.appl_type.get_enum() is ApplTypes.PCT_NATIONAL_PHASE:
+            # raise ('PCTNationalPhase appltype cannot be used with ApplOptions')
+            raise ApplTypePCTNationalPhaseNotSupportedException
         return appl_option
 
 
 class ApplOptionsParticularsManager(models.Manager):
     def create_appl_options_particulars(self, custom_options, country, appl_type):
         doc_format = custom_options.doc_format
-        if (custom_options.doc_format == None):
+        if custom_options.doc_format is None:
             doc_format = country.available_doc_formats \
                 .get(docformatcountry__default=True, docformatcountry__appl_type=appl_type)
         particulars = self.create(
             doc_format=doc_format,
             request_examination_early_bool=custom_options.request_examination_early_bool)
         return particulars
+
+
+class BaseOptionsManager(models.Manager):
+
+    def create_option_with_class_names(self, Transform, DfltTransform, appl_option):
+        country = appl_option.country
+        appl_type = appl_option.appl_type
+        if Transform.objects.filter(country=country, appl_type=appl_type).exists():
+            trans = Transform.objects.get(country=country, appl_type=appl_type)
+        else:
+            trans = DfltTransform.objects.get(appl_type=appl_type)
+
+        return self.create(date_diff=trans.date_diff, appl=appl_option)
+
+
+class PublOptionsManager(BaseOptionsManager):
+    def create_option(self, appl_option):
+        return self.create_option_with_class_names(Transform=PublicationTransform,
+                                                   DfltTransform=DefaultPublTransform,
+                                                   appl_option=appl_option)
+
+
+class AllowOptionsManager(BaseOptionsManager):
+    def create_option(self, appl_option):
+        return self.create_option_with_class_names(Transform=AllowanceTransform,
+                                                   DfltTransform=DefaultAllowanceTransform,
+                                                   appl_option=appl_option)
+
+
+class IssueOptionsManager(BaseOptionsManager):
+    def create_option(self, appl_option):
+        return self.create_option_with_class_names(Transform=IssueTransform,
+                                                   DfltTransform=DefaultIssueTransform,
+                                                   appl_option=appl_option)
+
+
+class RequestExaminationOptionsManager(BaseOptionsManager):
+    def create_option(self, appl_option):
+        return self.create_option_with_class_names(Transform=RequestExaminationTransform,
+                                                   DfltTransform=DefaultRequestExaminationTransform,
+                                                   appl_option=appl_option)
+
+
+class OAOptionsManager(models.Manager):
+
+    def create_option_with_class_names(self, Transform, DfltTransform, appl_option, oa_prev):
+        country = appl_option.country
+        appl_type = appl_option.appl_type
+        if Transform.objects.filter(country=country, appl_type=appl_type).exists():
+            trans = Transform.objects.get(country=country, appl_type=appl_type)
+        else:
+            trans = DfltTransform.objects.get(appl_type=appl_type)
+
+        return self.create(date_diff=trans.date_diff, appl=appl_option, oa_prev=oa_prev)
+
+    def create_option(self, appl_option, oa_prev):
+        return self.create_option_with_class_names(Transform=OATransform,
+                                                   DfltTransform=DefaultOATransform,
+                                                   appl_option=appl_option,
+                                                   oa_prev=oa_prev)
+
+    def create_all_oa_options(self, appl_option, oa_total):
+        i = 0
+        oa_arr = []
+        oa_prev = None
+        while i < oa_total:
+            oa = self.create_option(appl_option=appl_option, oa_prev=oa_prev)
+            oa_prev = oa
+            oa_arr.append(oa)
+            i += 1
+        return oa_arr

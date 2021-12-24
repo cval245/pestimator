@@ -22,7 +22,7 @@ class Family(models.Model):
         return self.famestformdata.unique_display_no
 
     def save(self, *args, **kwargs):
-        if self.pk == None:
+        if self.pk is None:
             # get all pervious families by user
             max_udn = Family.objects.filter(user=self.user).aggregate(max_udn=Max('unique_display_no'))
             if max_udn['max_udn'] is not None:
@@ -33,9 +33,8 @@ class Family(models.Model):
 
     def create_appls(self, famOptions):
         from application.models import BaseApplication
-        bob = famOptions.apploptions_set.all()
-        for x in bob:
-            BaseApplication.objects.create_full(options=x, user=self.user,
+        for appl_option in famOptions.apploptions_set.all():
+            BaseApplication.objects.create_full(options=appl_option, user=self.user,
                                                 family_id=self.id)
 
         # subtract one from user accounts

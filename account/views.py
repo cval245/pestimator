@@ -22,7 +22,6 @@ class UserProfileAdminViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user_id = self.request.query_params.get('user_id')
-        print('user_id', user_id)
         return UserProfile.objects.filter(user_id=user_id)
 
 

@@ -1,6 +1,5 @@
 from django.db import models
 
-from characteristics.models import EntitySize, Language
 
 
 class CustomApplDetails(models.Model):
@@ -11,7 +10,7 @@ class CustomApplDetails(models.Model):
     num_pages_description = models.IntegerField(default=None, null=True)
     num_pages_claims = models.IntegerField(default=None, null=True)
     num_pages_drawings = models.IntegerField(default=None, null=True)
-    entity_size = models.ForeignKey(EntitySize, on_delete=models.CASCADE,
+    entity_size = models.ForeignKey('characteristics.EntitySize', on_delete=models.CASCADE,
                                     default=None, null=True)
-    language = models.ForeignKey(Language, on_delete=models.CASCADE,
+    language = models.ForeignKey('characteristics.Language', on_delete=models.CASCADE,
                                  default=None, null=True)

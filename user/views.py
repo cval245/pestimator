@@ -23,7 +23,6 @@ class UserViewSet(ModelViewSet):
         self.perform_create(serializer)
 
         # create UserProfile object
-        print('ser.data', serializer.data)
         UserProfile.objects.create(user_id=serializer.data.id)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)

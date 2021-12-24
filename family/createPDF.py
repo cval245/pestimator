@@ -393,7 +393,6 @@ def generate_country_page(country, flowables, query_list, baseEsts, min_year, ma
         max_col = (1 + mega_row_counter) * cells_per_row
 
         short_col_widths = [4 * table_cell_width]
-        print('mega_row_counter', mega_row_counter)
         short_col_widths += col_widths[min_col: max_col]
         short_table = []
         for row in table_data:

@@ -2,12 +2,25 @@ import factory
 from django.utils import timezone
 
 from characteristics.factories import CountryFactory, ApplTypeFactory
+from estimation.factories import DiffProvider
 from . import models
+
+factory.Faker.add_provider(DiffProvider)
+
+
+class TransComplexTimeFactory(factory.django.DjangoModelFactory):
+    name = 'from priority date'
+
+    class Meta:
+        model = models.TransComplexTime
+        django_get_or_create = ('name',)
 
 
 class BaseTransformFactory(factory.django.DjangoModelFactory):
-    date_diff = 'P1Y'
+    date_diff = factory.Faker('diff')
     country = factory.SubFactory(CountryFactory)
+    appl_type = factory.SubFactory(ApplTypeFactory)
+    trans_complex_time_condition = factory.SubFactory(TransComplexTimeFactory)
 
     class Meta:
         model = models.BaseTransform
@@ -15,7 +28,6 @@ class BaseTransformFactory(factory.django.DjangoModelFactory):
 
 
 class CustomFilingTransformFactory(BaseTransformFactory):
-    appl_type = factory.SubFactory(ApplTypeFactory)
     prev_appl_type = None
 
     class Meta:
@@ -29,6 +41,12 @@ class PublicationTransformFactory(BaseTransformFactory):
         abstract = False
 
 
+class RequestExaminationTransformFactory(BaseTransformFactory):
+    class Meta:
+        model = models.RequestExaminationTransform
+        abstract = False
+
+
 class OATransformFactory(BaseTransformFactory):
     class Meta:
         model = models.OATransform
@@ -36,9 +54,15 @@ class OATransformFactory(BaseTransformFactory):
 
 
 class USOATransformFactory(OATransformFactory):
+    final_oa_bool = False
+
     class Meta:
         model = models.USOATransform
         abstract = False
+
+    class Params:
+        FOA = factory.Trait(final_oa_bool=True)
+        NFOA = factory.Trait(final_oa_bool=False)
 
 
 class AllowanceTransformFactory(BaseTransformFactory):
@@ -69,11 +93,12 @@ class DefaultCountryOANumFactory(factory.django.DjangoModelFactory):
 
 
 class BaseDefaultTransformFactory(factory.django.DjangoModelFactory):
-    date_diff = 'P1Y'
+    date_diff = factory.Faker('diff')
     appl_type = factory.SubFactory(ApplTypeFactory)
 
     class Meta:
         model = models.BaseDefaultTransform
+        django_get_or_create = ('appl_type',)
         abstract = True
 
 
@@ -86,6 +111,12 @@ class DefaultFilingTransformFactory(BaseDefaultTransformFactory):
 class DefaultPublTransformFactory(BaseDefaultTransformFactory):
     class Meta:
         model = models.DefaultPublTransform
+        abstract = False
+
+
+class DefaultRequestExaminationTransformFactory(BaseDefaultTransformFactory):
+    class Meta:
+        model = models.DefaultRequestExaminationTransform
         abstract = False
 
 

@@ -1,5 +1,7 @@
 from application.models.baseApplication import BaseApplication
 
+from application.models.epValidationIssue import EPValidationIssue
+
 
 class EPValidationApplication(BaseApplication):
     class Meta:
@@ -19,7 +21,6 @@ class EPValidationApplication(BaseApplication):
 
     def _generate_issue(self, date_diff, date_allowance):
         date_issuance = date_diff + date_allowance
-        from application.models.epValidationIssue import EPValidationIssue
         issue = EPValidationIssue.objects.create(
             application=self.epvalidationapplication,
             date_issuance=date_issuance,

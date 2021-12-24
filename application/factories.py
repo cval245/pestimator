@@ -7,9 +7,9 @@ from user.factories import UserFactory
 from . import models
 
 
-
 class ApplDetailsFactory(factory.django.DjangoModelFactory):
     num_indep_claims = factory.Faker('random_int', min=1, max=50, step=1)
+    num_claims_multiple_dependent = factory.Faker('random_int', min=1, max=50, step=1)
     num_pages_description = factory.Faker('random_int', min=1, max=50, step=1)
     num_pages_claims = factory.Faker('random_int', min=1, max=4, step=1)
     num_pages_drawings = factory.Faker('random_int', min=1, max=10, step=1)
@@ -23,6 +23,8 @@ class ApplDetailsFactory(factory.django.DjangoModelFactory):
 
 
 from famform.factories import ApplOptionsFactory
+
+
 class ApplicationFactory(factory.django.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
     title = factory.sequence(lambda n: "Title %03d" % n)
@@ -44,20 +46,24 @@ class ApplicationFactory(factory.django.DjangoModelFactory):
         #     prior_appl=factory.SubFactory('application.factories.ApplicationFactory'))
 
 
-class EPApplicationFactory(ApplicationFactory):
+class PCTApplicationFactory(ApplicationFactory):
+    isa_country = factory.SubFactory(CountryFactory, CN=True)
 
+    class Meta:
+        model = models.PCTApplication
+
+
+class EPApplicationFactory(ApplicationFactory):
     class Meta:
         model = models.EPApplication
 
 
 class BaseUtilityApplicationFactory(ApplicationFactory):
-
     class Meta:
         model = models.BaseUtilityApplication
 
 
 class USUtilityApplicationFactory(BaseUtilityApplicationFactory):
-
     class Meta:
         model = models.USUtilityApplication
 
@@ -70,6 +76,14 @@ class PublicationFactory(factory.django.DjangoModelFactory):
         model = models.Publication
 
 
+class RequestExaminationFactory(factory.django.DjangoModelFactory):
+    date_request_examination = factory.Faker('date_object')
+    application = factory.SubFactory(ApplicationFactory)
+
+    class Meta:
+        model = models.RequestExamination
+
+
 class OfficeActionFactory(factory.django.DjangoModelFactory):
     date_office_action = factory.Faker('date_object')
     application = factory.SubFactory(BaseUtilityApplicationFactory)
@@ -80,22 +94,23 @@ class OfficeActionFactory(factory.django.DjangoModelFactory):
 
 class USOfficeActionFactory(factory.django.DjangoModelFactory):
     date_office_action = factory.Faker('date_object')
-    application = factory.SubFactory(BaseUtilityApplicationFactory)
+    application = factory.SubFactory(USUtilityApplicationFactory)
 
     class Meta:
         model = models.USOfficeAction
 
 
 class AllowanceFactory(factory.django.DjangoModelFactory):
-    application = factory.SubFactory(ApplicationFactory)
+    application = factory.SubFactory(BaseUtilityApplicationFactory)
     date_allowance = factory.Faker('date_object')
 
     class Meta:
         model = models.Allowance
 
+
 class IssuanceFactory(factory.django.DjangoModelFactory):
     date_issuance = factory.Faker('date_object')
-    application = factory.SubFactory(ApplicationFactory)
+    application = factory.SubFactory(BaseUtilityApplicationFactory)
 
     class Meta:
         model = models.Issue

@@ -13,10 +13,11 @@ click-plugins==1.1.1
 click-repl==0.2.0
 coreapi==2.3.3
 coreschema==0.0.4
+coverage==6.2
 cryptography==36.0.0
 cycler==0.11.0
 defusedxml==0.7.1
-Django==3.2.9
+Django==3.2.10
 django-appconf==1.0.5
 django-celery-email==3.0.0
 django-cors-headers==3.10.0
@@ -47,7 +48,7 @@ packaging==21.3
 pandas==1.3.4
 pika==1.2.0
 Pillow==8.4.0
-pip==21.2.4
+pip==21.3.1
 prompt-toolkit==3.0.20
 psycopg2-binary==2.9.2
 py-moneyed==1.2
@@ -66,7 +67,7 @@ simplejson==3.17.6
 six==1.16.0
 social-auth-app-django==4.0.0
 social-auth-core==4.1.0
-sqlparse==0.4.1
+sqlparse==0.4.2
 stripe==2.63.0
 text-unidecode==1.3
 tomli==1.2.2

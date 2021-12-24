@@ -1,9 +1,13 @@
 from django.db import models
 
-from estimation import utils
 from application.models.baseApplication import BaseApplication
+from application.models.officeAction import OfficeAction
+from application.models.publication import Publication
+from application.models.requestExamination import RequestExamination
 from application.utils import convert_class_applType
 from characteristics.models import Country
+from estimation import utils
+from estimation.models import FilingEstimate, FilingEstimateTemplate, LawFirmEst
 
 
 class PCTApplication(BaseApplication):
@@ -21,7 +25,6 @@ class PCTApplication(BaseApplication):
         # excluding ISA ONLY costs and then calculates ISA oNly costs in ISA country
         self._generate_translation_est()
 
-        from estimation.models import FilingEstimateTemplate
         filing_templates = FilingEstimateTemplate.objects.filter(
             country=self.country,
             appl_type=convert_class_applType(self),
@@ -34,13 +37,11 @@ class PCTApplication(BaseApplication):
         for e in templates:
             lawFirmEst = None
             if e.law_firm_template is not None:
-                from estimation.models import LawFirmEst
                 lawFirmEst = LawFirmEst.objects.create(
                     date=e.law_firm_template.date_diff + self.date_filing,
                     law_firm_cost=e.law_firm_template.law_firm_cost
                 )
 
-            from estimation.models import FilingEstimate
             est = FilingEstimate.objects.create_complex_and_simple_est(
                 application=self,
                 law_firm_est=lawFirmEst,
@@ -60,13 +61,11 @@ class PCTApplication(BaseApplication):
         for e in templates:
             lawFirmEst = None
             if e.law_firm_template is not None:
-                from estimation.models import LawFirmEst
                 lawFirmEst = LawFirmEst.objects.create(
                     date=e.law_firm_template.date_diff + self.date_filing,
                     law_firm_cost=e.law_firm_template.law_firm_cost
                 )
 
-            from estimation.models import FilingEstimate
             est = FilingEstimate.objects.create_complex_and_simple_est(
                 application=self,
                 law_firm_est=lawFirmEst,
@@ -92,7 +91,6 @@ class PCTApplication(BaseApplication):
 
     def _generate_publication(self, publication_diff_from_filing):
         # lookup the publication time_diff
-        from application.models.publication import Publication
         publ = Publication.objects.create(
             application=self,
             date_publication=self.date_filing + publication_diff_from_filing)
@@ -101,7 +99,6 @@ class PCTApplication(BaseApplication):
         # create a publication instance
 
     def _generate_request_examination(self, date_diff_from_filing):
-        from application.models.requestExamination import RequestExamination
         req = RequestExamination.objects.create(
             application=self,
             date_request_examination=self.date_filing + date_diff_from_filing
@@ -128,7 +125,6 @@ class PCTApplication(BaseApplication):
         oa_array = []
         for oa in ordered_oa:
             date_oa = date_prev + oa.date_diff
-            from application.models.officeAction import OfficeAction
             created_oa = OfficeAction.objects.create(application=self,
                                                      date_office_action=date_oa)
             created_oa.generate_ests()

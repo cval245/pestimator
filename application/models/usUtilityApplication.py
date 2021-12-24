@@ -1,34 +1,21 @@
 from application.models import BaseUtilityApplication
 
+from application.models.usOfficeAction import USOfficeAction
+
 
 class USUtilityApplication(BaseUtilityApplication):
-
     class Meta:
         abstract = False
 
+    def _generate_oa(self, date_request_examination, oas_in):
 
-    def _generate_oa(self, date_request_examination, args):
-        ordered_oa = []
-        oa_first = [x for x in args if x.oa_prev is None]
-        ordered_oa.append(oa_first[0])
-        prev_oa = oa_first[0]
-        # order array
-        complete = False
-        while complete is False:
-            oa_x = [x for x in args if x.oa_prev == prev_oa]
-            if len(oa_x) != 0:
-                prev_oa = oa_x[0]
-                ordered_oa.append(oa_x[0])
-            else:
-                complete = True
-
+        ordered_oa = self._create_ordered_oa(oas_in=oas_in)
         date_prev = date_request_examination
         oa_array = []
         prev_oa = None
         final_oa_bool = False
         for oa in ordered_oa:
             date_oa = date_prev + oa.date_diff
-            from application.models.usOfficeAction import USOfficeAction
             created_oa = USOfficeAction.objects.create(
                 application=self,
                 oa_final_bool=final_oa_bool,

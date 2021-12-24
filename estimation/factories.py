@@ -5,42 +5,85 @@ from dateutil.relativedelta import relativedelta
 from djmoney.money import Money
 from faker.providers import BaseProvider
 
-from application.factories import ApplicationFactory
-from characteristics.factories import EntitySizeFactory, CountryFactory, ApplTypeFactory, LanguageFactory
+from application.factories import ApplicationFactory, OfficeActionFactory, USOfficeActionFactory, PublicationFactory, \
+    AllowanceFactory, IssuanceFactory
+from characteristics.factories import EntitySizeFactory, CountryFactory, ApplTypeFactory, LanguageFactory, \
+    DocFormatFactory, FeeCategoryFactory
 from . import models
 from .models import FilingEstimateTemplate, PublicationEstTemplate, OAEstimateTemplate, USOAEstimateTemplate, \
     AllowanceEstTemplate, IssueEstTemplate, LawFirmEst, BaseEst, FilingEstimate, OAEstimate, USOAEstimate, \
-    PublicationEst, IssueEst, AllowanceEst, TranslationEstTemplate, DefaultTranslationEstTemplate
+    PublicationEst, IssueEst, AllowanceEst, TranslationEstTemplate, DefaultTranslationEstTemplate, \
+    ComplexTimeConditions, ComplexConditions
 import random
+
+
 class MoneyProvider(BaseProvider):
-   def money(self):
-       return Money(random.random()*1000, 'USD')
+
+    def money(self):
+        return Money(random.random() * 1000, 'USD')
+
+    def moneyCN(self):
+        return Money(random.random() * 1000, 'CNY')
+
 
 class DiffProvider(BaseProvider):
+
     def diff(self):
-        return relativedelta(days=random.randint(0, 365))
+        return relativedelta(days=random.randint(0, 720))
+
 
 factory.Faker.add_provider(MoneyProvider)
 factory.Faker.add_provider(DiffProvider)
 
+
+class ComplexTimeConditionsFactory(factory.django.DjangoModelFactory):
+    name = 'from priority date'
+
+    class Meta:
+        model = ComplexTimeConditions
+        django_get_or_create = ('name',)
+
+
+class ComplexConditionsFactory(factory.django.DjangoModelFactory):
+    name = 'multiply each by template above minimum indep claims'
+
+    class Meta:
+        model = ComplexConditions
+        django_get_or_create = ('name',)
+
+
 class LineEstimationTemplateConditionsFactory(factory.django.DjangoModelFactory):
+    condition_claims_multiple_dependent_min = None
+    condition_claims_multiple_dependent_max = None
     condition_claims_min = None
     condition_claims_max = None
     condition_indep_claims_min = None
     condition_indep_claims_max = None
-    condition_pages_min = None
-    condition_pages_max = None
+
+    condition_pages_total_min = None
+    condition_pages_total_max = None
     condition_pages_desc_min = None
     condition_pages_desc_max = None
+    condition_pages_claims_min = None
+    condition_pages_claims_max = None
+    condition_pages_drawings_min = None
+    condition_pages_drawings_max = None
+
     condition_drawings_min = None
     condition_drawings_max = None
-    condition_entity_size = factory.SubFactory(EntitySizeFactory)
+    condition_entity_size = None
+
     condition_annual_prosecution_fee = False
+    condition_annual_prosecution_fee_until_grant = False
+    condition_renewal_fee_from_filing_after_grant = False
     condition_complex = None
     condition_time_complex = None
     prior_pct = None
     prior_pct_same_country = None
     prev_appl_date_excl_intermediary_time = False
+    prior_appl_exists = None
+    doc_format = None
+    language = None
 
     class Meta:
         model = models.LineEstimationTemplateConditions
@@ -59,14 +102,15 @@ class LineEstimationTemplateConditionsFactory(factory.django.DjangoModelFactory)
         )
 
 
-
 class LawFirmEstTemplateFactory(factory.django.DjangoModelFactory):
     law_firm_cost = factory.Faker('money')
-    date_diff = 'P1Y'
+    date_diff = factory.Faker('diff')
 
     class Meta:
         model = models.LawFirmEstTemplate
 
+    class Params:
+        CN = factory.Trait(law_firm_cost=factory.Faker('moneyCN'))
 
 class BaseEstTemplateFactory(factory.django.DjangoModelFactory):
     official_cost = factory.Faker('money')
@@ -74,10 +118,21 @@ class BaseEstTemplateFactory(factory.django.DjangoModelFactory):
     country = factory.SubFactory(CountryFactory)
     appl_type = factory.SubFactory(ApplTypeFactory)
     conditions = factory.SubFactory(LineEstimationTemplateConditionsFactory)
+    isa_country_fee_only = False
     law_firm_template = factory.SubFactory(LawFirmEstTemplateFactory)
+    description = 'ddd'
+    fee_code = 'ddd'
+    fee_category = factory.SubFactory(FeeCategoryFactory)
 
     class Meta:
         abstract = True
+
+    class Params:
+        CN = factory.Trait(
+            official_cost=factory.Faker('moneyCN'),
+            law_firm_template=factory.SubFactory(LawFirmEstTemplateFactory, CN=True),
+            country=factory.SubFactory(CountryFactory, CN=True),
+        )
 
 
 class FilingEstimateTemplateFactory(BaseEstTemplateFactory):
@@ -90,7 +145,8 @@ class PublicationEstTemplateFactory(BaseEstTemplateFactory):
     class Meta:
         model = PublicationEstTemplate
         abstract = False
-        #django_get_or_create = ('appl_type',)
+        # django_get_or_create = ('appl_type',)
+
 
 class OAEstimateTemplateFactory(BaseEstTemplateFactory):
     class Meta:
@@ -172,28 +228,42 @@ class BaseEstFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = BaseEst
 
+
 class FilingEstimateFactory(BaseEstFactory):
     class Meta:
         model = FilingEstimate
 
+
 class OAEstimateFactory(BaseEstFactory):
+    office_action = factory.SubFactory(OfficeActionFactory)
+
     class Meta:
         model = OAEstimate
 
+
 class USOAEstimateFactory(BaseEstFactory):
+    office_action = factory.SubFactory(USOfficeActionFactory)
+
     class Meta:
         model = USOAEstimate
 
+
 class PublicationEstFactory(BaseEstFactory):
+    publication = factory.SubFactory(PublicationFactory)
+
     class Meta:
         model = PublicationEst
 
 
 class AllowanceEstFactory(BaseEstFactory):
+    allowance = factory.SubFactory(AllowanceFactory)
+
     class Meta:
         model = AllowanceEst
 
 
 class IssueEstFactory(BaseEstFactory):
+    issue = factory.SubFactory(IssuanceFactory)
+
     class Meta:
         model = IssueEst
