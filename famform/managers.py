@@ -66,8 +66,9 @@ class ApplOptionsManager(models.Manager):
 
 class ApplOptionsParticularsManager(models.Manager):
     def create_appl_options_particulars(self, custom_options, country, appl_type):
-        doc_format = custom_options.doc_format
-        if custom_options.doc_format is None:
+        if custom_options.doc_format is not None:
+            doc_format = custom_options.doc_format
+        else:
             doc_format = country.available_doc_formats \
                 .get(docformatcountry__default=True, docformatcountry__appl_type=appl_type)
         particulars = self.create(
