@@ -1592,3 +1592,357 @@ class TestEstimationUtils(TestCase):
         self.assertEquals(filtered.count(), 2)
         self.assertIn(filing_est_template_false, filtered)
         self.assertIn(filing_est_template_none, filtered)
+
+
+class FilterConditionsTest(TestCase):
+
+    def test_filter_conditions_test_case_1(self):
+        appl_type_pct = ApplTypeFactory(pct=True)
+        appl_type_nationalphase = ApplTypeFactory(nationalphase=True)
+        appl_type_utility = ApplTypeFactory(utility=True)
+        doc_format_electronic = DocFormatFactory(electronic=True)
+        doc_format_paper = DocFormatFactory(paper=True)
+        particulars = ApplOptionsParticularsFactory(doc_format=doc_format_electronic)
+        entity_size_small = EntitySizeFactory(us_small=True)
+        entity_size_micro = EntitySizeFactory(us_micro=True)
+        language_cn = LanguageFactory(Chinese=True)
+        language_en = LanguageFactory(English=True)
+        country_cn = CountryFactory(CN=True)
+        country_gb = CountryFactory(gb=True)
+
+        appl_option = ApplOptionsFactory(particulars=particulars)
+        details = ApplDetailsFactory(num_indep_claims=5,
+                                     num_claims_multiple_dependent=5,
+                                     num_pages_description=50,
+                                     num_pages_claims=25,
+                                     num_pages_drawings=25,
+                                     num_claims=20,
+                                     num_drawings=20,
+                                     entity_size=entity_size_small,
+                                     language=language_cn)
+        priorapplication = PCTApplicationFactory(date_filing=date(1999, 1, 1), isa_country=country_gb)
+        application = BaseUtilityApplicationFactory(
+            country=country_cn,
+            prior_appl=priorapplication,
+            appl_option=appl_option,
+            details=details,
+            date_filing=date(2000, 1, 1))
+        allowance = AllowanceFactory(application=application, date_allowance=date(2001, 1, 1))
+        issue = IssuanceFactory(application=application, date_issuance=date(2002, 2, 1))
+        conditions_claims_min_pass = factories.LineEstimationTemplateConditionsFactory(
+            condition_claims_min=10)
+        template_claims_min_pass = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                           conditions=conditions_claims_min_pass)
+        conditions_claims_min_fail = factories.LineEstimationTemplateConditionsFactory(
+            condition_claims_min=25)
+        template_claims_min_fail = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                           conditions=conditions_claims_min_fail)
+        # ****************************
+        conditions_claims_max_pass = factories.LineEstimationTemplateConditionsFactory(
+            condition_claims_max=25)
+        template_claims_max_pass = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                           conditions=conditions_claims_max_pass)
+        conditions_claims_max_fail = factories.LineEstimationTemplateConditionsFactory(
+            condition_claims_max=10)
+        template_claims_max_fail = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                           conditions=conditions_claims_max_fail)
+
+        # ****************************
+        conditions_indep_claims_min_pass = factories.LineEstimationTemplateConditionsFactory(
+            condition_indep_claims_min=2)
+        template_indep_claims_min_pass = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                                 conditions=conditions_indep_claims_min_pass)
+        conditions_indep_claims_min_fail = factories.LineEstimationTemplateConditionsFactory(
+            condition_indep_claims_min=10)
+        template_indep_claims_min_fail = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                                 conditions=conditions_indep_claims_min_fail)
+        conditions_indep_claims_max_pass = factories.LineEstimationTemplateConditionsFactory(
+            condition_indep_claims_max=10)
+        template_indep_claims_max_pass = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                                 conditions=conditions_indep_claims_max_pass)
+        conditions_indep_claims_max_fail = factories.LineEstimationTemplateConditionsFactory(
+            condition_indep_claims_max=3)
+        template_indep_claims_max_fail = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                                 conditions=conditions_indep_claims_max_fail)
+
+        # ****************************
+        conditions_claims_multiple_dependent_min_pass = factories.LineEstimationTemplateConditionsFactory(
+            condition_claims_multiple_dependent_min=2)
+        template_claims_multiple_dependent_min_pass = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                                              conditions=conditions_claims_multiple_dependent_min_pass)
+        conditions_claims_multiple_dependent_min_fail = factories.LineEstimationTemplateConditionsFactory(
+            condition_claims_multiple_dependent_min=25)
+        template_claims_multiple_dependent_min_fail = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                                              conditions=conditions_claims_multiple_dependent_min_fail)
+        conditions_claims_multiple_dependent_max_pass = factories.LineEstimationTemplateConditionsFactory(
+            condition_claims_multiple_dependent_max=10)
+        template_claims_multiple_dependent_max_pass = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                                              conditions=conditions_claims_multiple_dependent_max_pass)
+        conditions_claims_multiple_dependent_max_fail = factories.LineEstimationTemplateConditionsFactory(
+            condition_claims_multiple_dependent_max=3)
+        template_claims_multiple_dependent_max_fail = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                                              conditions=conditions_claims_multiple_dependent_max_fail)
+
+        conditions_pages_total_min_pass = factories.LineEstimationTemplateConditionsFactory(
+            condition_pages_total_min=100)
+        template_pages_total_min_pass = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                                conditions=conditions_pages_total_min_pass)
+        conditions_pages_total_min_fail = factories.LineEstimationTemplateConditionsFactory(
+            condition_pages_total_min=101)
+        template_pages_total_min_fail = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                                conditions=conditions_pages_total_min_fail)
+        # ****************************
+        conditions_pages_total_max_pass = factories.LineEstimationTemplateConditionsFactory(
+            condition_pages_total_max=100)
+        template_pages_total_max_pass = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                                conditions=conditions_pages_total_max_pass)
+        conditions_pages_total_max_fail = factories.LineEstimationTemplateConditionsFactory(
+            condition_pages_total_max=99)
+        template_pages_total_max_fail = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                                conditions=conditions_pages_total_max_fail)
+
+        # ****************************
+        conditions_pages_description_min_pass = factories.LineEstimationTemplateConditionsFactory(
+            condition_pages_desc_min=50)
+        template_pages_description_min_pass = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                                      conditions=conditions_pages_description_min_pass)
+        conditions_pages_description_min_fail = factories.LineEstimationTemplateConditionsFactory(
+            condition_pages_desc_min=51)
+        template_pages_description_min_fail = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                                      conditions=conditions_pages_description_min_fail)
+        conditions_pages_description_max_pass = factories.LineEstimationTemplateConditionsFactory(
+            condition_pages_desc_max=50)
+        template_pages_description_max_pass = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                                      conditions=conditions_pages_description_max_pass)
+        conditions_pages_description_max_fail = factories.LineEstimationTemplateConditionsFactory(
+            condition_pages_desc_max=49)
+        template_pages_description_max_fail = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                                      conditions=conditions_pages_description_max_fail)
+
+        # ****************************
+        conditions_pages_claims_min_pass = factories.LineEstimationTemplateConditionsFactory(
+            condition_pages_claims_min=25)
+        template_pages_claims_min_pass = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                                 conditions=conditions_pages_claims_min_pass)
+        conditions_pages_claims_min_fail = factories.LineEstimationTemplateConditionsFactory(
+            condition_pages_claims_min=26)
+        template_pages_claims_min_fail = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                                 conditions=conditions_pages_claims_min_fail)
+        conditions_pages_claims_max_pass = factories.LineEstimationTemplateConditionsFactory(
+            condition_pages_claims_max=25)
+        template_pages_claims_max_pass = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                                 conditions=conditions_pages_claims_max_pass)
+        conditions_pages_claims_max_fail = factories.LineEstimationTemplateConditionsFactory(
+            condition_pages_claims_max=24)
+        template_pages_claims_max_fail = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                                 conditions=conditions_pages_claims_max_fail)
+
+        # ****************************
+        conditions_pages_drawings_min_pass = factories.LineEstimationTemplateConditionsFactory(
+            condition_pages_drawings_min=25)
+        template_pages_drawings_min_pass = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                                   conditions=conditions_pages_drawings_min_pass)
+        conditions_pages_drawings_min_fail = factories.LineEstimationTemplateConditionsFactory(
+            condition_pages_drawings_min=26)
+        template_pages_drawings_min_fail = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                                   conditions=conditions_pages_drawings_min_fail)
+        conditions_pages_drawings_max_pass = factories.LineEstimationTemplateConditionsFactory(
+            condition_pages_drawings_max=25)
+        template_pages_drawings_max_pass = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                                   conditions=conditions_pages_drawings_max_pass)
+        conditions_pages_drawings_max_fail = factories.LineEstimationTemplateConditionsFactory(
+            condition_pages_drawings_max=24)
+        template_pages_drawings_max_fail = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                                   conditions=conditions_pages_drawings_max_fail)
+
+        # ****************************
+        conditions_drawings_min_pass = factories.LineEstimationTemplateConditionsFactory(
+            condition_drawings_min=20)
+        template_drawings_min_pass = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                             conditions=conditions_drawings_min_pass)
+        conditions_drawings_min_fail = factories.LineEstimationTemplateConditionsFactory(
+            condition_drawings_min=21)
+        template_drawings_min_fail = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                             conditions=conditions_drawings_min_fail)
+        conditions_drawings_max_pass = factories.LineEstimationTemplateConditionsFactory(
+            condition_drawings_max=20)
+        template_drawings_max_pass = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                             conditions=conditions_drawings_max_pass)
+        conditions_drawings_max_fail = factories.LineEstimationTemplateConditionsFactory(
+            condition_drawings_max=19)
+        template_drawings_max_fail = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                             conditions=conditions_drawings_max_fail)
+
+        # ****************************
+        conditions_entity_size_pass = factories.LineEstimationTemplateConditionsFactory(
+            condition_entity_size=entity_size_small)
+        template_entity_size_pass = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                            conditions=conditions_entity_size_pass)
+        conditions_entity_size_fail = factories.LineEstimationTemplateConditionsFactory(
+            condition_entity_size=entity_size_micro)
+        template_entity_size_fail = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                            conditions=conditions_entity_size_fail)
+
+        # ****************************
+        conditions_language_pass = factories.LineEstimationTemplateConditionsFactory(
+            language=language_cn)
+        template_language_pass = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                         conditions=conditions_language_pass)
+        conditions_language_fail = factories.LineEstimationTemplateConditionsFactory(
+            language=language_en)
+        template_language_fail = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                         conditions=conditions_language_fail)
+
+        # ****************************
+        conditions_doc_format_pass = factories.LineEstimationTemplateConditionsFactory(
+            doc_format=doc_format_electronic)
+        template_doc_format_pass = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                           conditions=conditions_doc_format_pass)
+        conditions_doc_format_fail = factories.LineEstimationTemplateConditionsFactory(
+            doc_format=doc_format_paper)
+        template_doc_format_fail = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                           conditions=conditions_doc_format_fail)
+
+        conditions_annual_prosecution_fee_pass = factories.LineEstimationTemplateConditionsFactory(
+            condition_annual_prosecution_fee=True)
+        template_annual_prosecution_pass = factories.FilingEstimateTemplateFactory(date_diff='P1Y',
+                                                                                   conditions=conditions_annual_prosecution_fee_pass)
+        conditions_annual_prosecution_fee_fail = factories.LineEstimationTemplateConditionsFactory(
+            condition_annual_prosecution_fee=True)
+        template_annual_prosecution_fail = factories.FilingEstimateTemplateFactory(date_diff='P2Y',
+                                                                                   conditions=conditions_annual_prosecution_fee_fail)
+
+        conditions_annual_prosecution_fee_until_grant_pass = factories.LineEstimationTemplateConditionsFactory(
+            condition_annual_prosecution_fee_until_grant=True)
+        template_annual_prosecution_until_grant_pass = factories.FilingEstimateTemplateFactory(date_diff='P2Y',
+                                                                                               conditions=conditions_annual_prosecution_fee_until_grant_pass)
+        conditions_annual_prosecution_fee_until_grant_fail = factories.LineEstimationTemplateConditionsFactory(
+            condition_annual_prosecution_fee_until_grant=True)
+        template_annual_prosecution_until_grant_fail = factories.FilingEstimateTemplateFactory(date_diff='P3Y',
+                                                                                               conditions=conditions_annual_prosecution_fee_until_grant_fail)
+
+        conditions_renewal_fee_from_filing_after_grant_pass = factories.LineEstimationTemplateConditionsFactory(
+            condition_renewal_fee_from_filing_after_grant=True)
+        template_renewal_fee_from_filing_after_grant_pass = factories.FilingEstimateTemplateFactory(date_diff='P3Y',
+                                                                                                    conditions=conditions_renewal_fee_from_filing_after_grant_pass)
+        conditions_renewal_fee_from_filing_after_grant_fail = factories.LineEstimationTemplateConditionsFactory(
+            condition_renewal_fee_from_filing_after_grant=True)
+        template_renewal_fee_from_filing_after_grant_fail = factories.FilingEstimateTemplateFactory(date_diff='P2Y',
+                                                                                                    conditions=conditions_renewal_fee_from_filing_after_grant_fail)
+
+        conditions_prior_pct_pass = factories.LineEstimationTemplateConditionsFactory(
+            prior_pct=True)
+        template_prior_pct_pass = factories.FilingEstimateTemplateFactory(
+            date_diff='P3Y',
+            conditions=conditions_prior_pct_pass)
+        conditions_prior_pct_fail = factories.LineEstimationTemplateConditionsFactory(
+            prior_pct=False)
+        template_prior_pct_fail = factories.FilingEstimateTemplateFactory(
+            date_diff='P2Y',
+            conditions=conditions_prior_pct_fail)
+
+        conditions_prior_pct_isa_pass = factories.LineEstimationTemplateConditionsFactory(
+            prior_pct_same_country=False)
+        template_prior_pct_isa_pass = factories.FilingEstimateTemplateFactory(
+            date_diff='P2Y',
+            conditions=conditions_prior_pct_isa_pass)
+        conditions_prior_pct_isa_fail = factories.LineEstimationTemplateConditionsFactory(
+            prior_pct_same_country=True)
+        template_prior_pct_isa_fail = factories.FilingEstimateTemplateFactory(
+            date_diff='P2Y',
+            conditions=conditions_prior_pct_isa_fail)
+
+        conditions_prev_appl_date_excl_intermediary_time_pass = factories.LineEstimationTemplateConditionsFactory(
+            prev_appl_date_excl_intermediary_time=True)
+        template_prev_appl_date_excl_intermediary_time_pass = factories.FilingEstimateTemplateFactory(
+            date_diff='P2Y',
+            conditions=conditions_prev_appl_date_excl_intermediary_time_pass)
+        conditions_prev_appl_date_excl_intermediary_time_fail = factories.LineEstimationTemplateConditionsFactory(
+            prev_appl_date_excl_intermediary_time=True)
+        template_prev_appl_date_excl_intermediary_time_fail = factories.FilingEstimateTemplateFactory(
+            date_diff='P1Y',
+            conditions=conditions_prev_appl_date_excl_intermediary_time_fail)
+
+        conditions_prior_appl_exists_pass = factories.LineEstimationTemplateConditionsFactory(
+            prior_appl_exists=True)
+        template_prior_appl_exists_pass = factories.FilingEstimateTemplateFactory(
+            date_diff='P2Y',
+            conditions=conditions_prior_appl_exists_pass)
+        conditions_prior_appl_exists_fail = factories.LineEstimationTemplateConditionsFactory(
+            prior_appl_exists=False)
+        template_prior_appl_exists_fail = factories.FilingEstimateTemplateFactory(
+            date_diff='P2Y',
+            conditions=conditions_prior_appl_exists_fail)
+
+        templates = FilingEstimateTemplate.objects.all()
+        filtered = utils.filter_conditions(templates=templates, application=application)
+
+        self.assertIn(template_claims_min_pass, filtered)
+        self.assertNotIn(template_claims_min_fail, filtered)
+        self.assertIn(template_claims_max_pass, filtered)
+        self.assertNotIn(template_claims_max_fail, filtered)
+
+        self.assertIn(template_indep_claims_min_pass, filtered)
+        self.assertNotIn(template_indep_claims_min_fail, filtered)
+        self.assertIn(template_indep_claims_max_pass, filtered)
+        self.assertNotIn(template_indep_claims_max_fail, filtered)
+
+        self.assertIn(template_claims_multiple_dependent_min_pass, filtered)
+        self.assertNotIn(template_claims_multiple_dependent_min_fail, filtered)
+        self.assertIn(template_claims_multiple_dependent_max_pass, filtered)
+        self.assertNotIn(template_claims_multiple_dependent_max_fail, filtered)
+
+        self.assertIn(template_pages_total_min_pass, filtered)
+        self.assertNotIn(template_pages_total_min_fail, filtered)
+        self.assertIn(template_pages_total_max_pass, filtered)
+        self.assertNotIn(template_pages_total_max_fail, filtered)
+
+        self.assertIn(template_pages_description_min_pass, filtered)
+        self.assertNotIn(template_pages_description_min_fail, filtered)
+        self.assertIn(template_pages_description_max_pass, filtered)
+        self.assertNotIn(template_pages_description_max_fail, filtered)
+
+        self.assertIn(template_pages_claims_min_pass, filtered)
+        self.assertNotIn(template_pages_claims_min_fail, filtered)
+        self.assertIn(template_pages_claims_max_pass, filtered)
+        self.assertNotIn(template_pages_claims_max_fail, filtered)
+
+        self.assertIn(template_pages_drawings_min_pass, filtered)
+        self.assertNotIn(template_pages_drawings_min_fail, filtered)
+        self.assertIn(template_pages_drawings_max_pass, filtered)
+        self.assertNotIn(template_pages_drawings_max_fail, filtered)
+
+        self.assertIn(template_drawings_min_pass, filtered)
+        self.assertNotIn(template_drawings_min_fail, filtered)
+        self.assertIn(template_drawings_max_pass, filtered)
+        self.assertNotIn(template_drawings_max_fail, filtered)
+
+        self.assertIn(template_entity_size_pass, filtered)
+        self.assertNotIn(template_entity_size_fail, filtered)
+
+        self.assertIn(template_language_pass, filtered)
+        self.assertNotIn(template_language_fail, filtered)
+
+        self.assertIn(template_doc_format_pass, filtered)
+        self.assertNotIn(template_doc_format_fail, filtered)
+
+        self.assertIn(template_annual_prosecution_pass, filtered)
+        self.assertNotIn(template_annual_prosecution_fail, filtered)
+
+        self.assertIn(template_annual_prosecution_until_grant_pass, filtered)
+        self.assertNotIn(template_annual_prosecution_until_grant_fail, filtered)
+
+        self.assertIn(template_renewal_fee_from_filing_after_grant_pass, filtered)
+        self.assertNotIn(template_renewal_fee_from_filing_after_grant_fail, filtered)
+
+        self.assertIn(template_prior_pct_pass, filtered)
+        self.assertNotIn(template_prior_pct_fail, filtered)
+
+        self.assertIn(template_prior_pct_isa_pass, filtered)
+        self.assertNotIn(template_prior_pct_isa_fail, filtered)
+
+        self.assertIn(template_prev_appl_date_excl_intermediary_time_pass, filtered)
+        self.assertNotIn(template_prev_appl_date_excl_intermediary_time_fail, filtered)
+
+        self.assertIn(template_prior_pct_pass, filtered)
+        self.assertNotIn(template_prior_pct_fail, filtered)

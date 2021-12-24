@@ -81,7 +81,7 @@ class LineEstimationTemplateConditionsFactory(factory.django.DjangoModelFactory)
     prior_pct = None
     prior_pct_same_country = None
     prev_appl_date_excl_intermediary_time = False
-    prior_appl_exists = False
+    prior_appl_exists = None
     doc_format = None
     language = None
 

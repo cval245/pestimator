@@ -22,7 +22,7 @@ class Family(models.Model):
         return self.famestformdata.unique_display_no
 
     def save(self, *args, **kwargs):
-        if self.pk == None:
+        if self.pk is None:
             # get all pervious families by user
             max_udn = Family.objects.filter(user=self.user).aggregate(max_udn=Max('unique_display_no'))
             if max_udn['max_udn'] is not None:
