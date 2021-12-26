@@ -32,7 +32,7 @@ DEBUG = env('DEBUG')
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 from celery.schedules import crontab
 
-ALLOWED_HOSTS = ["pestimator.herokuapp.com"]
+ALLOWED_HOSTS = ["pestimator.herokuapp.com", "api.estpat.com"]
 
 
 DATABASES = {
