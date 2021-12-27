@@ -53,11 +53,11 @@ CORS_ALLOWED_ORIGINS = [
     "https://estpat.com",
 ]
 
-
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
+# EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
+EMAIL_BACKEND = 'dfdf.djangoQEmailBackend.DjangoQBackend'
 EMAIL_HOST = env('EMAIL_HOST')
 EMAIL_PORT = env('EMAIL_PORT')
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
