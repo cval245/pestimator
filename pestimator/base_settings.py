@@ -13,7 +13,6 @@ INSTALLED_APPS = [
     'corsheaders',
     'djmoney',
     'djmoney.contrib.exchange',
-    # 'djcelery_email',
     'django_q',
     'account.apps.AccountConfig',
     'application.apps.ApplicationConfig',
@@ -125,7 +124,6 @@ EXCHANGE_BACKEND = 'djmoney.contrib.exchange.backends.OpenExchangeRatesBackend'
 Q_CLUSTER = {
     'name': 'pestimator',
     'orm': 'default',
-    # 'orm': 'pestimator',
     'catch_up': False,
     'sync': False,
     'retry': 60,

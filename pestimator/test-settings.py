@@ -35,7 +35,6 @@ DOMAIN = 'localhost:4200'
 DOMAIN_FULL = 'http://localhost:4200'
 
 OPEN_EXCHANGE_RATES_APP_ID = env('OPEN_EXCHANGE_RATES_APP_ID')
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_BACKEND = 'pestimator.djangoQEmailBackend.DjangoQBackend'
 EMAIL_HOST = env('EMAIL_HOST')
 EMAIL_PORT = env('EMAIL_PORT')
