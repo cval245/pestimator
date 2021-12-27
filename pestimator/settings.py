@@ -53,11 +53,11 @@ CORS_ALLOWED_ORIGINS = [
     "https://estpat.com",
 ]
 
-
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
+# EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
+EMAIL_BACKEND = 'dfdf.djangoQEmailBackend.DjangoQBackend'
 EMAIL_HOST = env('EMAIL_HOST')
 EMAIL_PORT = env('EMAIL_PORT')
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
@@ -76,22 +76,6 @@ SITE_NAME = 'EstPat'
 
 OPEN_EXCHANGE_RATES_APP_ID = env('OPEN_EXCHANGE_RATES_APP_ID')
 
-BROKER_URL = os.environ.get(env('BROKER_PARTIAL_URL'), "django://")
-BROKER_POOL_LIMIT = 1
-BROKER_CONNECTION_MAX_RETRIES = 100
-CELERY_BROKER_URL = env('BROKER_PARTIAL_URL')
-CELERY_TASK_SERIALIZER = "json"
-CELERY_ACCEPT_CONTENT = ["json", "msgpack"]
-
-CELERY_BEAT_SCHEDULE = {
-    'update_rates': {
-        'task': 'account.tasks.update_rates',
-        'schedule': crontab(hour=8, minute=24),
-        'options': {
-            'expires': 300.0,
-        },
-    },
-}
 STRIPE_PRIVATE_KEY = env('STRIPE_PRIVATE_KEY')
 GOOGLE_RECAPTCHA_SECRET_KEY = env('GOOGLE_RECAPTCHA_SECRET_KEY')
 USE_RECAPTCHA_BOOL = True
