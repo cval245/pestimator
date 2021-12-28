@@ -30,7 +30,6 @@ SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-from celery.schedules import crontab
 
 ALLOWED_HOSTS = ["pestimator.herokuapp.com", "api.estpat.com"]
 
@@ -57,7 +56,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
-EMAIL_BACKEND = 'dfdf.djangoQEmailBackend.DjangoQBackend'
+EMAIL_BACKEND = 'djangoQEmailBackend.DjangoQBackend'
 EMAIL_HOST = env('EMAIL_HOST')
 EMAIL_PORT = env('EMAIL_PORT')
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
