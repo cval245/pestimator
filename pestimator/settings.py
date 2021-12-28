@@ -56,7 +56,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
-EMAIL_BACKEND = 'djangoQEmailBackend.DjangoQBackend'
+EMAIL_BACKEND = 'pestimator.djangoQEmailBackend.DjangoQBackend'
 EMAIL_HOST = env('EMAIL_HOST')
 EMAIL_PORT = env('EMAIL_PORT')
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
