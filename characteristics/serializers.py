@@ -118,6 +118,7 @@ class CountryAllPostSerializer(serializers.ModelSerializer):
         instance.currency_name = validated_data['currency_name']
         instance.pct_accept_bool = validated_data['pct_accept_bool']
         instance.long_name = validated_data['long_name']
+        instance.active_bool = validated_data['active_bool']
         instance.color = validated_data['color']
         isa_countries = []
         for c in validated_data['isa_countries']:
