@@ -10,6 +10,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'djoser',
+    'anymail',
     'corsheaders',
     'djmoney',
     'djmoney.contrib.exchange',
