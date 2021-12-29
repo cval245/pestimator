@@ -6,7 +6,9 @@ class UserProfileAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ('id', 'company_name', 'address', 'user',
-                  'city', 'state', 'zip_code', 'estimates_remaining')
+                  'city', 'state', 'zip_code',
+                  # 'estimates_remaining',
+                  )
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -16,5 +18,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ('id', 'company_name', 'address', 'user',
-                  'city', 'state', 'zip_code', 'estimates_remaining')
-        read_only_fields = ['estimates_remaining']
+                  'city', 'state', 'zip_code',
+                  # 'estimates_remaining'
+                  )
+        # read_only_fields = ['estimates_remaining']

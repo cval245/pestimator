@@ -6,7 +6,7 @@ from . import models
 
 
 class UserProfileFactory(factory.django.DjangoModelFactory):
-    estimates_remaining = 3
+    # estimates_remaining = 3
     user = factory.SubFactory(UserFactory)
     company_name = factory.sequence(lambda n: 'company_name%04d' % n)
     address = factory.sequence(lambda n: 'address%04d' % n)

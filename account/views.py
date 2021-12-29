@@ -32,11 +32,11 @@ class UserProfileViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return UserProfile.objects.filter(user=self.request.user)
 
-    def create(self, request, *args, **kwargs):
-        # add one free estimate
-        request.data['estimates_remaining'] = 1
-
-        return super().create(request, *args, **kwargs)
+    # def create(self, request, *args, **kwargs):
+    #     # add one free estimate
+    #     # request.data['estimates_remaining'] = 1
+    #
+    #     return super().create(request, *args, **kwargs)
 
 
 @api_view(['POST'])
@@ -97,9 +97,9 @@ def webhook_stripe_add_estimate(request):
                                     product_id=item['price']['product'],
                                     line_item_id=item['id']
                                     )
-            userProfile = UserProfile.objects.get(user=user)
-            userProfile.estimates_remaining = userProfile.estimates_remaining + item['quantity']
-            userProfile.save()
+            # userProfile = UserProfile.objects.get(user=user)
+            # userProfile.estimates_remaining = userProfile.estimates_remaining + item['quantity']
+            # userProfile.save()
 
 
     return JsonResponse(data={'success': True})

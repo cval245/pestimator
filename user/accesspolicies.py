@@ -56,15 +56,15 @@ class FamFormPostAccess(AccessPolicy):
                    "destroy", "create_checkout_session"],
         "principal": "authenticated",
         "effect": "allow",
-        "condition": ["has_estimates_remaining"]
+        # "condition": ["has_estimates_remaining"]
     }]
-    def has_estimates_remaining(self, request, view, action):
-        userProfile = UserProfile.objects.get(user=request.user)
-        est_remaining = userProfile.estimates_remaining
-        if est_remaining > 0:
-            return True
-        else:
-            return False
+    # def has_estimates_remaining(self, request, view, action):
+    #     userProfile = UserProfile.objects.get(user=request.user)
+    #     est_remaining = userProfile.estimates_remaining
+    #     if est_remaining > 0:
+    #         return True
+    #     else:
+    #         return False
 
 
 class GetOnlyPolicy(AccessPolicy):

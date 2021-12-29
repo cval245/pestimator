@@ -11,16 +11,16 @@ class UserProfile(models.Model):
     city = models.TextField(null=True)
     state = models.TextField(null=True)
     zip_code = models.IntegerField(null=True)
-    estimates_remaining = models.IntegerField(default=0)
+    # estimates_remaining = models.IntegerField(default=0)
 
-    def save(self, *args, **kwargs):
-        if (self.pk is None):
-            # if being created and not updated
-            self.estimates_remaining = 1
-            # set first estimate as free
-            super(UserProfile, self).save(*args, **kwargs)
-        else:
-            super(UserProfile, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if self.pk is None:
+    #         # if being created and not updated
+    #         self.estimates_remaining = -1
+    #         # set first estimate as free
+    #         super(UserProfile, self).save(*args, **kwargs)
+    #     else:
+    #         super(UserProfile, self).save(*args, **kwargs)
 
 
 class PurchaseOrder(models.Model):
