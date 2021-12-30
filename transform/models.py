@@ -106,12 +106,13 @@ class IssueTransform(BaseTransform):
 class CountryOANum(models.Model):
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
     oa_total = models.IntegerField()
+    appl_type = models.ForeignKey(ApplType, on_delete=models.CASCADE)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['country'],
-                name='CountryOANumCountryUniqueConstraint'),
+                fields=['country', 'appl_type'],
+                name='CountryOANumCountryApplTypeUniqueConstraint'),
         ]
 
 class DefaultCountryOANum(models.Model):

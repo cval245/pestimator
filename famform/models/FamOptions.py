@@ -27,9 +27,9 @@ class FamOptions(models.Model):
                                               prev_appl_option=prev_appl_option)
         return date_filing
 
-    def _calc_oa_num(self, country):
-        if CountryOANum.objects.filter(country=country).exists():
-            oa_total = CountryOANum.objects.get(country=country).oa_total
+    def _calc_oa_num(self, country, appl_type):
+        if CountryOANum.objects.filter(country=country, appl_type=appl_type).exists():
+            oa_total = CountryOANum.objects.get(country=country, appl_type=appl_type).oa_total
 
         else:
             oa_total = DefaultCountryOANum.objects.first().oa_total
@@ -67,7 +67,7 @@ class FamOptions(models.Model):
             # select transform and get date_diff
             date_filing = self._calc_filing_date(pct_appl_type, country, prev_appl_type, prev_date, prev_appl_option)
             # get oa_total
-            oa_total = self._calc_oa_num(country)
+            oa_total = self._calc_oa_num(country, pct_appl_type)
 
             det = self._smart_translate_details(
                 country=country, details=details, appl_type=pct_appl_type,
@@ -109,7 +109,7 @@ class FamOptions(models.Model):
             date_filing = self._calc_filing_date(appl_type, country, prev_appl_type,
                                                  prev_date, prev_appl_option)
             # get oa_total
-            oa_total = self._calc_oa_num(country)
+            oa_total = self._calc_oa_num(country, appl_type)
 
             det = self._smart_translate_details(
                 country=country, details=details, appl_type=appl_type,
