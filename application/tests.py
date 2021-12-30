@@ -35,7 +35,7 @@ from .models.allowance import Allowance
 from .models.issue import Issue
 from .models.publication import Publication
 from .models.usOfficeAction import USOfficeAction
-from .models.utilityApplication import UtilityApplication
+from .models.baseUtilityApplication import BaseUtilityApplication
 
 
 # Create your tests here.
@@ -203,7 +203,7 @@ class PCTApplicationTest(TestCase):
     #                       (oa_option_fourth.date_diff + oa_third.date_office_action))
 
 
-class UtilityApplicationTest(TestCase):
+class BaseUtilityApplicationTest(TestCase):
 
     def setUp(self):
         self.user = UserFactory()
@@ -254,18 +254,18 @@ class UtilityApplicationTest(TestCase):
         self.issueOption = IssueOptionsFactory(appl=self.applOption)
 
     def test_create_full_creates_Publication(self):
-        UtilityApplication.objects.create_full(options=self.applOption,
-                                               user=self.user,
-                                               family_id=self.family.id)
+        BaseUtilityApplication.objects.create_full(options=self.applOption,
+                                                   user=self.user,
+                                                   family_id=self.family.id)
 
         uAppl = BaseApplication.objects.get(user=self.user)
         date_publication = uAppl.date_filing + self.publOption.date_diff
         self.assertEquals(date_publication, Publication.objects.first().date_publication)
 
     def test_create_full_creates_oa(self):
-        UtilityApplication.objects.create_full(options=self.applOption,
-                                               user=self.user,
-                                               family_id=self.family.id)
+        BaseUtilityApplication.objects.create_full(options=self.applOption,
+                                                   user=self.user,
+                                                   family_id=self.family.id)
 
         uAppl = BaseApplication.objects.get(user=self.user)
         req_diff = self.reqExamOption.date_diff
@@ -274,9 +274,9 @@ class UtilityApplicationTest(TestCase):
         self.assertEquals(date_allowance, USOfficeAction.objects.first().date_office_action)
 
     def test_create_full_creates_allowance(self):
-        UtilityApplication.objects.create_full(options=self.applOption,
-                                               user=self.user,
-                                               family_id=self.family.id)
+        BaseUtilityApplication.objects.create_full(options=self.applOption,
+                                                   user=self.user,
+                                                   family_id=self.family.id)
         uAppl = BaseApplication.objects.get(user=self.user)
         # relativedelta is calced by combining options in Setup
         req_diff = self.reqExamOption.date_diff
@@ -286,9 +286,9 @@ class UtilityApplicationTest(TestCase):
         self.assertEquals(date_allowance, Allowance.objects.first().date_allowance)
 
     def test_create_full_creates_issue(self):
-        UtilityApplication.objects.create_full(options=self.applOption,
-                                               user=self.user,
-                                               family_id=self.family.id)
+        BaseUtilityApplication.objects.create_full(options=self.applOption,
+                                                   user=self.user,
+                                                   family_id=self.family.id)
         uAppl = BaseApplication.objects.get(user=self.user)
         req_diff = self.reqExamOption.date_diff
         oa_agg = self.applOption.oaoptions_set.all().aggregate(date_diff=Sum('date_diff'))
@@ -298,24 +298,24 @@ class UtilityApplicationTest(TestCase):
         self.assertEquals(date_issuance, Issue.objects.first().date_issuance)
 
     def test_generate_filing_est(self):
-        UtilityApplication.objects.create_full(options=self.applOption,
-                                               user=self.user,
-                                               family_id=self.family.id)
+        BaseUtilityApplication.objects.create_full(options=self.applOption,
+                                                   user=self.user,
+                                                   family_id=self.family.id)
         uAppl = BaseApplication.objects.get(user=self.user)
         self.assertEquals(FilingEstimate.objects.get(application=uAppl).official_cost,
                           FilingEstimateTemplate.objects.first().official_cost)
 
     def test_create_full_publication_est(self):
-        UtilityApplication.objects.create_full(options=self.applOption,
-                                               user=self.user, family_id=self.family.id)
+        BaseUtilityApplication.objects.create_full(options=self.applOption,
+                                                   user=self.user, family_id=self.family.id)
         publEstTemp = PublicationEstTemplate.objects.all()
         self.assertEquals(PublicationEstTemplate.objects.first().official_cost,
                           PublicationEst.objects.all().first().official_cost
                           )
 
     def test_create_full_oa_est(self):
-        UtilityApplication.objects.create_full(options=self.applOption,
-                                               user=self.user, family_id=self.family.id)
+        BaseUtilityApplication.objects.create_full(options=self.applOption,
+                                                   user=self.user, family_id=self.family.id)
         self.assertEquals(USOAEstimateTemplate.objects.first().official_cost,
                           USOAEstimate.objects.all().first().official_cost
                           )
@@ -328,23 +328,23 @@ class UtilityApplicationTest(TestCase):
         allowOption = AllowOptionsFactory(appl=applOption)
         issueOption = IssueOptionsFactory(appl=applOption)
 
-        UtilityApplication.objects.create_full(options=applOption,
-                                               user=self.user, family_id=self.family.id)
+        BaseUtilityApplication.objects.create_full(options=applOption,
+                                                   user=self.user, family_id=self.family.id)
 
         self.assertEquals(OAEstimateTemplate.objects.filter(country=self.country_CN).first().official_cost,
                           OAEstimate.objects.all().first().official_cost
                           )
 
     def test_create_full_allowance_est(self):
-        UtilityApplication.objects.create_full(options=self.applOption,
-                                               user=self.user, family_id=self.family.id)
+        BaseUtilityApplication.objects.create_full(options=self.applOption,
+                                                   user=self.user, family_id=self.family.id)
         self.assertEquals(AllowanceEstTemplate.objects.first().official_cost,
                           AllowanceEst.objects.all().first().official_cost
                           )
 
     def test_create_full_issue_est(self):
-        UtilityApplication.objects.create_full(options=self.applOption,
-                                               user=self.user, family_id=self.family.id)
+        BaseUtilityApplication.objects.create_full(options=self.applOption,
+                                                   user=self.user, family_id=self.family.id)
         self.assertEquals(IssueEstTemplate.objects.first().official_cost,
                           IssueEst.objects.all().first().official_cost
                           )
@@ -393,7 +393,9 @@ class UtilityApplicationTest(TestCase):
         self.assertEquals(oa_fourth.date_office_action,
                           (oa_option_fourth.date_diff + oa_third.date_office_action))
 
-    # def test_generate_oa_adds_oa_estimate_templates(self):
+
+#
+#     # def test_generate_oa_adds_oa_estimate_templates(self):
 
 
 class USUtilityApplicationTest(TestCase):

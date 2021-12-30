@@ -349,6 +349,54 @@ class ComplexConditionsTest(TestCase):
 
 class TestEstimationUtils(TestCase):
 
+    def test_utils__filter_fee_select_avail_currency_if_local_or_default(self):
+        country_cn = CountryFactory(CN=True, currency_name='CNY')
+        country_us = CountryFactory(US=True, currency_name='USD')
+        appl = PCTApplicationFactory(country=country_cn, isa_country=country_us)
+
+        conditions_true_AUD = factories.LineEstimationTemplateConditionsFactory(isa_country_fee_only=True)
+        filing_est_template_true_AUD = factories.FilingEstimateTemplateFactory(conditions=conditions_true_AUD,
+                                                                               official_cost=Money(100, 'AUD'))
+        conditions_true_USD = factories.LineEstimationTemplateConditionsFactory(isa_country_fee_only=True)
+        filing_est_template_true_USD = factories.FilingEstimateTemplateFactory(conditions=conditions_true_USD,
+                                                                               official_cost=Money(40, 'USD'))
+        templates = FilingEstimateTemplate.objects.all()
+        filtered = utils._filter_fee_select_avail_currency_if_local_or_default(templates=templates, application=appl)
+        self.assertEquals(len(filtered), 1)
+        self.assertEquals(filtered.first(), filing_est_template_true_USD)
+
+    def test_utils__filter_fee_select_avail_currency_if_local_or_default_return_one(self):
+        country_cn = CountryFactory(CN=True, currency_name='CNY')
+        country_us = CountryFactory(US=True, currency_name='USD')
+        appl = PCTApplicationFactory(country=country_cn, isa_country=country_us)
+        conditions_true_CNY = factories.LineEstimationTemplateConditionsFactory(isa_country_fee_only=True)
+        filing_est_template_true_CNY = factories.FilingEstimateTemplateFactory(conditions=conditions_true_CNY,
+                                                                               official_cost=Money(100, 'CNY'))
+        conditions_true_USD = factories.LineEstimationTemplateConditionsFactory(isa_country_fee_only=True)
+        filing_est_template_true_USD = factories.FilingEstimateTemplateFactory(conditions=conditions_true_USD,
+                                                                               official_cost=Money(40, 'USD'))
+        templates = FilingEstimateTemplate.objects.all()
+        filtered = utils._filter_fee_select_avail_currency_if_local_or_default(templates=templates, application=appl)
+        self.assertEquals(len(filtered), 1)
+        self.assertEquals(filtered.first(), filing_est_template_true_CNY)
+
+    def test_utils__filter_fee_select_avail_currency_if_local_or_default_returns_two(self):
+        country_cn = CountryFactory(CN=True, currency_name='CNY')
+        country_us = CountryFactory(US=True, currency_name='USD')
+        appl = PCTApplicationFactory(country=country_cn, isa_country=country_us)
+        conditions_true_CNY = factories.LineEstimationTemplateConditionsFactory(isa_country_fee_only=True)
+        filing_est_template_true_CNY = factories.FilingEstimateTemplateFactory(conditions=conditions_true_CNY,
+                                                                               official_cost=Money(100, 'CNY'))
+        conditions_false_CNY = factories.LineEstimationTemplateConditionsFactory(isa_country_fee_only=False)
+        filing_est_template_false_CNY = factories.FilingEstimateTemplateFactory(conditions=conditions_false_CNY,
+                                                                                official_cost=Money(100, 'CNY'))
+        conditions_false_USD = factories.LineEstimationTemplateConditionsFactory(isa_country_fee_only=True)
+        filing_est_template_true_USD = factories.FilingEstimateTemplateFactory(conditions=conditions_false_USD,
+                                                                               official_cost=Money(40, 'USD'))
+        templates = FilingEstimateTemplate.objects.all()
+        filtered = utils._filter_fee_select_avail_currency_if_local_or_default(templates=templates, application=appl)
+        self.assertEquals(len(filtered), 2)
+
     def test_utils__filter_fee_entity_size_includes_correct_and_null_entity_size(self):
         entity_size_small = EntitySizeFactory(us_small=True)
         entity_size_micro = EntitySizeFactory(us_micro=True)
@@ -1874,6 +1922,19 @@ class FilterConditionsTest(TestCase):
             date_diff='P2Y',
             conditions=conditions_prior_appl_exists_fail)
 
+        country_cn = CountryFactory(CN=True, currency_name='CNY')
+        country_us = CountryFactory(US=True, currency_name='USD')
+        conditions_isa_country_fee_only_fail_CNY = factories.LineEstimationTemplateConditionsFactory(
+            isa_country_fee_only=True)
+        filing_est_template_fail_CNY = factories.FilingEstimateTemplateFactory(
+            conditions=conditions_isa_country_fee_only_fail_CNY,
+            official_cost=Money(100, 'CNY'))
+        conditions_isa_country_fee_only_fail_USD = factories.LineEstimationTemplateConditionsFactory(
+            isa_country_fee_only=True)
+        filing_est_template_fail_USD = factories.FilingEstimateTemplateFactory(
+            conditions=conditions_isa_country_fee_only_fail_USD,
+            official_cost=Money(40, 'USD'))
+
         templates = FilingEstimateTemplate.objects.all()
         filtered = utils.filter_conditions(templates=templates, application=application)
 
@@ -1946,3 +2007,6 @@ class FilterConditionsTest(TestCase):
 
         self.assertIn(template_prior_pct_pass, filtered)
         self.assertNotIn(template_prior_pct_fail, filtered)
+
+        self.assertNotIn(filing_est_template_fail_CNY, filtered)
+        self.assertNotIn(filing_est_template_fail_USD, filtered)

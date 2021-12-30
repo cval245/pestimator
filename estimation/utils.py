@@ -34,8 +34,29 @@ def filter_conditions(templates, application):
 
     temp = _filter_languages(temp, appl_details)
     temp = _filter_fee_doc_format(temp, particulars)
+    temp = _filter_fee_select_avail_currency_if_local_or_default(temp, application)
     final_temps = temp
     return final_temps
+
+
+def _filter_fee_select_avail_currency_if_local_or_default(templates, application):
+    if hasattr(application, 'pctapplication'):
+        preferred_currency = application.country.currency_name
+        templates_preferred = templates.filter(
+            Q(conditions__isa_country_fee_only=False) |
+            Q(conditions__isa_country_fee_only=True, official_cost_currency=preferred_currency)
+        )
+        if templates_preferred.exists():
+            templates = templates_preferred
+        else:
+            normal_currency = application.isa_country.currency_name
+            templates = templates.filter(
+                Q(conditions__isa_country_fee_only=False) |
+                Q(conditions__isa_country_fee_only=True, official_cost_currency=normal_currency)
+            )
+    else:
+        templates = templates.filter(conditions__isa_country_fee_only=False)
+    return templates
 
 
 def _filter_fee_doc_format(templates, particulars):

@@ -31,7 +31,7 @@ class PCTApplication(BaseApplication):
         )
         templates = utils.filter_conditions(filing_templates, self)
         # filter for NOT ISA country
-        templates = templates.filter(isa_country_fee_only=False)
+        templates = templates.filter(conditions__isa_country_fee_only=False)
         templates = templates.select_related('law_firm_template')
         ests = []
         for e in templates:
@@ -54,7 +54,7 @@ class PCTApplication(BaseApplication):
             country=self.isa_country,
             appl_type=convert_class_applType(self),
         )
-        templates = filing_templates.filter(isa_country_fee_only=True)
+        templates = filing_templates.filter(conditions__isa_country_fee_only=True)
         templates = utils.filter_conditions(templates, self)
         # do same thing,
         templates = templates.select_related('law_firm_template')

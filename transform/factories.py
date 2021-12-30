@@ -80,6 +80,7 @@ class IssueTransformFactory(BaseTransformFactory):
 class CountryOANumFactory(factory.django.DjangoModelFactory):
     country = factory.SubFactory(CountryFactory)
     oa_total = factory.Faker('random_digit')
+    appl_type = factory.SubFactory(ApplTypeFactory)
 
     class Meta:
         model = models.CountryOANum

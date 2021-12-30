@@ -344,6 +344,7 @@ class LineEstimationTemplateConditions(models.Model):
     prior_pct_same_country = models.BooleanField(null=True)
     prev_appl_date_excl_intermediary_time = models.BooleanField(default=False)
     prior_appl_exists = models.BooleanField(default=None, null=True)
+    isa_country_fee_only = models.BooleanField(default=False)
     doc_format = models.ForeignKey(DocFormat, default=None, null=True, on_delete=models.CASCADE)
     language = models.ForeignKey(Language, default=None, null=True, on_delete=models.CASCADE)
 
@@ -371,7 +372,6 @@ class BaseEstTemplate(models.Model):
     appl_type = models.ForeignKey(ApplType, on_delete=models.CASCADE)
 
     conditions = models.OneToOneField(LineEstimationTemplateConditions, on_delete=models.CASCADE)
-    isa_country_fee_only = models.BooleanField(default=False)
     law_firm_template = models.OneToOneField(LawFirmEstTemplate, on_delete=models.CASCADE)
     description = models.TextField()
     fee_code = models.CharField(max_length=30)

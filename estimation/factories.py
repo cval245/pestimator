@@ -82,6 +82,7 @@ class LineEstimationTemplateConditionsFactory(factory.django.DjangoModelFactory)
     prior_pct_same_country = None
     prev_appl_date_excl_intermediary_time = False
     prior_appl_exists = None
+    isa_country_fee_only = False
     doc_format = None
     language = None
 
@@ -118,7 +119,6 @@ class BaseEstTemplateFactory(factory.django.DjangoModelFactory):
     country = factory.SubFactory(CountryFactory)
     appl_type = factory.SubFactory(ApplTypeFactory)
     conditions = factory.SubFactory(LineEstimationTemplateConditionsFactory)
-    isa_country_fee_only = False
     law_firm_template = factory.SubFactory(LawFirmEstTemplateFactory)
     description = 'ddd'
     fee_code = 'ddd'

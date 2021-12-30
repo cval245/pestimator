@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='officeaction_set',
                                     to='application.baseutilityapplication'),
         ),
-        migrations.DeleteModel(
-            name='UtilityApplication',
-        ),
+        # migrations.DeleteModel(
+        #     name='UtilityApplication',
+        # ),
     ]

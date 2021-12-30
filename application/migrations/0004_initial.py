@@ -55,18 +55,18 @@ class Migration(migrations.Migration):
             },
             bases=('application.baseutilityapplication',),
         ),
-        migrations.CreateModel(
-            name='UtilityApplication',
-            fields=[
-                ('baseutilityapplication_ptr',
-                 models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True,
-                                      primary_key=True, serialize=False, to='application.baseutilityapplication')),
-            ],
-            options={
-                'abstract': False,
-            },
-            bases=('application.baseutilityapplication',),
-        ),
+        # migrations.CreateModel(
+        #     name='UtilityApplication',
+        #     fields=[
+        #         ('baseutilityapplication_ptr',
+        #          models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True,
+        #                               primary_key=True, serialize=False, to='application.baseutilityapplication')),
+        #     ],
+        #     options={
+        #         'abstract': False,
+        #     },
+        #     bases=('application.baseutilityapplication',),
+        # ),
         migrations.AddField(
             model_name='pctapplication',
             name='isa_country',

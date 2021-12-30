@@ -774,18 +774,20 @@ class FamOptionsTest(TestCase):
 
     def test_calc_oa_num_returns_CountryOANum(self):
         country_US = CountryFactory(US=True)
+        appl_type = ApplTypeFactory()
         country_oa_num = CountryOANumFactory(country=country_US)
         family_option = FamOptionsFactory()
-        oa_total = family_option._calc_oa_num(country_US)
+        oa_total = family_option._calc_oa_num(country_US, appl_type)
         self.assertEquals(oa_total, country_oa_num.oa_total)
 
     def test_calc_oa_num_returns_DefaultCountryOANum(self):
         country_CN = CountryFactory(CN=True)
         country_US = CountryFactory(US=True)
+        appl_type = ApplTypeFactory()
         country_oa_num = CountryOANumFactory(country=country_US)
         default_country_oa_num = DefaultCountryOANumFactory()
         family_option = FamOptionsFactory()
-        oa_total = family_option._calc_oa_num(country_CN)
+        oa_total = family_option._calc_oa_num(country_CN, appl_type)
         self.assertEquals(oa_total, default_country_oa_num.oa_total)
 
     def test_apply_custom_details_empty_custom_details(self):
