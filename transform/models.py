@@ -66,7 +66,12 @@ class PublicationTransform(BaseTransform):
 
 
 class RequestExaminationTransform(BaseTransform):
-    pass
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['country', 'appl_type'],
+                name='RequestExaminationCountryApplTypeUniqueConstraint'),
+        ]
 
 
 class OATransform(BaseTransform):
