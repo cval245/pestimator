@@ -1,15 +1,11 @@
-from django.http import JsonResponse
-from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
 from characteristics.enums import ApplTypes
 from characteristics.models import ApplType, Country
 from user.accesspolicies import StaffOnlyAccess
-from user.permissions import DataPermission
 from .models import CustomFilingTransform, PublicationTransform, OATransform, \
-    AllowanceTransform, IssueTransform, CountryOANum, USOATransform, TransComplexTime
+    AllowanceTransform, IssueTransform, CountryOANum, RequestExaminationTransform, USOATransform, TransComplexTime
 
 from .serializers import CustomFilingTransformSerializer, \
     PublicationTransformSerializer, OATransformSerializer, \
@@ -46,7 +42,7 @@ class RequestExaminationTransformViewSet(viewsets.ModelViewSet):
     permission_classes = (StaffOnlyAccess,)
 
     def get_queryset(self):
-        return PublicationTransform.objects.all()
+        return RequestExaminationTransform.objects.all()
 
 
 class OATransformViewSet(viewsets.ModelViewSet):
