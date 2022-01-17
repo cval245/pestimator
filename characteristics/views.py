@@ -20,7 +20,6 @@ class ApplTypeViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         # from django.conf import settings.djmoney
-
         return ApplType.objects.filter(internal_bool=False)
 
     # class Meta:

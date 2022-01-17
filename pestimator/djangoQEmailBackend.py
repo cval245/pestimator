@@ -68,7 +68,6 @@ def to_dict(email_message):
     Converts the specified email message to a dictionary representation.
     """
     # if type(email_message) not in [EmailMessage, EmailMultiAlternatives]:
-    #     print('wurg,', email_message)
     #     return email_message
     email_message_data = {
         'subject': email_message.subject,

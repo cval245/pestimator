@@ -159,7 +159,6 @@ class FamEstFormDataNetPostSerializer(serializers.Serializer):
         init_appl_options = CustomApplOptions.objects.create(
             **init_appl_options
         )
-
         famEstData = FamEstFormData.objects.create(
             family=fam,
             user=validated_data['user'],
@@ -178,7 +177,7 @@ class FamEstFormDataNetPostSerializer(serializers.Serializer):
         famEstData.save()
         validate_entity_size(famEstData.init_appl_country, famEstData.init_appl_details)
         if famEstData.pct_country:
-            validate_entity_size(famEstData.pct_country, famEstData.pct_method_customization)
+            validate_entity_size(famEstData.pct_country, famEstData.pct_method_customization.custom_appl_details)
 
         pct_countries = validated_data.pop('pct_countries')
         for country in pct_countries:
@@ -191,17 +190,14 @@ class FamEstFormDataNetPostSerializer(serializers.Serializer):
         self.validate_ep_entrypoint(famEstData)
         self.validate_against_double_patenting(famEstData)
 
-        print('famEstData', famEstData.__dict__)
-        print('famEstDataParis', famEstData.paris_countries.all())
-        for i in famEstData.paris_countries.through.objects.filter(fam_est_form_data_id=famEstData.id):
-            print(i.__dict__)
         famEstData.generate_family_options()
         return famEstData
 
     def validate_ep_entrypoint(self, famEstData):
         if famEstData.ep_method:
             ep_country = Country.objects.get(country='EP')
-            if famEstData.init_appl_type.get_enum is not ApplTypes.EP \
+            print('ff', famEstData.init_appl_type.get_enum())
+            if famEstData.init_appl_type.get_enum() is not ApplTypes.EP \
                     and not ParisCountryCustomization.objects.filter(fam_est_form_data=famEstData,
                                                                      country=ep_country).exists() \
                     and not PCTCountryCustomization.objects.filter(fam_est_form_data=famEstData,
@@ -210,7 +206,7 @@ class FamEstFormDataNetPostSerializer(serializers.Serializer):
 
     def validate_against_double_patenting(self, famEstData):
         # check if a country is repeated
-        if famEstData.init_appl_type.get_enum is ApplTypes.UTILITY:
+        if famEstData.init_appl_type.get_enum() is ApplTypes.UTILITY:
             if famEstData.pariscountrycustomization_set.filter(country=famEstData.init_appl_country).exists() \
                     or famEstData.pctcountrycustomization_set.filter(country=famEstData.init_appl_country).exists() \
                     or famEstData.epcountrycustomization_set.filter(country=famEstData.init_appl_country).exists():
@@ -255,11 +251,9 @@ class FamEstFormDataNetPostSerializer(serializers.Serializer):
 
     def create_paris_country_customization(self, country, famEstData):
         country = create_generic_customization(country)
-        print('country', country)
         country['fam_est_form_data'] = famEstData
         validate_entity_size(country['country'], country['custom_appl_details'])
         bob = ParisCountryCustomization.objects.create(**country)
-        print(bob.__dict__)
         return bob
 
 
@@ -270,7 +264,6 @@ def validate_entity_size(country, customApplDetails):
 
 
 def create_generic_customization(method_customization):
-    print('method_cus', method_customization)
     if method_customization is None:
         custom_appl_details = CustomApplDetails.objects.create()
         custom_appl_options = CustomApplOptions.objects.create()
@@ -288,5 +281,4 @@ def create_generic_customization(method_customization):
         else:
             method_customization['custom_appl_options'] = CustomApplOptions.objects.create(
                 **method_customization['custom_appl_options'])
-        print('haihu', method_customization)
         return method_customization

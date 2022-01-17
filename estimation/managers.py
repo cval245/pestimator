@@ -71,7 +71,7 @@ class ReqExamEstimateManager(models.Manager):
             cost = complex_condition.calc_complex_condition(application.details,
                                                             cost,
                                                             est_template.conditions)
-        new_date = exam_request.date_requst_examination + est_template.date_diff
+        new_date = exam_request.date_request_examination + est_template.date_diff
         if est_template.conditions.condition_time_complex:
             time_complex = est_template.conditions.condition_time_complex
             date_diff = est_template.date_diff

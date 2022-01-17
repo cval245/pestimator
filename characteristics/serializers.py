@@ -47,7 +47,7 @@ class PostDocFormatCountrySerializer(serializers.Serializer):
 class ApplTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ApplType
-        fields = ('id', 'application_type', 'long_name', 'country_set')
+        fields = ('id', 'application_type', 'long_name', 'country_set', 'internal_bool')
 
 
 class CountrySerializer(serializers.ModelSerializer):
