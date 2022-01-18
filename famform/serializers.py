@@ -196,7 +196,6 @@ class FamEstFormDataNetPostSerializer(serializers.Serializer):
     def validate_ep_entrypoint(self, famEstData):
         if famEstData.ep_method:
             ep_country = Country.objects.get(country='EP')
-            print('ff', famEstData.init_appl_type.get_enum())
             if famEstData.init_appl_type.get_enum() is not ApplTypes.EP \
                     and not ParisCountryCustomization.objects.filter(fam_est_form_data=famEstData,
                                                                      country=ep_country).exists() \

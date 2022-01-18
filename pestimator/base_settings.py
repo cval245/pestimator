@@ -14,7 +14,6 @@ INSTALLED_APPS = [
     'corsheaders',
     'djmoney',
     'djmoney.contrib.exchange',
-    'django_q',
     'account.apps.AccountConfig',
     'application.apps.ApplicationConfig',
     'estimation.apps.EstimationConfig',
@@ -24,7 +23,6 @@ INSTALLED_APPS = [
     'transform.apps.TransformConfig',
     'lawfirm.apps.LawfirmConfig',
     'user.apps.UserConfig',
-    # 'countryform.apps.CountryformConfig',
 ]
 
 MIDDLEWARE = [
@@ -115,18 +113,8 @@ DJOSER = {
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# EMAIL_BACKEND=None
 
 MEDIA_ROOT = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static/media')
 
 MEDIA_URL = '/media/'
 EXCHANGE_BACKEND = 'djmoney.contrib.exchange.backends.OpenExchangeRatesBackend'
-
-Q_CLUSTER = {
-    'name': 'pestimator',
-    'orm': 'default',
-    'catch_up': False,
-    'sync': False,
-    'retry': 60,
-    'timeout': 30,
-}
