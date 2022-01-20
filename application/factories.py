@@ -1,5 +1,4 @@
 import factory
-from django.utils import timezone
 
 from characteristics.factories import CountryFactory, EntitySizeFactory, LanguageFactory
 from family.factories import FamilyFactory
@@ -48,6 +47,7 @@ class ApplicationFactory(factory.django.DjangoModelFactory):
 
 class PCTApplicationFactory(ApplicationFactory):
     isa_country = factory.SubFactory(CountryFactory, CN=True)
+    isa_entity_size = factory.SubFactory(EntitySizeFactory)
 
     class Meta:
         model = models.PCTApplication

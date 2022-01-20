@@ -54,8 +54,8 @@ class FamOptions(models.Model):
         )
         return new_details
 
-    def generate_pct_appl(self, details, custom_details, country, isa_country, prev_appl_type, prev_date,
-                          first_appl_bool, prev_appl_option, custom_options):
+    def generate_pct_appl(self, details, custom_details, country, isa_country, isa_entity_size,
+                          prev_appl_type, prev_date, first_appl_bool, prev_appl_option, custom_options):
         pct_appl_type = ApplType.objects.get_name_from_enum(ApplTypes.PCT)
         particulars = ApplOptionsParticulars.objects.create_appl_options_particulars(
             custom_options=custom_options,
@@ -87,6 +87,7 @@ class FamOptions(models.Model):
             pct_appl_option = PCTApplOptions.objects.create_pct_appl_option(
                 date_filing=date_filing, country=country, details=final_details,
                 oa_total=oa_total, fam_option=self, isa_country=isa_country,
+                isa_entity_size=isa_entity_size,
                 prev_appl_option=prev_appl_option,
                 translation_enum=translation_enum,
                 particulars=particulars,

@@ -15,7 +15,7 @@ class Family(models.Model):
     # objects = FamilyManager()
 
     def __str__(self):
-        return self.family_nama
+        return self.family_name
 
     @property
     def get_fam_est_form_data_udn(self):
@@ -34,7 +34,8 @@ class Family(models.Model):
     def create_appls(self, famOptions):
         from application.models import BaseApplication
         for appl_option in famOptions.apploptions_set.all():
-            BaseApplication.objects.create_full(options=appl_option, user=self.user,
+            BaseApplication.objects.create_full(options=appl_option,
+                                                user=self.user,
                                                 family_id=self.id)
 
         # subtract one from user accounts

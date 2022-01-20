@@ -58,9 +58,10 @@ class BaseUtilityApplication(BaseApplication):
         ordered_oa.append(oa_first[0])
         prev_oa = oa_first[0]
         # order array
+
         complete = False
         while complete is False:
-            oa_x = [x for x in oas_in if x.oa_prev == prev_oa]
+            oa_x = [x for x in oas_in if x.oa_prev_id == prev_oa.id]
             if len(oa_x) != 0:
                 prev_oa = oa_x[0]
                 ordered_oa.append(oa_x[0])

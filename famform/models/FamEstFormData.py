@@ -6,7 +6,7 @@ from django.db.models import Max, Sum
 
 from application.models import ApplDetails
 from characteristics.enums import ApplTypes
-from characteristics.models import ApplType, Country
+from characteristics.models import ApplType, Country, EntitySize
 
 from famform.models.PCTCountryCustomization import PCTCountryCustomization
 from famform.models.AllowOptions import AllowOptions
@@ -45,6 +45,10 @@ class FamEstFormData(models.Model):
                                     on_delete=models.CASCADE,
                                     null=True,
                                     related_name='isa_country')
+
+    isa_entity_size = models.ForeignKey(EntitySize,
+                                        on_delete=models.CASCADE,
+                                        null=True)
 
     pct_countries = models.ManyToManyField(Country,
                                            through='PCTCountryCustomization',
@@ -158,6 +162,7 @@ class FamEstFormData(models.Model):
                                                            custom_options=custom_options,
                                                            country=self.pct_country,
                                                            isa_country=self.isa_country,
+                                                           isa_entity_size=self.isa_entity_size,
                                                            prev_appl_type=prevApplType,
                                                            prev_date=prevDate,
                                                            first_appl_bool=firstApplBool,

@@ -2,12 +2,10 @@ from dateutil.relativedelta import relativedelta
 from django.db.models import Q
 from application import utils as appl_utils
 # take templates and then filter using application details
-from application.utils import convert_class_to_base_application
 from characteristics.enums import ApplTypes
-from famform.models import OAOptions, AllowOptions, IssueOptions, RequestExaminationOptions
 
 
-def filter_conditions(templates, application):
+def filter_conditions(templates, application, isa_filter=False):
     appl_details = application.details
     particulars = application.appl_option.particulars
 
@@ -22,8 +20,8 @@ def filter_conditions(templates, application):
     temp = _filter_claims_pages(temp, appl_details)
     temp = _filter_drawings_pages(temp, appl_details)
 
+    temp = _filter_entity_size(temp, application, isa_filter)
     temp = _filter_drawings(temp, appl_details)
-    temp = _filter_entity_size(temp, appl_details)
     temp = _filter_annual_prosecution_fee(temp, application)
     temp = _filter_annual_prosecution_fee_until_grant(temp, application)
     temp = _filter_renewal_fee_from_filing_after_grant(temp, application)
@@ -167,9 +165,13 @@ def _filter_drawings(templates, appl_details):
     return templates
 
 
-def _filter_entity_size(templates, appl_details):
+def _filter_entity_size(templates, application, isa_filter):
+    # ISA only applies for PCTApplication
+    entity_size = application.details.entity_size
+    if isa_filter:
+        entity_size = application.isa_entity_size
     templates = templates.filter(
-        Q(conditions__condition_entity_size=appl_details.entity_size)
+        Q(conditions__condition_entity_size=entity_size)
         | Q(conditions__condition_entity_size=None))
     return templates
 

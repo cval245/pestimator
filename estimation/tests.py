@@ -7,7 +7,6 @@ from djmoney.money import Money
 from application.factories import AllowanceFactory, ApplDetailsFactory, BaseUtilityApplicationFactory, \
     EPApplicationFactory, IssuanceFactory, \
     OfficeActionFactory, PCTApplicationFactory, PublicationFactory, RequestExaminationFactory
-from application.models import RequestExamination
 from characteristics.factories import ApplTypeFactory, CountryFactory, DocFormatFactory, EntitySizeFactory, \
     LanguageFactory
 from famform.factories import AllowOptionsFactory, ApplOptionsFactory, ApplOptionsParticularsFactory, \
@@ -408,7 +407,8 @@ class TestEstimationUtils(TestCase):
         filing_est_template = factories.FilingEstimateTemplateFactory(conditions=conditions_none)
         templates = FilingEstimateTemplate.objects.all()
         appl_details = ApplDetailsFactory(entity_size=entity_size_small)
-        filtered = utils._filter_entity_size(templates=templates, appl_details=appl_details)
+        application = BaseUtilityApplicationFactory(details=appl_details)
+        filtered = utils._filter_entity_size(templates=templates, application=application, isa_filter=False)
         self.assertEquals(filtered.count(), 2)
         self.assertTrue(filtered.filter(conditions__condition_entity_size=entity_size_small).exists())
         self.assertTrue(filtered.filter(conditions__condition_entity_size=None).exists())
@@ -424,9 +424,30 @@ class TestEstimationUtils(TestCase):
         filing_est_template = factories.FilingEstimateTemplateFactory(conditions=conditions_none)
         templates = FilingEstimateTemplate.objects.all()
         appl_details = ApplDetailsFactory(entity_size=None)
-        filtered = utils._filter_entity_size(templates=templates, appl_details=appl_details)
+        application = BaseUtilityApplicationFactory(details=appl_details)
+        filtered = utils._filter_entity_size(templates=templates, application=application, isa_filter=False)
         self.assertEquals(filtered.count(), 1)
         self.assertEquals(filtered.first(), filing_est_template)
+        self.assertTrue(filtered.filter(conditions__condition_entity_size=None).exists())
+
+    def test_utils__filter_fee_entity_size_includes_correct_and_null_entity_size_for_ISA_Country(self):
+        entity_size_small = EntitySizeFactory(us_small=True)
+        entity_size_micro = EntitySizeFactory(us_micro=True)
+        country_us = CountryFactory(US=True)
+        country_cn = CountryFactory(CN=True)
+        conditions_small = factories.LineEstimationTemplateConditionsFactory(condition_entity_size=entity_size_small)
+        conditions_micro = factories.LineEstimationTemplateConditionsFactory(condition_entity_size=entity_size_micro)
+        conditions_none = factories.LineEstimationTemplateConditionsFactory()
+        filing_est_template_small = factories.FilingEstimateTemplateFactory(conditions=conditions_small)
+        filing_est_template_micro = factories.FilingEstimateTemplateFactory(conditions=conditions_micro)
+        filing_est_template = factories.FilingEstimateTemplateFactory(conditions=conditions_none)
+        templates = FilingEstimateTemplate.objects.all()
+        appl_details = ApplDetailsFactory(entity_size=entity_size_micro)
+        application = PCTApplicationFactory(country=country_cn, isa_country=country_us,
+                                            isa_entity_size=entity_size_small)
+        filtered = utils._filter_entity_size(templates=templates, application=application, isa_filter=True)
+        self.assertEquals(filtered.count(), 2)
+        self.assertTrue(filtered.filter(conditions__condition_entity_size=entity_size_small).exists())
         self.assertTrue(filtered.filter(conditions__condition_entity_size=None).exists())
 
     def test_utils_filter_fee_doc_format_includes_correct_value_and_none(self):

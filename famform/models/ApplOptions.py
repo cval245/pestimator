@@ -1,11 +1,13 @@
 from django.db import models
 
+from characteristics.models import Country
 from famform.managers import ApplOptionsManager
 from famform.models.RequestExaminationOptions import RequestExaminationOptions
 from famform.models.AllowOptions import AllowOptions
 from famform.models.IssueOptions import IssueOptions
 from famform.models.OAOptions import OAOptions
 from famform.models.PublOptions import PublOptions
+from famform.models.USOAOptions import USOAOptions
 
 
 class ApplOptions(models.Model):
@@ -36,8 +38,12 @@ class ApplOptions(models.Model):
         return RequestExaminationOptions.objects.create_option(appl_option=self)
 
     def create_all_oa_options(self, oa_total):
-        return OAOptions.objects.create_all_oa_options(appl_option=self,
-                                                       oa_total=oa_total)
+        if self.country == Country.objects.get(country='US'):
+            return USOAOptions.objects.create_all_oa_options(appl_option=self,
+                                                             oa_total=oa_total)
+        else:
+            return OAOptions.objects.create_all_oa_options(appl_option=self,
+                                                           oa_total=oa_total)
 
     def create_allow_option(self):
         return AllowOptions.objects.create_option(appl_option=self)

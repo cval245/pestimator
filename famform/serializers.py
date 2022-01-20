@@ -110,6 +110,8 @@ class FamEstFormDataNetSerializer(serializers.Serializer):
                                                      required=False, allow_null=True)
     isa_country = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all(),
                                                      required=False, allow_null=True)
+    isa_entity_size = serializers.PrimaryKeyRelatedField(queryset=EntitySize.objects.all(),
+                                                         required=False, allow_null=True)
     pct_countries = GetPCTCountryCustomizationSerializer(source='get_pct_countries', many=True, read_only=True)
     ep_method = serializers.BooleanField(default=False, required=False)
     ep_method_customization = EPMethodCustomizationSerializer(allow_null=True)
@@ -135,6 +137,8 @@ class FamEstFormDataNetPostSerializer(serializers.Serializer):
                                                      required=False, allow_null=True)
     isa_country = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all(),
                                                      required=False, allow_null=True)
+    isa_entity_size = serializers.PrimaryKeyRelatedField(queryset=EntitySize.objects.all(),
+                                                         required=False, allow_null=True)
     pct_countries = PCTCountryCustomizationSerializer(many=True)
     ep_method = serializers.BooleanField(default=False, required=False)
     ep_method_customization = EPMethodCustomizationSerializer(allow_null=True)
@@ -171,6 +175,7 @@ class FamEstFormDataNetPostSerializer(serializers.Serializer):
             pct_method_customization=pct_method_customization,
             pct_country=validated_data['pct_country'],
             isa_country=validated_data['isa_country'],
+            isa_entity_size=validated_data['isa_entity_size'],
             ep_method=validated_data['ep_method'],
             ep_method_customization=ep_method_customization,
         )

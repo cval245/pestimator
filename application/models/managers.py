@@ -42,6 +42,7 @@ class ApplManager(models.Manager):
                            family_id=family_id,
                            country=options.country,
                            isa_country=options.isa_country,
+                           isa_entity_size=options.isa_entity_size,
                            details=applDetails,
                            appl_option=options,
                            prior_appl=prev_appl)

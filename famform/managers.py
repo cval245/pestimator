@@ -5,18 +5,21 @@ from characteristics.models import ApplType, TranslationImplementedPseudoEnum
 from pestimator.exceptions import ApplTypePCTNotSupportedException, ApplTypePCTNationalPhaseNotSupportedException
 from transform.models import PublicationTransform, DefaultPublTransform, AllowanceTransform, DefaultAllowanceTransform, \
     IssueTransform, DefaultIssueTransform, RequestExaminationTransform, DefaultRequestExaminationTransform, OATransform, \
-    DefaultOATransform
+    DefaultOATransform, USOATransform
 
 
 class PCTApplOptionsManager(models.Manager):
 
     def create_pct_appl_option(self, date_filing, country, details,
-                               oa_total, fam_option, isa_country, particulars,
+                               oa_total, fam_option, isa_country,
+                               isa_entity_size,
+                               particulars,
                                translation_enum, prev_appl_option):
         pct_appl_type = ApplType.objects.get_name_from_enum(ApplTypes.PCT)
         pct_appl_option = self.create(title='title', date_filing=date_filing,
                                       country=country, appl_type=pct_appl_type,
                                       isa_country=isa_country,
+                                      isa_entity_size=isa_entity_size,
                                       details=details, fam_options=fam_option,
                                       translation_implemented=TranslationImplementedPseudoEnum.objects.get_name_from_enum(
                                           translation_enum),
@@ -32,6 +35,7 @@ class ApplOptionsManager(models.Manager):
     def create_appl_option(self, date_filing, country, appl_type, details,
                            oa_total, fam_option, particulars,
                            translation_enum, prev_appl_option):
+
         appl_option = self.create(
             title='title', date_filing=date_filing,
             country=country, appl_type=appl_type,
@@ -82,8 +86,16 @@ class BaseOptionsManager(models.Manager):
     def create_option_with_class_names(self, Transform, DfltTransform, appl_option):
         country = appl_option.country
         appl_type = appl_option.appl_type
+        prev_appl_option = appl_option.prev_appl_options
+        prev_appl_type = None
+        if prev_appl_option:
+            prev_appl_type = prev_appl_option.appl_type
+
         if Transform.objects.filter(country=country, appl_type=appl_type).exists():
-            trans = Transform.objects.get(country=country, appl_type=appl_type)
+            if Transform.objects.filter(country=country, appl_type=appl_type, prev_appl_type=prev_appl_type):
+                trans = Transform.objects.get(country=country, appl_type=appl_type, prev_appl_type=prev_appl_type)
+            else:
+                trans = Transform.objects.get(country=country, appl_type=appl_type)
         else:
             trans = DfltTransform.objects.get(appl_type=appl_type)
 
@@ -123,8 +135,17 @@ class OAOptionsManager(models.Manager):
     def create_option_with_class_names(self, Transform, DfltTransform, appl_option, oa_prev):
         country = appl_option.country
         appl_type = appl_option.appl_type
+
+        prev_appl_option = appl_option.prev_appl_options
+        prev_appl_type = None
+        if prev_appl_option:
+            prev_appl_type = prev_appl_option.appl_type
+
         if Transform.objects.filter(country=country, appl_type=appl_type).exists():
-            trans = Transform.objects.get(country=country, appl_type=appl_type)
+            if Transform.objects.filter(country=country, appl_type=appl_type, prev_appl_type=prev_appl_type):
+                trans = Transform.objects.get(country=country, appl_type=appl_type, prev_appl_type=prev_appl_type)
+            else:
+                trans = Transform.objects.get(country=country, appl_type=appl_type)
         else:
             trans = DfltTransform.objects.get(appl_type=appl_type)
 
@@ -144,5 +165,47 @@ class OAOptionsManager(models.Manager):
             oa = self.create_option(appl_option=appl_option, oa_prev=oa_prev)
             oa_prev = oa
             oa_arr.append(oa)
+            i += 1
+        return oa_arr
+
+
+class USOAOptionsManager(models.Manager):
+
+    def create_option_with_class_names(self, Transform, DfltTransform, appl_option, oa_prev, oa_final_bool):
+        country = appl_option.country
+        appl_type = appl_option.appl_type
+
+        prev_appl_option = appl_option.prev_appl_options
+        prev_appl_type = None
+        if prev_appl_option:
+            prev_appl_type = prev_appl_option.appl_type
+
+        if Transform.objects.filter(country=country, appl_type=appl_type).exists():
+            if Transform.objects.filter(country=country, appl_type=appl_type, prev_appl_type=prev_appl_type):
+                trans = Transform.objects.get(country=country, appl_type=appl_type, prev_appl_type=prev_appl_type)
+            else:
+                trans = Transform.objects.get(country=country, appl_type=appl_type)
+        else:
+            trans = DfltTransform.objects.get(appl_type=appl_type)
+
+        return self.create(date_diff=trans.date_diff, appl=appl_option, oa_prev=oa_prev, oa_final_bool=oa_final_bool)
+
+    def create_option(self, appl_option, oa_prev, oa_final_bool):
+        return self.create_option_with_class_names(Transform=USOATransform,
+                                                   DfltTransform=DefaultOATransform,
+                                                   appl_option=appl_option,
+                                                   oa_prev=oa_prev,
+                                                   oa_final_bool=oa_final_bool)
+
+    def create_all_oa_options(self, appl_option, oa_total):
+        i = 0
+        oa_arr = []
+        oa_prev = None
+        oa_final_bool = False
+        while i < oa_total:
+            oa = self.create_option(appl_option=appl_option, oa_prev=oa_prev, oa_final_bool=oa_final_bool)
+            oa_prev = oa
+            oa_arr.append(oa)
+            oa_final_bool = not oa_final_bool
             i += 1
         return oa_arr

@@ -2,28 +2,25 @@ from datetime import date, datetime
 
 from django.test import TestCase
 
-from account.factories import UserProfileFactory
 from application.factories import ApplDetailsFactory
-from application.models import BaseApplication, Publication
 from characteristics.enums import TranslationRequirements
 from characteristics.factories import ApplTypeFactory, CountryFactory, EntitySizeFactory, LanguageFactory, \
     TotalCountryFactoryUS, TotalCountryFactoryCN, AvailableLanguagesFactory, TranslationImplementedPseudoEnumFactory, \
     AvailableApplTypesFactory, AvailableISACountriesFactory, TotalCountryFactoryGB, TotalCountryFactoryEP
-from estimation.models import PublicationEstTemplate, PublicationEst
 from family.factories import FamilyFactory
-from transform.factories import DefaultFilingTransformFactory, CustomFilingTransformFactory, IssueTransformFactory, \
+from transform.factories import DefaultFilingTransformFactory, IssueTransformFactory, \
     AllowanceTransformFactory, OATransformFactory, PublicationTransformFactory, CountryOANumFactory, \
     DefaultCountryOANumFactory, DefaultPublTransformFactory, DefaultOATransformFactory, \
     DefaultAllowanceTransformFactory, DefaultIssueTransformFactory, RequestExaminationTransformFactory, \
     DefaultRequestExaminationTransformFactory
 from transform.models import DefaultFilingTransform, DefaultOATransform
-from .factories import FamEstFormDataFactory, ApplOptionsFactory, PublOptionFactory, FamOptionsFactory, \
-    ApplOptionsParticularsFactory, OAOptionsFactory, AllowOptionsFactory, IssueOptionsFactory, CustomApplDetailsFactory, \
-    CustomApplOptionsFactory, generate_paris_countries, ParisCountriesFactory, EPCountriesFactory, PCTCountriesFactory
+from .factories import FamEstFormDataFactory, ApplOptionsFactory, FamOptionsFactory, \
+    ApplOptionsParticularsFactory, OAOptionsFactory, AllowOptionsFactory, CustomApplDetailsFactory, \
+    CustomApplOptionsFactory, ParisCountriesFactory, EPCountriesFactory, PCTCountriesFactory
 from pestimator.exceptions import ApplTypePCTNotSupportedException, ApplTypePCTNationalPhaseNotSupportedException, \
     ApplTypeNotAvailableForCountry, ISACountryNotAvailableForCountry
 from .models import ApplOptions, PublOptions, OAOptions, \
-    AllowOptions, IssueOptions, RequestExaminationOptions, PCTApplOptions, FamOptions, ParisCountryCustomization, \
+    AllowOptions, IssueOptions, RequestExaminationOptions, PCTApplOptions, ParisCountryCustomization, \
     EPCountryCustomization
 
 
@@ -342,6 +339,7 @@ class FamOptionsTest(TestCase):
             custom_details=custom_details,
             country=country,
             isa_country=country,
+            isa_entity_size=None,
             custom_options=custom_options,
             prev_appl_type=prev_appl_type,
             prev_date=prev_date,
@@ -391,6 +389,7 @@ class FamOptionsTest(TestCase):
             custom_details=custom_details,
             country=country,
             isa_country=country,
+            isa_entity_size=None,
             custom_options=custom_options,
             prev_appl_type=prev_appl_type,
             prev_date=prev_date,
@@ -429,6 +428,7 @@ class FamOptionsTest(TestCase):
             custom_details=custom_details,
             country=country,
             isa_country=country,
+            isa_entity_size=None,
             custom_options=custom_options,
             prev_appl_type=prev_appl_type,
             prev_date=prev_date,
@@ -442,6 +442,7 @@ class FamOptionsTest(TestCase):
 
     def test_generate_pct_appl_raises_appl_type_not_available_exception(self):
         country = CountryFactory(GB=True)
+        entity_size = None
         appl_type = ApplTypeFactory(utility=True)
         appl_type_pct = ApplTypeFactory(pct=True)
         appl_type_ep = ApplTypeFactory(ep=True)
@@ -472,6 +473,7 @@ class FamOptionsTest(TestCase):
                           custom_details=custom_details,
                           country=country,
                           isa_country=country,
+                          isa_entity_size=entity_size,
                           custom_options=custom_options,
                           prev_appl_type=prev_appl_type,
                           prev_date=prev_date,
@@ -950,6 +952,7 @@ class PCTApplOptionsTest(TestCase):
 
     def test_create_pct_appl_option_returns_appropriate_children_with_pct_appl_option(self):
         country = CountryFactory(US=True)
+        entity_size = EntitySizeFactory(us_small=True)
         appl_type = ApplTypeFactory(pct=True)
         oa_transform = OATransformFactory(country=country, appl_type=appl_type)
         date_filing = datetime(2020, 6, 4)
@@ -970,6 +973,7 @@ class PCTApplOptionsTest(TestCase):
         appl_option = PCTApplOptions.objects.create_pct_appl_option(
             date_filing=date_filing, country=country,
             details=details,
+            isa_entity_size=entity_size,
             oa_total=2, fam_option=fam_option,
             isa_country=country,
             particulars=particulars, translation_enum=translation_enum,

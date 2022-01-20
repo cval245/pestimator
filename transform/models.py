@@ -42,12 +42,12 @@ class BaseTransform(models.Model):
         abstract = True
 
 
-
 class CustomFilingTransform(BaseTransform):
     prev_appl_type = models.ForeignKey(ApplType, on_delete=models.CASCADE,
                                        null=True, related_name='prev_appl_type')
 
     objects = FilingTransformManager()
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -57,53 +57,72 @@ class CustomFilingTransform(BaseTransform):
 
 
 class PublicationTransform(BaseTransform):
+    prev_appl_type = models.ForeignKey(ApplType, on_delete=models.CASCADE,
+                                       null=True, related_name='prev_appl_type_publication')
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['country', 'appl_type'],
+                fields=['country', 'prev_appl_type', 'appl_type'],
                 name='PublicationCountryApplTypeUniqueConstraint'),
         ]
 
 
 class RequestExaminationTransform(BaseTransform):
+    prev_appl_type = models.ForeignKey(ApplType, on_delete=models.CASCADE,
+                                       null=True, related_name='prev_appl_type_request_examination')
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['country', 'appl_type'],
+                fields=['country', 'prev_appl_type', 'appl_type'],
                 name='RequestExaminationCountryApplTypeUniqueConstraint'),
         ]
 
 
 class OATransform(BaseTransform):
-    # oa_num = models.IntegerField()
-    pass
-
-
-class USOATransform(OATransform):
-    final_oa_bool = models.BooleanField(default=False)
+    prev_appl_type = models.ForeignKey(ApplType, on_delete=models.CASCADE,
+                                       null=True, related_name='prev_appl_type_oa_transform')
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['final_oa_bool'],
+                fields=['country', 'prev_appl_type', 'appl_type'],
+                name='OATransformApplTypeUniqueConstraint'),
+        ]
+
+
+class USOATransform(OATransform):
+    oa_final_bool = models.BooleanField(default=False)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['oa_final_bool'],
                 name='FinalOABoolUniqueConstraint'),
         ]
 
 
 class AllowanceTransform(BaseTransform):
+    prev_appl_type = models.ForeignKey(ApplType, on_delete=models.CASCADE,
+                                       null=True, related_name='prev_appl_type_allowance')
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['country', 'appl_type'],
+                fields=['country', 'prev_appl_type', 'appl_type'],
                 name='AllowanceCountryApplTypeUniqueConstraint'),
         ]
 
 
 class IssueTransform(BaseTransform):
+    prev_appl_type = models.ForeignKey(ApplType, on_delete=models.CASCADE,
+                                       null=True, related_name='prev_appl_type_issuance')
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['country', 'appl_type'],
+                fields=['country', 'prev_appl_type', 'appl_type'],
                 name='IssueCountryApplTypeUniqueConstraint'),
         ]
 
@@ -112,13 +131,16 @@ class CountryOANum(models.Model):
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
     oa_total = models.IntegerField()
     appl_type = models.ForeignKey(ApplType, on_delete=models.CASCADE)
+    prev_appl_type = models.ForeignKey(ApplType, on_delete=models.CASCADE,
+                                       null=True, related_name='prev_appl_type_oanum')
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['country', 'appl_type'],
+                fields=['country', 'prev_appl_type', 'appl_type'],
                 name='CountryOANumCountryApplTypeUniqueConstraint'),
         ]
+
 
 class DefaultCountryOANum(models.Model):
     oa_total = models.IntegerField()
@@ -127,6 +149,7 @@ class DefaultCountryOANum(models.Model):
 class BaseDefaultTransform(models.Model):
     date_diff = RelativeDeltaField()
     appl_type = models.ForeignKey(ApplType, on_delete=models.CASCADE)
+
     class Meta:
         abstract = True
         constraints = [

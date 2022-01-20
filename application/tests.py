@@ -1,7 +1,6 @@
-from datetime import datetime, date
+from datetime import datetime
 from math import trunc
 
-from dateutil.relativedelta import relativedelta
 from django.db.models import Sum
 from django.test import TestCase
 from djmoney.contrib.exchange.models import convert_money
@@ -19,8 +18,9 @@ from estimation.models import \
     FilingEstimateTemplate
 from famform.factories import ApplOptionsFactory, PCTApplOptionsFactory, PublOptionFactory, AllowOptionsFactory, \
     OAOptionsFactory, \
-    IssueOptionsFactory, ApplOptionsParticularsFactory, RequestExaminationOptionFactory
+    IssueOptionsFactory, RequestExaminationOptionFactory, USOAOptionsFactory
 from famform.models import OAOptions, RequestExaminationOptions
+from famform.models.USOAOptions import USOAOptions
 from family.factories import FamilyFactory
 from transform.factories import DefaultFilingTransformFactory, CustomFilingTransformFactory, IssueTransformFactory, \
     AllowanceTransformFactory, OATransformFactory, PublicationTransformFactory, CountryOANumFactory, \
@@ -29,7 +29,6 @@ from transform.factories import DefaultFilingTransformFactory, CustomFilingTrans
 from user.factories import UserFactory
 from .factories import USUtilityApplicationFactory, USOfficeActionFactory, IssuanceFactory, \
     AllowanceFactory, PublicationFactory, BaseUtilityApplicationFactory, OfficeActionFactory, ApplDetailsFactory
-from . import factories
 from .models import BaseApplication, OfficeAction, PCTApplication
 from .models.allowance import Allowance
 from .models.issue import Issue
@@ -250,6 +249,7 @@ class BaseUtilityApplicationTest(TestCase):
         self.publOption = PublOptionFactory(appl=self.applOption)
         self.reqExamOption = RequestExaminationOptionFactory(appl=self.applOption)
         self.oaOption = OAOptionsFactory(appl=self.applOption)
+        self.usOaOption = USOAOptionsFactory(appl=self.applOption)
         self.allowOption = AllowOptionsFactory(appl=self.applOption)
         self.issueOption = IssueOptionsFactory(appl=self.applOption)
 
@@ -270,7 +270,7 @@ class BaseUtilityApplicationTest(TestCase):
         uAppl = BaseApplication.objects.get(user=self.user)
         req_diff = self.reqExamOption.date_diff
         # relativedelta is calced by combining options in Setup
-        date_allowance = uAppl.date_filing + req_diff + self.oaOption.date_diff
+        date_allowance = uAppl.date_filing + req_diff + self.usOaOption.date_diff
         self.assertEquals(date_allowance, USOfficeAction.objects.first().date_office_action)
 
     def test_create_full_creates_allowance(self):
@@ -280,7 +280,7 @@ class BaseUtilityApplicationTest(TestCase):
         uAppl = BaseApplication.objects.get(user=self.user)
         # relativedelta is calced by combining options in Setup
         req_diff = self.reqExamOption.date_diff
-        oa_agg = self.applOption.oaoptions_set.all().aggregate(date_diff=Sum('date_diff'))
+        oa_agg = USOAOptions.objects.filter(appl=self.applOption).aggregate(date_diff=Sum('date_diff'))
         allow_diff = self.applOption.allowoptions.date_diff
         date_allowance = uAppl.date_filing + req_diff + oa_agg['date_diff'] + allow_diff
         self.assertEquals(date_allowance, Allowance.objects.first().date_allowance)
@@ -291,7 +291,7 @@ class BaseUtilityApplicationTest(TestCase):
                                                    family_id=self.family.id)
         uAppl = BaseApplication.objects.get(user=self.user)
         req_diff = self.reqExamOption.date_diff
-        oa_agg = self.applOption.oaoptions_set.all().aggregate(date_diff=Sum('date_diff'))
+        oa_agg = USOAOptions.objects.filter(appl=self.applOption).aggregate(date_diff=Sum('date_diff'))
         allow_diff = self.applOption.allowoptions.date_diff
         issue_diff = self.applOption.issueoptions.date_diff
         date_issuance = uAppl.date_filing + req_diff + oa_agg['date_diff'] + allow_diff + issue_diff
@@ -325,6 +325,7 @@ class BaseUtilityApplicationTest(TestCase):
         publOption = PublOptionFactory(appl=applOption)
         reqExamOption = RequestExaminationOptionFactory(appl=applOption)
         oaOption = OAOptionsFactory(appl=applOption)
+        usoaOption = USOAOptionsFactory(appl=applOption)
         allowOption = AllowOptionsFactory(appl=applOption)
         issueOption = IssueOptionsFactory(appl=applOption)
 
@@ -440,19 +441,21 @@ class USUtilityApplicationTest(TestCase):
         self.issue_template = IssueEstTemplateFactory(country=self.country_US, appl_type=self.applType_utility)
 
         self.applOption = ApplOptionsFactory(country=self.country_US, appl_type=self.applType_utility)
+        self.pre_applOption = ApplOptionsFactory(country=self.country_US, appl_type=self.applType_utility)
         self.publOption = PublOptionFactory(appl=self.applOption)
         self.reqExamOption = RequestExaminationOptionFactory(appl=self.applOption)
-        self.oaOption = OAOptionsFactory(appl=self.applOption)
-        self.oaOption_two = OAOptionsFactory(appl=self.applOption, oa_prev=self.oaOption)
-        self.oaOption_three = OAOptionsFactory(appl=self.applOption, oa_prev=self.oaOption_two)
-        self.oaOption_four = OAOptionsFactory(appl=self.applOption, oa_prev=self.oaOption_three)
+        self.pre_oaOption = USOAOptionsFactory(appl=self.pre_applOption)
+        self.oaOption = USOAOptionsFactory(appl=self.applOption, oa_final_bool=False)
+        self.oaOption_two = USOAOptionsFactory(appl=self.applOption, oa_prev=self.oaOption, oa_final_bool=True)
+        self.oaOption_three = USOAOptionsFactory(appl=self.applOption, oa_prev=self.oaOption_two, oa_final_bool=False)
+        self.oaOption_four = USOAOptionsFactory(appl=self.applOption, oa_prev=self.oaOption_three, oa_final_bool=True)
         self.allowOption = AllowOptionsFactory(appl=self.applOption)
         self.issueOption = IssueOptionsFactory(appl=self.applOption)
 
     def test_creates_only_one_primary_oas(self):
         application = USUtilityApplicationFactory(country=self.country_US)
         req_options = RequestExaminationOptions.objects.get(appl=self.applOption)
-        oa_options = OAOptions.objects.filter(appl=self.applOption)
+        oa_options = USOAOptions.objects.filter(appl=self.applOption)
         date_request_examination = application.date_filing + req_options.date_diff
         application._generate_oa(date_request_examination=date_request_examination, oas_in=oa_options)
         oas = USOfficeAction.objects.all()
@@ -461,11 +464,11 @@ class USUtilityApplicationTest(TestCase):
     def test_create_ordered_oa_creates_ordered_array(self):
         application = USUtilityApplicationFactory(country=self.country_US)
         applOption = ApplOptionsFactory(country=self.country_US, appl_type=self.applType_utility)
-        oaOption_one = OAOptionsFactory(appl=applOption, oa_prev=None)
-        oaOption_two = OAOptionsFactory(appl=applOption, oa_prev=oaOption_one)
-        oaOption_three = OAOptionsFactory(appl=applOption, oa_prev=oaOption_two)
-        oaOption_four = OAOptionsFactory(appl=applOption, oa_prev=oaOption_three)
-        oas_in = OAOptions.objects.filter(appl=applOption)
+        oaOption_one = USOAOptionsFactory(appl=applOption, oa_prev=None)
+        oaOption_two = USOAOptionsFactory(appl=applOption, oa_prev=oaOption_one)
+        oaOption_three = USOAOptionsFactory(appl=applOption, oa_prev=oaOption_two)
+        oaOption_four = USOAOptionsFactory(appl=applOption, oa_prev=oaOption_three)
+        oas_in = USOAOptions.objects.filter(appl=applOption)
         ordered_oa = application._create_ordered_oa(oas_in=oas_in)
         self.assertEquals(oaOption_one, ordered_oa[0])
         self.assertEquals(oaOption_two, ordered_oa[1])
@@ -474,7 +477,7 @@ class USUtilityApplicationTest(TestCase):
 
     def test_create_multiple_oas_nfoa_foa_nfoa_foa(self):
         application = USUtilityApplicationFactory(country=self.country_US)
-        oa_options = OAOptions.objects.filter(appl=self.applOption)
+        oa_options = USOAOptions.objects.filter(appl=self.applOption)
         req_options = RequestExaminationOptions.objects.get(appl=self.applOption)
         date_request_examination = application.date_filing + req_options.date_diff
         application._generate_oa(date_request_examination=date_request_examination, oas_in=oa_options)
@@ -492,25 +495,25 @@ class USUtilityApplicationTest(TestCase):
     def test_oa_dates_calculated(self):
         application = USUtilityApplicationFactory(country=self.country_US)
         req_options = RequestExaminationOptions.objects.get(appl=self.applOption)
-        oa_options = OAOptions.objects.filter(appl=self.applOption)
+        oa_options = USOAOptions.objects.filter(appl=self.applOption)
         date_request_examination = application.date_filing + req_options.date_diff
         application._generate_oa(date_request_examination=date_request_examination, oas_in=oa_options)
         oas = USOfficeAction.objects.all()
 
         oa_first = [x for x in oas if x.oa_prev is None][0]
-        oa_option_first = [y for y in oa_options if y.oa_prev is None][0]
+        oa_option_first = [y for y in oa_options if y.oa_prev_id is None][0]
         self.assertEquals(oa_first.date_office_action,
                           (oa_option_first.date_diff + application.date_filing + req_options.date_diff))
-        oa_second = [x for x in oas if x.oa_prev == oa_first][0]
-        oa_option_second = [y for y in oa_options if y.oa_prev == oa_option_first][0]
+        oa_second = [x for x in oas if x.oa_prev_id == oa_first.id][0]
+        oa_option_second = [y for y in oa_options if y.oa_prev_id == oa_option_first.id][0]
         self.assertEquals(oa_second.date_office_action,
                           (oa_option_second.date_diff + oa_first.date_office_action))
-        oa_third = [x for x in oas if x.oa_prev == oa_second][0]
-        oa_option_third = [y for y in oa_options if y.oa_prev == oa_option_second][0]
+        oa_third = [x for x in oas if x.oa_prev_id == oa_second.id][0]
+        oa_option_third = [y for y in oa_options if y.oa_prev_id == oa_option_second.id][0]
         self.assertEquals(oa_third.date_office_action,
                           (oa_option_third.date_diff + oa_second.date_office_action))
-        oa_fourth = [x for x in oas if x.oa_prev == oa_third][0]
-        oa_option_fourth = [y for y in oa_options if y.oa_prev == oa_option_third][0]
+        oa_fourth = [x for x in oas if x.oa_prev_id == oa_third.id][0]
+        oa_option_fourth = [y for y in oa_options if y.oa_prev_id == oa_option_third.id][0]
         self.assertEquals(oa_fourth.date_office_action,
                           (oa_option_fourth.date_diff + oa_third.date_office_action))
 

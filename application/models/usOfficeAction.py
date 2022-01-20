@@ -19,7 +19,7 @@ class USOfficeAction(BaseOfficeAction):
     def generate_ests(self):
 
         foas = USOfficeAction.objects.filter(application=self.application, oa_final_bool=True)
-        if (foas.count() == 1):
+        if foas.count() == 1:
             oa_first_final_bool = True
         else:
             oa_first_final_bool = False

@@ -5,7 +5,7 @@ from application.models.officeAction import OfficeAction
 from application.models.publication import Publication
 from application.models.requestExamination import RequestExamination
 from application.utils import convert_class_applType
-from characteristics.models import Country
+from characteristics.models import Country, EntitySize
 from estimation import utils
 from estimation.models import FilingEstimate, FilingEstimateTemplate, LawFirmEst
 
@@ -14,6 +14,7 @@ class PCTApplication(BaseApplication):
     # normal country variable is the REceiveing office
     # isa_country is the International Search Authority Country
     isa_country = models.ForeignKey(Country, on_delete=models.CASCADE)
+    isa_entity_size = models.ForeignKey(EntitySize, on_delete=models.CASCADE, null=True)
 
     class Meta:
         abstract = False
@@ -55,7 +56,7 @@ class PCTApplication(BaseApplication):
             appl_type=convert_class_applType(self),
         )
         templates = filing_templates.filter(conditions__isa_country_fee_only=True)
-        templates = utils.filter_conditions(templates, self)
+        templates = utils.filter_conditions(templates, self, isa_filter=True)
         # do same thing,
         templates = templates.select_related('law_firm_template')
         for e in templates:

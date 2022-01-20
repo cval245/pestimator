@@ -2,21 +2,19 @@ from random import random
 
 import factory
 from dateutil.relativedelta import relativedelta
-from django.utils import timezone
 
-# from application.factories import ApplDetailsFactory
 from faker.providers import BaseProvider
 
 from application.factories import ApplDetailsFactory
 from characteristics.factories import CountryFactory, ApplTypeFactory, EntitySizeFactory, \
     TranslationImplementedPseudoEnumFactory, DocFormatFactory, LanguageFactory, translate_country
-from characteristics.models import DocFormat
 from family.factories import FamilyFactory
 from user.factories import UserFactory
 from .models import FamEstFormData, FamOptions, ApplOptions, BaseOptions, PCTApplOptions, PublOptions, OAOptions, \
     AllowOptions, \
     IssueOptions, ApplOptionsParticulars, PCTCountryCustomization, EPMethodCustomization, PCTMethodCustomization, \
     CustomApplOptions, CustomApplDetails, EPCountryCustomization, ParisCountryCustomization, RequestExaminationOptions
+from .models.USOAOptions import USOAOptions
 
 
 class DiffProvider(BaseProvider):
@@ -219,6 +217,7 @@ class ApplOptionsFactory(factory.django.DjangoModelFactory):
 
 class PCTApplOptionsFactory(ApplOptionsFactory):
     isa_country = factory.SubFactory(CountryFactory)
+    isa_entity_size = factory.SubFactory(EntitySizeFactory)
 
     class Meta:
         model = PCTApplOptions
@@ -250,6 +249,15 @@ class OAOptionsFactory(BaseOptionsFactory):
 
     class Meta:
         model = OAOptions
+        abstract = False
+
+
+class USOAOptionsFactory(BaseOptionsFactory):
+    oa_prev = None
+    oa_final_bool = False
+
+    class Meta:
+        model = USOAOptions
         abstract = False
 
 
