@@ -8,4 +8,4 @@ pass: Belgrade2010
 
 #  make sure to point to appropriate venv
 crontab -e 
-37 0-24/2 * * * python update_rates
+37 0-23/2 * * * python ~/pestimator/manage.py update_rates
