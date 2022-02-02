@@ -1,15 +1,13 @@
 from copy import deepcopy
-from decimal import Decimal
 
 import xlsxwriter
 from django.db.models import Min, Max, F
 
 from characteristics.models import Country
 from estimation.models import BaseEst
-from famform.models import FamEstFormData, PCTCountryCustomization, ParisCountryCustomization
+from famform.models import FamEstFormData
 from family import utils
 from family.models import Family
-import toolz as tlz
 
 
 def create_synopsis_sheet(id, workbook):
@@ -412,7 +410,7 @@ def create_country_sheet(filtered_arr, workbook, country, min_year, max_year,
     chart.set_x_axis({'name': 'year'})
     chart.set_y_axis({'name': 'Cost (USD)'})
     if country['country'][0].lower() in ['a', 'e', 'i', 'o', 'u']:
-        chart.set_title({'name': 'Cost Estimate for the' + country['country']})
+        chart.set_title({'name': 'Cost Estimate for the ' + country['country']})
     else:
         chart.set_title({'name': 'Cost Estimate for ' + country['country']})
     worksheet.insert_chart(num_row + 3, 1, chart)
