@@ -96,7 +96,8 @@ class Country(models.Model):
             models.UniqueConstraint(
                 fields=['country'],
                 name='uniqueCountry'),
-            # models.UniqueConstraint(fields='currency_name', name='unique_currency_name')
+            # models.UniqueConstraint(fields='currency_name',
+            # name='unique_currency_name')
         ]
 
     def get_country_formats(self):
@@ -187,3 +188,14 @@ class OANumPerCountry(models.Model):
 
 class FeeCategory(models.Model):
     name = models.CharField(max_length=200)
+
+
+class DetailedFeeCategory(models.Model):
+    name = models.CharField(max_length=200)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE)
+
+    class Meta:
+        models.UniqueConstraint(
+            fields=['name', 'country'],
+            name='UniqueNameCountryConstraint',
+        )

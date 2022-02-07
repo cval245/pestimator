@@ -2,9 +2,8 @@ from djmoney.settings import CURRENCY_CHOICES
 from rest_framework import viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from user.accesspolicies import StaffOnlyAccess, StaffOnlyPost, AuthenticatedGetAccess
+from user.accesspolicies import StaffOnlyPost, AuthenticatedGetAccess
 from .models import ApplType, Country, EntitySize, Language, EPValidationTranslationRequired, DocFormat, \
     DocFormatCountry
 from .serializers import ApplTypeSerializer, CountrySerializer, EntitySerializer, \
@@ -55,18 +54,13 @@ class CountryAllViewSet(viewsets.ModelViewSet):
     serializer_class = CountryAllSerializer
 
     def get_queryset(self):
-        return Country.objects.all()  # .prefetch_related('available_doc_formats')
+        return Country.objects.all()
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         s = CountryAllPostSerializer()
         country = s.update(instance=instance, validated_data=request.data)
-        # serializer = CountryAllPostSerializer(data=request.data, context=context)
-        # serializer.is_valid(raise_exception=True)
-        # self.perform_update(serializer)
-        # new_object = Country.objects.get(id=serializer.data['id'])
         resp = CountryAllSerializer(country)
-        # return Response(resp_serializer.data)
         return Response(resp.data)
 
 

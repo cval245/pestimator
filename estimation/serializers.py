@@ -4,59 +4,62 @@ from .models import BaseEstTemplate, FilingEstimateTemplate, LawFirmEstTemplate,
     PublicationEstTemplate, \
     OAEstimateTemplate, AllowanceEstTemplate, IssueEstTemplate, USOAEstimateTemplate, ComplexConditions, \
     ComplexTimeConditions, RequestExamEstTemplate
-from characteristics.models import FeeCategory
+from characteristics.models import DetailedFeeCategory, FeeCategory
 
 
 class BaseEstTemplateSerializer(serializers.ModelSerializer):
     class Meta:
         model = BaseEstTemplate
         fields = ('id', 'official_cost', 'official_cost_currency', 'date_diff', 'country',
+                  'detailed_fee_category',
                   'fee_category',
                   'appl_type', 'conditions', 'law_firm_template',
-                  'description', 'fee_code'
-                  )
+                  'description', 'fee_code')
 
 
 class FilingEstimateTemplateSerializer(serializers.ModelSerializer):
-	class Meta:
-		model = FilingEstimateTemplate
-		fields = ('id', 'official_cost', 'official_cost_currency', 'date_diff', 'country',
-                  'fee_category',
-                  'description', 'fee_code',
+    class Meta:
+        model = FilingEstimateTemplate
+        fields = ('id', 'official_cost', 'official_cost_currency', 'date_diff', 'country',
+                  'detailed_fee_category',
+                  'fee_category', 'description', 'fee_code',
                   'appl_type', 'conditions', 'law_firm_template')
 
 
 class PublicationEstTemplateSerializer(serializers.ModelSerializer):
-	class Meta:
-		model = PublicationEstTemplate
-		fields = ('id', 'official_cost', 'official_cost_currency', 'date_diff', 'country',
+    class Meta:
+        model = PublicationEstTemplate
+        fields = ('id', 'official_cost', 'official_cost_currency', 'date_diff', 'country',
+                  'detailed_fee_category',
                   'fee_category',
                   'description', 'fee_code',
                   'appl_type', 'conditions', 'law_firm_template')
 
 
 class RequestExamEstTemplateSerializer(serializers.ModelSerializer):
-	class Meta:
-		model = RequestExamEstTemplate
-		fields = ('id', 'official_cost', 'official_cost_currency', 'date_diff', 'country',
+    class Meta:
+        model = RequestExamEstTemplate
+        fields = ('id', 'official_cost', 'official_cost_currency', 'date_diff', 'country',
+                  'detailed_fee_category',
                   'fee_category',
                   'description', 'fee_code',
                   'appl_type', 'conditions', 'law_firm_template')
 
 
 class OAEstimateTemplateSerializer(serializers.ModelSerializer):
-	class Meta:
-		model = OAEstimateTemplate
-		fields = ('id', 'official_cost', 'official_cost_currency', 'date_diff', 'country',
-                  'fee_category',
-                  'description', 'fee_code',
+    class Meta:
+        model = OAEstimateTemplate
+        fields = ('id', 'official_cost', 'official_cost_currency', 'date_diff', 'country',
+                  'detailed_fee_category',
+                  'fee_category', 'description', 'fee_code',
                   'appl_type', 'conditions', 'law_firm_template')
 
 
 class USOAEstimateTemplateSerializer(serializers.ModelSerializer):
-	class Meta:
-		model = USOAEstimateTemplate
-		fields = ('id', 'official_cost', 'official_cost_currency', 'date_diff', 'country', 'oa_final_bool',
+    class Meta:
+        model = USOAEstimateTemplate
+        fields = ('id', 'official_cost', 'official_cost_currency', 'date_diff', 'country', 'oa_final_bool',
+                  'detailed_fee_category',
                   'fee_category',
                   'oa_first_final_bool',
                   'description', 'fee_code',
@@ -64,38 +67,40 @@ class USOAEstimateTemplateSerializer(serializers.ModelSerializer):
 
 
 class AllowanceEstTemplateSerializer(serializers.ModelSerializer):
-	class Meta:
-		model = AllowanceEstTemplate
-		fields = ('id', 'official_cost', 'official_cost_currency', 'date_diff', 'country',
+    class Meta:
+        model = AllowanceEstTemplate
+        fields = ('id', 'official_cost', 'official_cost_currency', 'date_diff', 'country',
+                  'detailed_fee_category',
                   'fee_category',
                   'description', 'fee_code',
                   'appl_type', 'conditions', 'law_firm_template')
 
 
 class IssueEstTemplateSerializer(serializers.ModelSerializer):
-	class Meta:
-		model = IssueEstTemplate
-		fields = ('id', 'official_cost', 'official_cost_currency', 'date_diff', 'country',
+    class Meta:
+        model = IssueEstTemplate
+        fields = ('id', 'official_cost', 'official_cost_currency', 'date_diff', 'country',
+                  'detailed_fee_category',
                   'fee_category',
                   'description', 'fee_code',
                   'appl_type', 'conditions', 'law_firm_template')
 
 
 class LawFirmEstTemplateSerializer(serializers.ModelSerializer):
-	class Meta:
-		model = LawFirmEstTemplate
-		fields = ('id', 'law_firm_cost', 'law_firm_cost_currency', 'date_diff')
+    class Meta:
+        model = LawFirmEstTemplate
+        fields = ('id', 'law_firm_cost', 'law_firm_cost_currency', 'date_diff')
 
 
 class ConditionsSerializer(serializers.ModelSerializer):
-	class Meta:
-		model = LineEstimationTemplateConditions
-		fields = ('id',
-				  'condition_annual_prosecution_fee',
-				  'condition_annual_prosecution_fee_until_grant',
-				  'condition_renewal_fee_from_filing_after_grant',
-				  'condition_claims_min', 'condition_claims_max',
-				  'condition_claims_multiple_dependent_min', 'condition_claims_multiple_dependent_max',
+    class Meta:
+        model = LineEstimationTemplateConditions
+        fields = ('id',
+                  'condition_annual_prosecution_fee',
+                  'condition_annual_prosecution_fee_until_grant',
+                  'condition_renewal_fee_from_filing_after_grant',
+                  'condition_claims_min', 'condition_claims_max',
+                  'condition_claims_multiple_dependent_min', 'condition_claims_multiple_dependent_max',
                   'condition_indep_claims_min', 'condition_indep_claims_max',
                   'condition_pages_total_min', 'condition_pages_total_max',
                   'condition_pages_desc_min', 'condition_pages_desc_max',
@@ -127,3 +132,9 @@ class FeeCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = FeeCategory
         fields = ('id', 'name')
+
+
+class DetailedFeeCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DetailedFeeCategory
+        fields = ('id', 'name', 'country')

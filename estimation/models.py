@@ -15,7 +15,7 @@ from relativedeltafield import RelativeDeltaField
 # from application.models.usOfficeAction import USOfficeAction
 # from application.models.utilityApplication import UtilityApplication
 from characteristics.enums import ApplTypes
-from characteristics.models import Country, EntitySize, ApplType, Language, DocFormat, FeeCategory
+from characteristics.models import Country, DetailedFeeCategory, EntitySize, ApplType, Language, DocFormat, FeeCategory
 from estimation.managers import EstimateManager, OAEstimateManager, USOAEstimateManager, PublEstimateManager, \
     AllowanceEstimateManager, IssueEstimateManager, ReqExamEstimateManager
 from application import utils as applUtils
@@ -258,7 +258,6 @@ class ComplexConditions(models.Model):
             fee = num_fee * cost
         return fee
 
-
     def calc_multiply_each_page_by_unit_of_fifty_pages(self, appl_details,
                                                        template_conditions,
                                                        cost):
@@ -356,8 +355,6 @@ class LawFirmEstTemplate(models.Model):
                                default_currency='USD')
     date_diff = RelativeDeltaField()
 
-    # objects = TemplateManager()
-
     class Meta:
         abstract = False
 
@@ -368,27 +365,18 @@ class BaseEstTemplate(models.Model):
                                default=Money(0, 'USD'),
                                default_currency='USD')
     date_diff = RelativeDeltaField()
-    country = models.ForeignKey(Country, on_delete=models.CASCADE)
-    appl_type = models.ForeignKey(ApplType, on_delete=models.CASCADE)
+    country = models.ForeignKey(Country, on_delete=models.PROTECT)
+    appl_type = models.ForeignKey(ApplType, on_delete=models.PROTECT)
 
-    conditions = models.OneToOneField(LineEstimationTemplateConditions, on_delete=models.CASCADE)
-    law_firm_template = models.OneToOneField(LawFirmEstTemplate, on_delete=models.CASCADE)
+    conditions = models.OneToOneField(LineEstimationTemplateConditions, on_delete=models.PROTECT)
+    law_firm_template = models.OneToOneField(LawFirmEstTemplate, on_delete=models.PROTECT)
     description = models.TextField()
     fee_code = models.CharField(max_length=30)
-    fee_category = models.ForeignKey(FeeCategory, on_delete=models.CASCADE)
-
-    # objects = TemplateManager()
+    fee_category = models.ForeignKey(FeeCategory, on_delete=models.PROTECT)
+    detailed_fee_category = models.ForeignKey(DetailedFeeCategory, on_delete=models.PROTECT)
 
     class Meta:
         abstract = True
-
-    # def save(self, *args, **kwargs):
-    #     # override so the country and currency are correct
-    #     self.official_cost = Money(self.official_cost.amount, self.country.currency_name)
-    #     self.law_firm_template.law_firm_cost = \
-    #         Money(self.law_firm_template.law_firm_cost.amount, self.country.currency_name)
-    #     self.law_firm_template.save()
-    #     return super().save()
 
 
 class FilingEstimateTemplate(BaseEstTemplate):
@@ -543,8 +531,3 @@ class IssueEst(BaseEst):
 
     class Meta:
         abstract = False
-
-# class TranslationEst(BaseEst):
-#
-#     class Meta:
-#         abstract = False

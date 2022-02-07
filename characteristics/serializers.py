@@ -67,16 +67,12 @@ class CountrySerializer(serializers.ModelSerializer):
                   'ep_bool', 'available_languages',
                   'available_appl_types', 'available_doc_formats',
                   'long_name', 'color', 'isa_countries',
-                  'ep_validation_translation_required',
-                  # 'available_entity_sizes'
-                  )
+                  'ep_validation_translation_required')
 
 
 class CountryAllSerializer(serializers.ModelSerializer):
     available_appl_types = serializers.PrimaryKeyRelatedField(queryset=ApplType.objects.all(), many=True,
                                                               allow_null=True)
-    # available_entity_sizes = serializers.PrimaryKeyRelatedField(queryset=EntitySize.objects.all(), many=True,
-    #                                                             allow_null=True)
     available_languages = GetLanguageCountrySerializer(source='get_languages', many=True)
     available_doc_formats = GetDocFormatCountrySerializer(source='get_country_formats', many=True)
     isa_countries = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all(), many=True, allow_null=True)
@@ -89,15 +85,12 @@ class CountryAllSerializer(serializers.ModelSerializer):
                   'pct_ro_bool',
                   'ep_bool', 'long_name', 'color', 'available_appl_types', 'isa_countries',
                   'available_languages', 'ep_validation_translation_required',
-                  # 'available_entity_sizes',
                   'available_doc_formats')
 
 
 class CountryAllPostSerializer(serializers.ModelSerializer):
     available_appl_types = serializers.PrimaryKeyRelatedField(queryset=ApplType.objects.all(), many=True,
                                                               allow_null=True)
-    # available_entity_sizes = serializers.PrimaryKeyRelatedField(queryset=EntitySize.objects.all(), many=True,
-    #                                                             allow_null=True)
     available_doc_formats = PostDocFormatCountrySerializer(source='get_country_formats', many=True)
     available_languages = PostLanguageCountrySerializer(source='get_languages', many=True)
     isa_countries = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all(), many=True, allow_null=True)
@@ -110,7 +103,6 @@ class CountryAllPostSerializer(serializers.ModelSerializer):
                   'pct_ro_bool',
                   'ep_bool', 'long_name', 'color', 'available_appl_types', 'isa_countries',
                   'available_languages', 'ep_validation_translation_required',
-                  # 'available_entity_sizes',
                   'available_doc_formats')
 
     def update(self, instance, validated_data):
@@ -124,11 +116,9 @@ class CountryAllPostSerializer(serializers.ModelSerializer):
         for c in validated_data['isa_countries']:
             isa_countries.append(Country.objects.get(id=c))
         instance.isa_countries.set(isa_countries)
-        # instance.Language_set.set(validated_data['Language_set'])
         ep_validation_translation_required = EPValidationTranslationRequired(
             id=validated_data['ep_validation_translation_required'])
         instance.ep_validation_translation_required = ep_validation_translation_required
-        # instance.available_entity_sizes.set(validated_data['available_entity_sizes'])
         instance.available_appl_types.set(validated_data['available_appl_types'])
         available_doc_formats = []
         instance.available_doc_formats.clear()

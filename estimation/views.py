@@ -6,8 +6,9 @@ from .models import BaseEstTemplate, FilingEstimateTemplate, LawFirmEstTemplate,
     OAEstimateTemplate, AllowanceEstTemplate, IssueEstTemplate, \
     LineEstimationTemplateConditions, USOAEstimateTemplate, ComplexConditions, ComplexTimeConditions, \
     RequestExamEstTemplate
-from characteristics.models import FeeCategory
-from .serializers import BaseEstTemplateSerializer, FilingEstimateTemplateSerializer, LawFirmEstTemplateSerializer, \
+from characteristics.models import DetailedFeeCategory, FeeCategory
+from .serializers import BaseEstTemplateSerializer, DetailedFeeCategorySerializer, FilingEstimateTemplateSerializer, \
+    LawFirmEstTemplateSerializer, \
     PublicationEstTemplateSerializer, OAEstimateTemplateSerializer, \
     AllowanceEstTemplateSerializer, IssueEstTemplateSerializer, \
     ConditionsSerializer, USOAEstimateTemplateSerializer, ComplexConditionsSerializer, ComplexTimeConditionsSerializer, \
@@ -117,3 +118,11 @@ class FeeCategoryViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return FeeCategory.objects.all()
+
+
+class DetailedFeeCategoryViewSet(viewsets.ModelViewSet):
+    serializer_class = DetailedFeeCategorySerializer
+    permission_classes = [StaffOnlyAccess]
+
+    def get_queryset(self):
+        return DetailedFeeCategory.objects.all()

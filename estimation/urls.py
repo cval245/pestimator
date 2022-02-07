@@ -37,6 +37,8 @@ router.register(r'complex-time-conditions',
                 views.ComplexTimeConditionsViewSet, basename='complextimeconditionsviewset')
 router.register(r'fee-category',
                 views.FeeCategoryViewSet, basename='feecategoryviewset')
+router.register(r'detailed-fee-category',
+                views.DetailedFeeCategoryViewSet, basename='detailedfeecategoryviewset')
 
 urlpatterns = router.urls
 urlpatterns = format_suffix_patterns(urlpatterns)

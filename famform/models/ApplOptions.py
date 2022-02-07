@@ -1,5 +1,4 @@
 from django.db import models
-
 from characteristics.models import Country
 from famform.managers import ApplOptionsManager
 from famform.models.RequestExaminationOptions import RequestExaminationOptions
