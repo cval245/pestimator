@@ -4,7 +4,7 @@ from .models import BaseEstTemplate, FilingEstimateTemplate, LawFirmEstTemplate,
     PublicationEstTemplate, \
     OAEstimateTemplate, AllowanceEstTemplate, IssueEstTemplate, USOAEstimateTemplate, ComplexConditions, \
     ComplexTimeConditions, RequestExamEstTemplate
-from characteristics.models import DetailedFeeCategory, FeeCategory
+from characteristics.models import ApplType, DetailedFeeCategory, FeeCategory
 
 
 class BaseEstTemplateSerializer(serializers.ModelSerializer):
@@ -135,6 +135,8 @@ class FeeCategorySerializer(serializers.ModelSerializer):
 
 
 class DetailedFeeCategorySerializer(serializers.ModelSerializer):
+    appl_types = serializers.PrimaryKeyRelatedField(many=True, queryset=ApplType.objects.all())
+
     class Meta:
         model = DetailedFeeCategory
-        fields = ('id', 'name', 'country')
+        fields = ('id', 'name', 'country', 'appl_types')

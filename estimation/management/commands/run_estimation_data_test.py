@@ -38,136 +38,58 @@ class Command(BaseCommand):
 
     def test_all_us(self):
         country_us = Country.objects.get(country='US')
+
         self.entity_size_us_micro = EntitySize.objects.get(country=country_us, entity_size='micro')
         self.entity_size_us_small = EntitySize.objects.get(country=country_us, entity_size='small')
         self.entity_size_us_default = EntitySize.objects.get(country=country_us, entity_size='default')
         templates = FilingEstimateTemplate.objects.filter(country=country_us)
+        # countries = Country.objects.filter(active_bool=True)
+        countries = Country.objects.all()
+        for country in countries:
+            print('\n==================================================================')
+            print('country ', country.long_name)
+            for applType in country_us.available_appl_types.all():
+                det_cats = DetailedFeeCategory.objects.filter(country=country, appl_types=applType)
+                if country == country_us:
+                    for category in det_cats:
+                        temp_filtered = templates.filter(detailed_fee_category=category,
+                                                         appl_type=applType)
+                        self.fundamental_us_test(templates=temp_filtered,
+                                                 detailed_fee_category=category,
+                                                 appl_type=applType)
+                else:
+                    for category in det_cats:
+                        temp_filtered = templates.filter(detailed_fee_category=category,
+                                                         appl_type=applType)
+                        self.fundamental_test(templates=temp_filtered,
+                                              detailed_fee_category=category,
+                                              appl_type=applType)
 
-        detailed_fee_cat = DetailedFeeCategory.objects.get(
-            country=country_us,
-            name="Basic filing fee - Utility (paper filing also requires non-electronic filing fee under 1.16(t))")
-        self.test_pct_and_utility(detailed_fee_cat=detailed_fee_cat, templates=templates)
-
-        detailed_fee_cat = DetailedFeeCategory.objects.get(
-            country=country_us,
-            name="Each independent claim in excess of three")
-        self.test_pct_and_utility(detailed_fee_cat=detailed_fee_cat, templates=templates)
-
-        detailed_fee_cat = DetailedFeeCategory.objects.get(
-            country=country_us,
-            name="Each claim in excess of 20")
-        self.test_pct_and_utility(detailed_fee_cat=detailed_fee_cat, templates=templates)
-
-        detailed_fee_cat = DetailedFeeCategory.objects.get(
-            country=country_us,
-            name="Multiple dependent claim")
-        self.test_pct_and_utility(detailed_fee_cat=detailed_fee_cat, templates=templates)
-
-        detailed_fee_cat = DetailedFeeCategory.objects.get(
-            country=country_us,
-            name="Utility application size fee - for each additional 50 sheets that exceeds 100 sheets")
-        self.test_pct_and_utility(detailed_fee_cat=detailed_fee_cat, templates=templates)
-
-        detailed_fee_cat = DetailedFeeCategory.objects.get(
-            country=country_us,
-            name="Provisional application size fee - for each additional 50 sheets that exceeds 100 sheets")
-        temp_prov = templates.filter(detailed_fee_category=detailed_fee_cat, appl_type=self.appl_type_prov)
-        self.fundamental_us_test(templates=temp_prov,
-                                 detailed_fee_category=detailed_fee_cat,
-                                 appl_type=self.appl_type_prov)
-
-        detailed_fee_cat = DetailedFeeCategory.objects.get(
-            country=country_us,
-            name="Utility search fee")
-        self.test_pct_and_utility(detailed_fee_cat=detailed_fee_cat, templates=templates)
-
-        detailed_fee_cat = DetailedFeeCategory.objects.get(
-            country=country_us,
-            name="Utility examination fee")
-        self.test_pct_and_utility(detailed_fee_cat=detailed_fee_cat, templates=templates)
-
-        detailed_fee_cat = DetailedFeeCategory.objects.get(
-            country=country_us,
-            name="Utility issue fee")
-        temp_utility = templates.filter(detailed_fee_category=detailed_fee_cat, appl_type=self.appl_type_utility)
-        self.fundamental_us_test(templates=temp_utility,
-                                 detailed_fee_category=detailed_fee_cat,
-                                 appl_type=self.appl_type_utility)
-
-        detailed_fee_cat = DetailedFeeCategory.objects.get(
-            country=country_us,
-            name="For maintaining an original or any reissue patent, due at 3.5 years")
-        temp_utility = templates.filter(detailed_fee_category=detailed_fee_cat, appl_type=self.appl_type_utility)
-        self.fundamental_us_test(templates=temp_utility,
-                                 detailed_fee_category=detailed_fee_cat,
-                                 appl_type=self.appl_type_utility)
-
-        detailed_fee_cat = DetailedFeeCategory.objects.get(
-            country=country_us,
-            name="For maintaining an original or any reissue patent, due at 7.5 years")
-        temp_utility = templates.filter(detailed_fee_category=detailed_fee_cat, appl_type=self.appl_type_utility)
-        self.fundamental_us_test(templates=temp_utility,
-                                 detailed_fee_category=detailed_fee_cat,
-                                 appl_type=self.appl_type_utility)
-
-        detailed_fee_cat = DetailedFeeCategory.objects.get(
-            country=country_us,
-            name="For maintaining an original or any reissue patent, due at 11.5 years")
-        temp_utility = templates.filter(detailed_fee_category=detailed_fee_cat, appl_type=self.appl_type_utility)
-        self.fundamental_us_test(templates=temp_utility,
-                                 detailed_fee_category=detailed_fee_cat,
-                                 appl_type=self.appl_type_utility)
-
-        detailed_fee_cat = DetailedFeeCategory.objects.get(
-            country=country_us,
-            name="Request for continued examination (RCE) - 1st request (see 37 CFR 1.114)")
-        temp_utility = templates.filter(detailed_fee_category=detailed_fee_cat, appl_type=self.appl_type_utility)
-        self.fundamental_us_test(templates=temp_utility,
-                                 detailed_fee_category=detailed_fee_cat,
-                                 appl_type=self.appl_type_utility)
-
-        detailed_fee_cat = DetailedFeeCategory.objects.get(
-            country=country_us,
-            name="Request for continued examination (RCE) - 2nd and subsequent request (see 37 CFR 1.114)")
-        temp_utility = templates.filter(detailed_fee_category=detailed_fee_cat, appl_type=self.appl_type_utility)
-        self.fundamental_us_test(templates=temp_utility,
-                                 detailed_fee_category=detailed_fee_cat,
-                                 appl_type=self.appl_type_utility)
-
-        detailed_fee_cat = DetailedFeeCategory.objects.get(
-            country=country_us,
-            name="Processing fee, except in provisional applications")
-        temp_utility = templates.filter(detailed_fee_category=detailed_fee_cat, appl_type=self.appl_type_utility)
-        self.fundamental_us_test(templates=temp_utility,
-                                 detailed_fee_category=detailed_fee_cat,
-                                 appl_type=self.appl_type_utility)
-
-    def test_pct_and_utility(self, detailed_fee_cat, templates):
-        temp_utility = templates.filter(detailed_fee_category=detailed_fee_cat, appl_type=self.appl_type_utility)
-        temp_pct = templates.filter(detailed_fee_category=detailed_fee_cat, appl_type=self.appl_type_pct)
-        self.fundamental_us_test(templates=temp_utility,
-                                 detailed_fee_category=detailed_fee_cat,
-                                 appl_type=self.appl_type_utility)
-        self.fundamental_us_test(templates=temp_pct,
-                                 detailed_fee_category=detailed_fee_cat,
-                                 appl_type=self.appl_type_utility)
+    def fundamental_test(self, templates, appl_type, detailed_fee_category):
+        temp = templates.filter(detailed_fee_category=detailed_fee_category, appl_type=appl_type)
+        len_temp = temp.filter(conditions__condition_entity_size=self.entity_size_us_micro).count()
+        if len_temp < 1:
+            print('missing  ==> ', appl_type.application_type, ' ==> ', detailed_fee_category.name)
+        elif len_temp > 1:
+            print('Too Many  ==> ', appl_type.application_type, ' ==> ', detailed_fee_category.name,
+                  ' count ', len_temp)
 
     def fundamental_us_test(self, templates, appl_type, detailed_fee_category):
-        temp_utility = templates.filter(detailed_fee_category=detailed_fee_category, appl_type=appl_type)
-        len_micro = temp_utility.filter(conditions__condition_entity_size=self.entity_size_us_micro).count()
+        temp = templates.filter(detailed_fee_category=detailed_fee_category, appl_type=appl_type)
+        len_micro = temp.filter(conditions__condition_entity_size=self.entity_size_us_micro).count()
         if len_micro < 1:
             print('missing micro entity size ==> ', appl_type.application_type, ' ==> ', detailed_fee_category.name)
         elif len_micro > 1:
             print('Too Many micro entity size ==> ', appl_type.application_type, ' ==> ', detailed_fee_category.name,
                   ' count ', len_micro)
-        len_small = temp_utility.filter(conditions__condition_entity_size=self.entity_size_us_small).count()
+        len_small = temp.filter(conditions__condition_entity_size=self.entity_size_us_small).count()
         if len_small < 1:
             print('missing small entity size ==> ', appl_type.application_type, ' ==> ', detailed_fee_category.name)
         elif len_small > 1:
             print('Too Many small entity size ==> ', appl_type.application_type, ' ==> ', detailed_fee_category.name,
                   ' count ', len_small)
 
-        len_default = temp_utility.filter(conditions__condition_entity_size=self.entity_size_us_default).count()
+        len_default = temp.filter(conditions__condition_entity_size=self.entity_size_us_default).count()
         if len_default < 1:
             print('missing default entity size ==> ', appl_type.application_type, ' ==> ', detailed_fee_category.name)
         elif len_default > 1:

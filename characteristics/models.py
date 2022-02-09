@@ -124,7 +124,6 @@ class EntitySize(models.Model):
                 fields=['country'],
                 condition=Q(default_bool=True),
                 name='DefaultEntitySizeCountryUniqueConstraint'),
-
         ]
 
 
@@ -193,9 +192,11 @@ class FeeCategory(models.Model):
 class DetailedFeeCategory(models.Model):
     name = models.CharField(max_length=200)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
+    appl_types = models.ManyToManyField(ApplType)
 
     class Meta:
-        models.UniqueConstraint(
-            fields=['name', 'country'],
-            name='UniqueNameCountryConstraint',
-        )
+        constraints = [
+            models.UniqueConstraint(
+                fields=['name', 'country'],
+                name='UniqueNameCountryConstraint')
+        ]
