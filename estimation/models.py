@@ -19,6 +19,7 @@ from characteristics.models import Country, DetailedFeeCategory, EntitySize, App
 from estimation.managers import EstimateManager, OAEstimateManager, USOAEstimateManager, PublEstimateManager, \
     AllowanceEstimateManager, IssueEstimateManager, ReqExamEstimateManager
 from application import utils as applUtils
+from famform.models import ApplOptions
 
 
 class ComplexTimeConditions(models.Model):
@@ -132,7 +133,9 @@ class ComplexTimeConditions(models.Model):
 class ComplexConditions(models.Model):
     name = models.CharField(max_length=200)
 
-    def calc_complex_condition(self, appl_details, cost, template_conditions):
+    def calc_complex_condition(self, application, cost, template_conditions):
+        appl_details = application.details
+
         if self.name == 'multiply each by template above minimum indep claims':
             return self.calc_multiply_each_by_template_above_minimum_indep_claims(appl_details,
                                                                                   template_conditions,
@@ -161,7 +164,23 @@ class ComplexConditions(models.Model):
             return self.calc_multiply_each_additional_page(appl_details,
                                                            template_conditions,
                                                            cost)
+        elif self.name == 'calc fee per each child country max fee at seven':
+            return self.calc_fee_per_each_child_country_max_fee_at_seven(application=application, cost=cost)
         return None
+
+    def calc_fee_per_each_child_country_max_fee_at_seven(self, application, cost):
+        # determine the number of child applications
+        # need appl_options
+        appl_option = application.appl_option
+        # find child_options
+        num_child_appl_options = ApplOptions.objects.filter(prev_appl_options=appl_option).count()
+        # multiply number of child options by cost
+        if num_child_appl_options < 7:
+            tot_cost = num_child_appl_options * cost
+        else:
+            tot_cost = num_child_appl_options * 7
+
+        return tot_cost
 
     def calc_multiply_each_by_template_above_minimum_indep_claims(self, appl_details,
                                                                   template_conditions,

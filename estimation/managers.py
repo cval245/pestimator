@@ -7,7 +7,7 @@ class EstimateManager(models.Manager):
         cost = est_template.official_cost
         if est_template.conditions.condition_complex:
             complex_condition = est_template.conditions.condition_complex
-            cost = complex_condition.calc_complex_condition(application.details,
+            cost = complex_condition.calc_complex_condition(application,
                                                             cost,
                                                             est_template.conditions)
         new_date = application.date_filing + est_template.date_diff
@@ -37,7 +37,7 @@ class PublEstimateManager(models.Manager):
         cost = est_template.official_cost
         if est_template.conditions.condition_complex:
             complex_condition = est_template.conditions.condition_complex
-            cost = complex_condition.calc_complex_condition(application.details,
+            cost = complex_condition.calc_complex_condition(application,
                                                             cost,
                                                             est_template.conditions)
         new_date = publication.date_publication + est_template.date_diff
@@ -68,7 +68,7 @@ class ReqExamEstimateManager(models.Manager):
         cost = est_template.official_cost
         if est_template.conditions.condition_complex:
             complex_condition = est_template.conditions.condition_complex
-            cost = complex_condition.calc_complex_condition(application.details,
+            cost = complex_condition.calc_complex_condition(application,
                                                             cost,
                                                             est_template.conditions)
         new_date = exam_request.date_request_examination + est_template.date_diff
@@ -99,7 +99,7 @@ class AllowanceEstimateManager(models.Manager):
         cost = est_template.official_cost
         if est_template.conditions.condition_complex:
             complex_condition = est_template.conditions.condition_complex
-            cost = complex_condition.calc_complex_condition(application.details,
+            cost = complex_condition.calc_complex_condition(application,
                                                             cost,
                                                             est_template.conditions)
         new_date = allowance.date_allowance + est_template.date_diff
@@ -132,7 +132,7 @@ class IssueEstimateManager(models.Manager):
         cost = est_template.official_cost
         if est_template.conditions.condition_complex:
             complex_condition = est_template.conditions.condition_complex
-            cost = complex_condition.calc_complex_condition(application.details,
+            cost = complex_condition.calc_complex_condition(application,
                                                             cost,
                                                             est_template.conditions)
         new_date = issuance.date_issuance + est_template.date_diff
@@ -165,7 +165,7 @@ class OAEstimateManager(models.Manager):
         cost = est_template.official_cost
         if est_template.conditions.condition_complex:
             complex_condition = est_template.conditions.condition_complex
-            cost = complex_condition.calc_complex_condition(application.details,
+            cost = complex_condition.calc_complex_condition(application,
                                                             cost,
                                                             est_template.conditions)
         new_date = office_action.date_office_action + est_template.date_diff
@@ -196,7 +196,7 @@ class USOAEstimateManager(models.Manager):
         cost = est_template.official_cost
         if est_template.conditions.condition_complex:
             complex_condition = est_template.conditions.condition_complex
-            cost = complex_condition.calc_complex_condition(application.details,
+            cost = complex_condition.calc_complex_condition(application,
                                                             cost,
                                                             est_template.conditions)
         new_date = office_action.date_office_action + est_template.date_diff

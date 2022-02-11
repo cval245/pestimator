@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.db import models
 from djmoney.money import Money
-from django.apps import apps
 
 from application import utils as applUtils
 from application.models import ApplDetails
