@@ -12,6 +12,9 @@ class TransComplexTime(models.Model):
         if self.name == 'from priority date':
             return self.calc_from_priority_date(prev_appl_option=prev_appl_option, prev_date=prev_date,
                                                 filing_transform=filing_transform)
+        elif self.name == 'from previous filing date':
+            return self.calc_from_prev_appl_filing_date(prev_appl_option=prev_appl_option, prev_date=prev_date,
+                                                        filing_transform=filing_transform)
 
     def calc_from_priority_date(self, prev_appl_option, prev_date, filing_transform):
         if prev_appl_option is None:
@@ -28,6 +31,9 @@ class TransComplexTime(models.Model):
             appl = prior_appl_option
             # traverse to the top of the tree
         return new_date
+
+    def calc_from_prev_appl_filing_date(self, prev_appl_option, prev_date, filing_transform):
+        return prev_appl_option.date_filing
 
 
 class BaseTransform(models.Model):
