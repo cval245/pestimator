@@ -142,7 +142,7 @@ class OAOptionsManager(models.Manager):
             prev_appl_type = prev_appl_option.appl_type
 
         if Transform.objects.filter(country=country, appl_type=appl_type).exists():
-            if Transform.objects.filter(country=country, appl_type=appl_type, prev_appl_type=prev_appl_type):
+            if Transform.objects.filter(country=country, appl_type=appl_type, prev_appl_type=prev_appl_type).exists():
                 trans = Transform.objects.get(country=country, appl_type=appl_type, prev_appl_type=prev_appl_type)
             else:
                 trans = Transform.objects.get(country=country, appl_type=appl_type)
@@ -180,11 +180,13 @@ class USOAOptionsManager(models.Manager):
         if prev_appl_option:
             prev_appl_type = prev_appl_option.appl_type
 
-        if Transform.objects.filter(country=country, appl_type=appl_type).exists():
-            if Transform.objects.filter(country=country, appl_type=appl_type, prev_appl_type=prev_appl_type):
-                trans = Transform.objects.get(country=country, appl_type=appl_type, prev_appl_type=prev_appl_type)
+        if Transform.objects.filter(country=country, appl_type=appl_type, oa_final_bool=oa_final_bool).exists():
+            if Transform.objects.filter(country=country, appl_type=appl_type, prev_appl_type=prev_appl_type,
+                                        oa_final_bool=oa_final_bool).exists():
+                trans = Transform.objects.get(country=country, appl_type=appl_type, prev_appl_type=prev_appl_type,
+                                              oa_final_bool=oa_final_bool)
             else:
-                trans = Transform.objects.get(country=country, appl_type=appl_type)
+                trans = Transform.objects.get(country=country, appl_type=appl_type, oa_final_bool=oa_final_bool)
         else:
             trans = DfltTransform.objects.get(appl_type=appl_type)
 
