@@ -7,7 +7,8 @@ from faker.providers import BaseProvider
 
 from application.factories import ApplicationFactory, OfficeActionFactory, USOfficeActionFactory, PublicationFactory, \
     AllowanceFactory, IssuanceFactory
-from characteristics.factories import EntitySizeFactory, CountryFactory, ApplTypeFactory, LanguageFactory, \
+from characteristics.factories import DetailedFeeCategoryFactory, EntitySizeFactory, CountryFactory, ApplTypeFactory, \
+    LanguageFactory, \
     DocFormatFactory, FeeCategoryFactory
 from . import models
 from .models import FilingEstimateTemplate, PublicationEstTemplate, OAEstimateTemplate, USOAEstimateTemplate, \
@@ -123,6 +124,7 @@ class BaseEstTemplateFactory(factory.django.DjangoModelFactory):
     description = 'ddd'
     fee_code = 'ddd'
     fee_category = factory.SubFactory(FeeCategoryFactory)
+    detailed_fee_category = factory.SubFactory(DetailedFeeCategoryFactory)
 
     class Meta:
         abstract = True

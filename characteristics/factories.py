@@ -520,3 +520,12 @@ class TotalCountryFactoryUS(CountryFactory):
         factory_related_name='country',
         us_default=True
     )
+
+
+class DetailedFeeCategoryFactory(factory.django.DjangoModelFactory):
+    name = 'default fee category name'
+    country = factory.SubFactory(CountryFactory)
+
+    class Meta:
+        model = models.DetailedFeeCategory
+        django_get_or_create = ('name', 'country')
