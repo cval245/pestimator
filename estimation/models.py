@@ -166,7 +166,32 @@ class ComplexConditions(models.Model):
                                                            cost)
         elif self.name == 'calc fee per each child country max fee at seven':
             return self.calc_fee_per_each_child_country_max_fee_at_seven(application=application, cost=cost)
+
+        elif self.name == 'calc fee per each 5 claims':
+            return self.calc_fee_per_each_five_claims(appl_details=appl_details,
+                                                      template_conditions=template_conditions,
+                                                      cost=cost)
         return None
+
+    def calc_fee_per_each_five_claims(self, appl_details,
+                                      template_conditions,
+                                      cost):
+        fee = Money(0, cost.currency)
+        condition_min = template_conditions.condition_claims_min
+        condition_max = template_conditions.condition_claims_max
+        if condition_min:
+            num_fee_claims = appl_details.num_claims - condition_min
+        else:
+            num_fee_claims = appl_details.num_claims
+
+        if condition_max:
+            min_max_diff = condition_max
+            if condition_min:
+                min_max_diff = condition_max - condition_min
+            num_fee_claims = min(min_max_diff, num_fee_claims)
+        if num_fee_claims > 0:
+            fee = int(num_fee_claims / 5) * cost
+        return fee
 
     def calc_fee_per_each_child_country_max_fee_at_seven(self, application, cost):
         # determine the number of child applications
