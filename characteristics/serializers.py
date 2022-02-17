@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models import ApplType, Country, EntitySize, Language, EPValidationTranslationRequired, DocFormat, \
-    DocFormatCountry, LanguageCountry
+    DocFormatCountry, LanguageCountry, TranslationRequiredOptions
 
 
 class GetLanguageCountrySerializer(serializers.Serializer):
@@ -66,6 +66,7 @@ class CountrySerializer(serializers.ModelSerializer):
         fields = ('id', 'country', 'currency_name', 'pct_accept_bool', 'pct_ro_bool',
                   'ep_bool', 'available_languages',
                   'available_appl_types', 'available_doc_formats',
+                  'utility_translation_required',
                   'long_name', 'color', 'isa_countries',
                   'ep_validation_translation_required')
 
@@ -83,6 +84,7 @@ class CountryAllSerializer(serializers.ModelSerializer):
         model = Country
         fields = ('id', 'country', 'active_bool', 'currency_name', 'pct_accept_bool',
                   'pct_ro_bool',
+                  'utility_translation_required',
                   'ep_bool', 'long_name', 'color', 'available_appl_types', 'isa_countries',
                   'available_languages', 'ep_validation_translation_required',
                   'available_doc_formats')
@@ -101,6 +103,7 @@ class CountryAllPostSerializer(serializers.ModelSerializer):
         model = Country
         fields = ('id', 'country', 'active_bool', 'currency_name', 'pct_accept_bool',
                   'pct_ro_bool',
+                  'utility_translation_required',
                   'ep_bool', 'long_name', 'color', 'available_appl_types', 'isa_countries',
                   'available_languages', 'ep_validation_translation_required',
                   'available_doc_formats')
@@ -119,6 +122,8 @@ class CountryAllPostSerializer(serializers.ModelSerializer):
         ep_validation_translation_required = EPValidationTranslationRequired(
             id=validated_data['ep_validation_translation_required'])
         instance.ep_validation_translation_required = ep_validation_translation_required
+        instance.utility_translation_required = TranslationRequiredOptions(
+            id=validated_data['utility_translation_required'])
         instance.available_appl_types.set(validated_data['available_appl_types'])
         available_doc_formats = []
         instance.available_doc_formats.clear()
@@ -166,6 +171,12 @@ class LanguageSerializer(serializers.ModelSerializer):
 class EPValidationTranslationRequiredSerializer(serializers.ModelSerializer):
     class Meta:
         model = EPValidationTranslationRequired
+        fields = ('id', 'name')
+
+
+class TranslationRequiredOptionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TranslationRequiredOptions
         fields = ('id', 'name')
 
 

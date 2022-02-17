@@ -3,6 +3,7 @@ from enum import Enum
 
 class TranslationRequirements(Enum):
     FULL_TRANSLATION = 'full translation',
+    CLAIMS_TRANSLATION = 'claims translation',
     NO_TRANSLATION = 'no translation',
 
 

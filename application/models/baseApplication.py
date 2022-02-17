@@ -81,6 +81,29 @@ class BaseApplication(models.Model):
                     application=self,
                     translation_bool=True)
 
+            if self.appl_option.translation_implemented.get_enum() is TranslationRequirements.CLAIMS_TRANSLATION:
+                start = TranslationEstTemplate.objects.filter(start_language=prev_language)
+                if start.filter(end_language=language).exists():
+                    translation_est = start.get(end_language=language)
+                else:
+                    translation_est = DefaultTranslationEstTemplate.objects.first()
+
+                num_words = language.words_per_page * self.details.num_pages_claims
+                translation_cost = num_words * translation_est.cost_per_word
+
+                date = self.date_filing + translation_est.date_diff
+                lawFirmEst = LawFirmEst.objects.create(
+                    date=date,
+                    law_firm_cost=Money(0, 'USD')
+                )
+
+                BaseEst.objects.create(
+                    official_cost=translation_cost,
+                    date=date,
+                    law_firm_est=lawFirmEst,
+                    application=self,
+                    translation_bool=True)
+
     def _generate_filing_est(self):
 
         # create translation ests

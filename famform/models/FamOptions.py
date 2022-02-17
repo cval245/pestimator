@@ -36,6 +36,24 @@ class FamOptions(models.Model):
 
         return oa_total
 
+    def translate_claims_new_language(self, details, current_language, desired_language):
+        # convert current language to english ex. French to English
+        num_words = current_language.words_per_page * details.num_pages_claims
+        new_pages = math.ceil(num_words / desired_language.words_per_page)
+
+        new_details = ApplDetails.objects.create(
+            num_indep_claims=details.num_indep_claims,
+            num_claims=details.num_claims,
+            num_claims_multiple_dependent=details.num_claims_multiple_dependent,
+            num_drawings=details.num_drawings,
+            num_pages_description=details.num_pages_description,
+            num_pages_claims=new_pages,
+            num_pages_drawings=details.num_pages_drawings,
+            entity_size=details.entity_size,
+            language_id=desired_language.id
+        )
+        return new_details
+
     def translate_details_new_language(self, details, current_language, desired_language):
         # convert current language to english ex. French to English
         num_words = current_language.words_per_page * details.num_pages_description
@@ -186,6 +204,11 @@ class FamOptions(models.Model):
                 details=details,
                 current_language=details.language,
                 desired_language=desired_language)
+        elif translate_enum is TranslationRequirements.CLAIMS_TRANSLATION:
+            new_details = self.translate_claims_new_language(
+                details=details,
+                current_language=details.language,
+                desired_language=desired_language)
         elif translate_enum is TranslationRequirements.NO_TRANSLATION:
             new_details = deepcopy(details)
             new_details.pk = None
@@ -211,4 +234,15 @@ class FamOptions(models.Model):
                     return TranslationRequirements.NO_TRANSLATION
                 elif country.ep_validation_translation_required.name == 'full translation required':
                     return TranslationRequirements.FULL_TRANSLATION
+                elif country.ep_validation_translation_required.name == 'claims translation required':
+                    return TranslationRequirements.CLAIMS_TRANSLATION
+        elif appl_type.get_enum() is ApplTypes.UTILITY:
+            if country.utility_translation_required.name == 'full translation required':
+                return TranslationRequirements.FULL_TRANSLATION
+            if country.utility_translation_required.name == 'claims only translation if english specification':
+                if old_language.name == 'English':
+                    return TranslationRequirements.CLAIMS_TRANSLATION
+                else:
+                    return TranslationRequirements.FULL_TRANSLATION
+
         return TranslationRequirements.FULL_TRANSLATION

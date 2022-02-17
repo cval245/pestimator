@@ -48,6 +48,8 @@ class EPValidationTranslationRequired(models.Model):
     name = models.CharField(max_length=200)
     # applicable_bool = models.BooleanField(default=False)
 
+class TranslationRequiredOptions(models.Model):
+    name = models.CharField(max_length=200)
 
 class TranslationImplementedPseudoEnum(models.Model):
     name = models.CharField(max_length=200)
@@ -59,6 +61,8 @@ class TranslationImplementedPseudoEnum(models.Model):
             return TranslationRequirements.NO_TRANSLATION
         elif self.name == 'full translation':
             return TranslationRequirements.FULL_TRANSLATION
+        elif self.name == 'claims translation':
+            return TranslationRequirements.CLAIMS_TRANSLATION
 
 
 class DocFormat(models.Model):
@@ -82,6 +86,10 @@ class Country(models.Model):
         on_delete=models.CASCADE)  # London Agreement
     # entity_size_available = models.BooleanField(default=False)
     # available_entity_sizes = models.ManyToManyField(EntitySize)
+    utility_translation_required = models.ForeignKey(
+        TranslationRequiredOptions,
+        on_delete=models.PROTECT
+    )
     available_doc_formats = models.ManyToManyField(DocFormat,
                                                    through='DocFormatCountry',
                                                    through_fields=('country', 'doc_format', 'appl_type'),

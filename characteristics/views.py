@@ -5,10 +5,10 @@ from rest_framework.response import Response
 
 from user.accesspolicies import StaffOnlyPost, AuthenticatedGetAccess
 from .models import ApplType, Country, EntitySize, Language, EPValidationTranslationRequired, DocFormat, \
-    DocFormatCountry
+    DocFormatCountry, TranslationRequiredOptions
 from .serializers import ApplTypeSerializer, CountrySerializer, EntitySerializer, \
     CountryAllSerializer, LanguageSerializer, EPValidationTranslationRequiredSerializer, DocFormatSerializer, \
-    PostDocFormatCountrySerializer, CountryAllPostSerializer
+    PostDocFormatCountrySerializer, CountryAllPostSerializer, TranslationRequiredOptionsSerializer
 
 
 # Create your views here.
@@ -39,6 +39,14 @@ class EPValidationTranslationRequiredViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return EPValidationTranslationRequired.objects.all()
+
+
+class TranslationRequiredOptionsViewSet(viewsets.ModelViewSet):
+    serializer_class = TranslationRequiredOptionsSerializer
+    permission_classes = (StaffOnlyPost,)
+
+    def get_queryset(self):
+        return TranslationRequiredOptions.objects.all()
 
 
 class CountryViewSet(viewsets.ModelViewSet):

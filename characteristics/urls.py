@@ -24,6 +24,9 @@ router.register(r'doc-formats-countries', views.DocFormatCountryViewSet, basenam
 router.register(r'epvalidation-translation-required',
                 views.EPValidationTranslationRequiredViewSet,
                 basename='epvalidationtranslationrequired')
+router.register(r'translation-required-options',
+                views.TranslationRequiredOptionsViewSet,
+                basename='translationrequiredoptions')
 
 b = [
     path(r'entity-size/', views.getEntitySize, name='entity-size'),

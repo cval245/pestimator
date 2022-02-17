@@ -8,6 +8,8 @@ class TranslationImplementedPseudoEnumManager(models.Manager):
     def get_name_from_enum(self, enum):
         if enum is TranslationRequirements.FULL_TRANSLATION:
             return self.get(name='full translation')
+        elif enum is TranslationRequirements.CLAIMS_TRANSLATION:
+            return self.get(name='claims translation')
         elif enum is TranslationRequirements.NO_TRANSLATION:
             return self.get(name='no translation')
 
