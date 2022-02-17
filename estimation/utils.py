@@ -196,7 +196,7 @@ def _filter_annual_prosecution_fee_until_grant(templates, application):
     if hasattr(application, 'issue'):
         delta_t = application.issue.date_issuance - application.date_filing
 
-    templates = templates.exclude(
+    templates = templates.filter(
         Q(conditions__condition_annual_prosecution_fee_until_grant=True)
         & Q(date_diff__gt=delta_t))
     return templates
