@@ -13,7 +13,6 @@ class BaseUtilityApplication(BaseApplication):
 
     def generate_dates(self, options):
         # generate filing estimates
-        self._generate_filing_est()
 
         # generate publication date and estimates
         publ = self._generate_publication(options.publoptions.date_diff)
@@ -33,14 +32,20 @@ class BaseUtilityApplication(BaseApplication):
         allowance = self._generate_allowance(allow_date_diff, last_date)
         issue_date_diff = options.issueoptions.date_diff
         # generate issue date and estimates
-        self._generate_issue(issue_date_diff, allowance.date_allowance)
+        issue = self._generate_issue(issue_date_diff, allowance.date_allowance)
+        self._generate_filing_est()
+        publ.generate_ests()
+        req.generate_ests()
+        for oa in oas_out:
+            oa.generate_ests()
+        allowance.generate_ests()
+        issue.generate_ests()
 
     def _generate_publication(self, publication_diff_from_filing):
         # lookup the publication time_diff
         publ = Publication.objects.create(
             application=self,
             date_publication=self.date_filing + publication_diff_from_filing)
-        publ.generate_ests()
         return publ
         # create a publication instance
 
@@ -49,7 +54,6 @@ class BaseUtilityApplication(BaseApplication):
             application=self,
             date_request_examination=self.date_filing + date_diff_from_filing
         )
-        req.generate_ests()
         return req
 
     def _create_ordered_oa(self, oas_in):
@@ -82,7 +86,6 @@ class BaseUtilityApplication(BaseApplication):
             created_oa = OfficeAction.objects.create(application=self,
                                                      oa_prev=prev_oa,
                                                      date_office_action=date_oa)
-            created_oa.generate_ests()
             oa_array.append(created_oa)
             date_prev = date_oa
             prev_oa = created_oa
@@ -95,7 +98,6 @@ class BaseUtilityApplication(BaseApplication):
         allow = Allowance.objects.create(
             application=self,
             date_allowance=date_allowance)
-        allow.generate_ests()
         return allow
 
     def _generate_issue(self, date_diff, date_allowance):
@@ -104,6 +106,5 @@ class BaseUtilityApplication(BaseApplication):
             application=self,
             date_issuance=date_issuance,
         )
-        issue.generate_ests()
         return issue
 

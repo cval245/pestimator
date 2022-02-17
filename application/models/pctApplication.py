@@ -78,58 +78,17 @@ class PCTApplication(BaseApplication):
 
     def generate_dates(self, options):
         # generate filing estimates
-        self._generate_filing_est()
 
         # generate publication date and estimates
         publ = self._generate_publication(options.publoptions.date_diff)
-        # TODO
-        # req = self._generate_request_examination(options.requestexaminationoptions.date_diff)
-        #
-        # if req:
-        #     oas_in = options.oaoptions_set.all()
-        #     oas_out = self._generate_oa(date_request_examination=req.date_request_examination, args=oas_in)
-        # calc last oa
+
+        self._generate_filing_est()
+        publ.generate_ests()
 
     def _generate_publication(self, publication_diff_from_filing):
         # lookup the publication time_diff
         publ = Publication.objects.create(
             application=self,
             date_publication=self.date_filing + publication_diff_from_filing)
-        publ.generate_ests()
         return publ
         # create a publication instance
-
-    def _generate_request_examination(self, date_diff_from_filing):
-        req = RequestExamination.objects.create(
-            application=self,
-            date_request_examination=self.date_filing + date_diff_from_filing
-        )
-        req.generate_ests()
-        return req
-
-    def _generate_oa(self, date_request_examination, args):
-        ordered_oa = []
-        oa_first = [x for x in args if x.oa_prev is None]
-        ordered_oa.append(oa_first[0])
-        prev_oa = oa_first[0]
-        # order array
-        complete = False
-        while complete is False:
-            oa_x = [x for x in args if x.oa_prev == prev_oa]
-            if len(oa_x) != 0:
-                prev_oa = oa_x[0]
-                ordered_oa.append(oa_x[0])
-            else:
-                complete = True
-
-        date_prev = date_request_examination  # self.date_filing
-        oa_array = []
-        for oa in ordered_oa:
-            date_oa = date_prev + oa.date_diff
-            created_oa = OfficeAction.objects.create(application=self,
-                                                     date_office_action=date_oa)
-            created_oa.generate_ests()
-            oa_array.append(created_oa)
-            date_prev = date_oa
-
-        return oa_array

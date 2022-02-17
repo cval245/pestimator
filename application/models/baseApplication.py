@@ -37,18 +37,17 @@ class BaseApplication(models.Model):
 
     def generate_dates(self, options):
         # generate filing estimates
-        self._generate_filing_est()
 
         # generate publication date and estimates
-        self._generate_publication(options.publoptions.date_diff)
+        publ = self._generate_publication(options.publoptions.date_diff)
         # calc last oa
-        last_date = self.date_filing
+        self._generate_filing_est()
+        publ.generate_ests()
 
     def _generate_publication(self, publication_diff_from_filing):
         publ = Publication.objects.create(
             application=self,
             date_publication=self.date_filing + publication_diff_from_filing)
-        publ.generate_ests()
         return publ
         # create a publication instance
 

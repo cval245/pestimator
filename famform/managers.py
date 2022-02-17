@@ -92,9 +92,7 @@ class BaseOptionsManager(models.Manager):
             prev_appl_type = prev_appl_option.appl_type
 
         if Transform.objects.filter(country=country, appl_type=appl_type).exists():
-            print('sniperhello', appl_type.application_type, ' ', prev_appl_type.application_type)
             if Transform.objects.filter(country=country, appl_type=appl_type, prev_appl_type=prev_appl_type).exists():
-                print('hello', appl_type.application_type, ' ', prev_appl_type.application_type)
                 trans = Transform.objects.get(country=country, appl_type=appl_type, prev_appl_type=prev_appl_type)
             elif Transform.objects.filter(country=country, appl_type=appl_type, prev_appl_type=None).exists():
                 trans = Transform.objects.get(country=country, appl_type=appl_type, prev_appl_type=None)

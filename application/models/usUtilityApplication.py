@@ -10,7 +10,7 @@ class USUtilityApplication(BaseUtilityApplication):
 
     def generate_dates(self, options):
         # generate filing estimates
-        self._generate_filing_est()
+        # self._generate_filing_est()
 
         # generate publication date and estimates
         publ = self._generate_publication(options.publoptions.date_diff)
@@ -44,7 +44,7 @@ class USUtilityApplication(BaseUtilityApplication):
                 oa_final_bool=oa.oa_final_bool,
                 oa_prev=prev_oa,
                 date_office_action=date_oa)
-            created_oa.generate_ests()
+            # created_oa.generate_ests()
             oa_array.append(created_oa)
             date_prev = date_oa
             prev_oa = created_oa
