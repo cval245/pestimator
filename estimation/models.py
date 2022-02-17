@@ -5,15 +5,6 @@ from djmoney.contrib.exchange.models import convert_money
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 from relativedeltafield import RelativeDeltaField
-
-# from application.models import BaseApplication, BaseUtilityApplication, USUtilityApplication
-# from application.models.allowance import Allowance
-# from application.models.issue import Issue
-# from application.models.officeAction import OfficeAction
-# from application.models.publication import Publication
-# from application.models.requestExamination import RequestExamination
-# from application.models.usOfficeAction import USOfficeAction
-# from application.models.utilityApplication import UtilityApplication
 from characteristics.enums import ApplTypes
 from characteristics.models import Country, DetailedFeeCategory, EntitySize, ApplType, Language, DocFormat, FeeCategory
 from estimation.managers import EstimateManager, OAEstimateManager, USOAEstimateManager, PublEstimateManager, \
@@ -35,35 +26,13 @@ class ComplexTimeConditions(models.Model):
         elif self.name == 'from date of filing and issue acc fees':
             return self.calc_acc_fees_from_filing_to_issue(application, date_diff)
         elif self.name == 'from inter filing date or filing date':
-            return self.calc_from_international_filing_date_or_filing_date()
-        # elif (self.name == 'from 4th anniversary of filing date until grant'):
-        #     return self.calc_from_4th_anniversary_of_filing_date_until_grant()
+            return self.calc_from_international_filing_date_or_filing_date(application, date_diff)
+        elif self.name == 'from filing date':
+            return self.calc_from_filing_date(application, date_diff)
         return None
 
-    # def calc_from_4th_anniversary_of_filing_date_until_grant(self, application, date_diff):
-    #     # use applOption to retrieve allowance_option
-    #     appl_option = application.appl_option
-    #
-    #     # sum Delta Time between filing and allowance_option
-    #     delta_t = relativedelta(days=0)
-    #
-    #     if (IssueOptions.objects.filter(appl=appl_option).exists()):
-    #         allow_option = IssueOptions.objects.get(appl=appl_option)
-    #         delta_t += allow_option.date_diff
-    #     if (AllowOptions.objects.filter(appl=appl_option).exists()):
-    #         allow_option = AllowOptions.objects.get(appl=appl_option)
-    #         delta_t += allow_option.date_diff
-    #
-    #     if (OAOptions.objects.filter(appl=appl_option).exists()):
-    #         oa_options = OAOptions.objects.filter(appl=appl_option)
-    #         for oa in oa_options:
-    #             delta_t += oa.date_diff
-    #
-    #
-    #     # templates = templates.exclude(
-    #     #     Q(conditions__condition_annual_prosecution_fee=True)
-    #     #     & Q(date_diff__gt=delta_t))
-    #     # return templates
+    def calc_from_filing_date(self, application, date_diff):
+        return application.date_filing + date_diff
 
     def calc_from_priority_date(self, application, date_diff):
         appl = application
