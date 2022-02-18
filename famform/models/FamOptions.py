@@ -236,6 +236,11 @@ class FamOptions(models.Model):
                     return TranslationRequirements.FULL_TRANSLATION
                 elif country.ep_validation_translation_required.name == 'claims translation required':
                     return TranslationRequirements.CLAIMS_TRANSLATION
+                elif country.ep_validation_translation_required.name == 'claims translation if english otherwise full':
+                    if old_language.name == 'English':
+                        return TranslationRequirements.CLAIMS_TRANSLATION
+                    else:
+                        return TranslationRequirements.FULL_TRANSLATION
         elif appl_type.get_enum() is ApplTypes.UTILITY:
             if country.utility_translation_required.name == 'full translation required':
                 return TranslationRequirements.FULL_TRANSLATION
