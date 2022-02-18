@@ -226,6 +226,8 @@ class FamOptions(models.Model):
     def determine_extent_of_translation_required(self, country, appl_type, old_language,
                                                  new_language):
         # determine if translations are required.
+        if old_language is None:
+            return TranslationRequirements.NO_TRANSLATION
         if old_language == new_language:
             return TranslationRequirements.NO_TRANSLATION
         if appl_type.get_enum() is ApplTypes.EP_VALIDATION:
