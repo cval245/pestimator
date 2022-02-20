@@ -125,14 +125,15 @@ class ComplexConditions(models.Model):
             return self.calc_multiply_each_by_template_above_minimum_total_claims(appl_details,
                                                                                   template_conditions,
                                                                                   cost)
+        elif self.name == 'multiply each page by unit of fifteen pages':
+            return self.calc_multiply_each_page_by_unit_of_fifteen_pages(appl_details,
+                                                                         template_conditions,
+                                                                         cost)
         elif self.name == 'multiply each addl page':
             return self.calc_multiply_each_additional_page(appl_details,
                                                            template_conditions,
                                                            cost)
-        elif self.name == 'date_diff from earliest priority_date':
-            return self.calc_multiply_each_additional_page(appl_details,
-                                                           template_conditions,
-                                                           cost)
+
         elif self.name == 'calc fee per each child country max fee at seven':
             return self.calc_fee_per_each_child_country_max_fee_at_seven(application=application, cost=cost)
 
@@ -144,7 +145,21 @@ class ComplexConditions(models.Model):
             return self.calc_fee_per_each_ten_claims(appl_details=appl_details,
                                                      template_conditions=template_conditions,
                                                      cost=cost)
+        elif self.name == 'calc fee per 4 pages or fraction of 4 pages of parent application':
+            return self.calc_fee_per_4_pages_or_fraction_of_four_pages_of_parent_application(
+                application=application, template_conditions=template_conditions, cost=cost
+            )
+
         return None
+
+    def calc_fee_per_4_pages_or_fraction_of_four_pages_of_parent_application(self, application,
+                                                                             template_conditions,
+                                                                             cost):
+
+        fee = Money(0, cost.currency)
+        if application.prior_appl:
+            fee = cost * math.ceil(application.prior_appl.details.total_pages / 4)
+        return fee
 
     def calc_fee_per_each_ten_claims(self, appl_details,
                                      template_conditions,
@@ -289,6 +304,31 @@ class ComplexConditions(models.Model):
             min_max_diff = math.floor(condition_max / 5)
             if condition_min:
                 min_max_diff = math.floor((condition_max - condition_min) / 5)
+            # num_fee_claims = min(min_max_diff, num_fee_claims)
+            num_fee = min(min_max_diff, num_fee)
+        if num_fee > 0:
+            fee = num_fee * cost
+        return fee
+
+    def calc_multiply_each_page_by_unit_of_fifteen_pages(self, appl_details,
+                                                         template_conditions,
+                                                         cost):
+        # $100 per set of 50 pages in excess of 100
+        # 150 pages will yield a fee of $100
+        fee = Money(0, cost.currency)
+        condition_min = template_conditions.condition_pages_total_min
+        condition_max = template_conditions.condition_pages_total_max
+        if condition_min:
+            num_fee = math.floor((appl_details.total_pages - template_conditions.condition_pages_total_min) / 15)
+            # num_fee_claims = appl_details.num_claims - condition_min
+        else:
+            num_fee = math.floor(appl_details.total_pages / 15)
+            # num_fee_claims = appl_details.num_claims
+
+        if condition_max:
+            min_max_diff = math.floor(condition_max / 15)
+            if condition_min:
+                min_max_diff = math.floor((condition_max - condition_min) / 15)
             # num_fee_claims = min(min_max_diff, num_fee_claims)
             num_fee = min(min_max_diff, num_fee)
         if num_fee > 0:
