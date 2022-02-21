@@ -209,10 +209,13 @@ def _filter_renewal_fee_from_filing_after_grant(templates, application):
 
     delta_t = relativedelta(days=0)
     if hasattr(application, 'issue'):
-        delta_t = application.issue.date_issuance - application.date_filing
+        if application.prior_appl:
+            delta_t = application.issue.date_issuance - application.prior_appl.date_filing
+        else:
+            delta_t = application.issue.date_issuance - application.date_filing
 
     templates = templates.exclude(
-        Q(conditions__condition_renewal_fee_from_filing_after_grant=True)
+        Q(conditions__condition_renewal_fee_from_filing_of_prior_after_grant=True)
         & Q(date_diff__lt=delta_t))
     return templates
 
