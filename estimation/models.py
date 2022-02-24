@@ -439,6 +439,7 @@ class LineEstimationTemplateConditions(models.Model):
     condition_annual_prosecution_fee = models.BooleanField(default=False)
     condition_annual_prosecution_fee_until_grant = models.BooleanField(default=False)
     condition_renewal_fee_from_filing_of_prior_after_grant = models.BooleanField(default=False)
+    condition_renewal_fee_from_filing_after_grant = models.BooleanField(default=False)
     condition_complex = models.ForeignKey(ComplexConditions,
                                           on_delete=models.CASCADE,
                                           null=True, default=None)

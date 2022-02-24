@@ -25,6 +25,7 @@ def filter_conditions(templates, application, isa_filter=False):
     temp = _filter_annual_prosecution_fee(temp, application)
     temp = _filter_annual_prosecution_fee_until_grant(temp, application)
     temp = _filter_renewal_fee_from_filing_after_grant(temp, application)
+    temp = _filter_renewal_fee_from_filing_of_prior_after_grant(temp, application)
     temp = _filter_prior_appl_pct(temp, application)
     temp = _filter_prior_appl_pct_isa_same_country(temp, application)
     temp = _filter_fee_from_prior_appl_filing_date_and_excluding_overlapping_dates(temp, application)
@@ -203,7 +204,7 @@ def _filter_annual_prosecution_fee_until_grant(templates, application):
     return templates
 
 
-def _filter_renewal_fee_from_filing_after_grant(templates, application):
+def _filter_renewal_fee_from_filing_of_prior_after_grant(templates, application):
     # remove all that are less than the issue date
     # sum Delta Time between filing and issuance_date
 
@@ -216,6 +217,20 @@ def _filter_renewal_fee_from_filing_after_grant(templates, application):
 
     templates = templates.exclude(
         Q(conditions__condition_renewal_fee_from_filing_of_prior_after_grant=True)
+        & Q(date_diff__lt=delta_t))
+    return templates
+
+
+def _filter_renewal_fee_from_filing_after_grant(templates, application):
+    # remove all that are less than the issue date
+    # sum Delta Time between filing and issuance_date
+
+    delta_t = relativedelta(days=0)
+    if hasattr(application, 'issue'):
+        delta_t = application.issue.date_issuance - application.date_filing
+
+    templates = templates.exclude(
+        Q(conditions__condition_renewal_fee_from_filing_after_grant=True)
         & Q(date_diff__lt=delta_t))
     return templates
 

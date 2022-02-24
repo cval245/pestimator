@@ -99,6 +99,7 @@ class ConditionsSerializer(serializers.ModelSerializer):
                   'condition_annual_prosecution_fee',
                   'condition_annual_prosecution_fee_until_grant',
                   'condition_renewal_fee_from_filing_of_prior_after_grant',
+                  'condition_renewal_fee_from_filing_after_grant',
                   'condition_claims_min', 'condition_claims_max',
                   'condition_claims_multiple_dependent_min', 'condition_claims_multiple_dependent_max',
                   'condition_indep_claims_min', 'condition_indep_claims_max',
