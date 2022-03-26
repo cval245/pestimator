@@ -207,7 +207,7 @@ class USOAEstimateManager(models.Manager):
                                                                 est_template.conditions)
 
         date_of_expiry = applUtils.get_date_of_expiry(application)
-        if (date_of_expiry > new_date):
+        if date_of_expiry > new_date:
             est = self.create(
                 application=application,
                 date=new_date,

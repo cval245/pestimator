@@ -92,7 +92,7 @@ class FamEstFormData(models.Model):
         famOptions = FamOptions.objects.create(family=self.family)
         # !important the ep application must be added in either first appl
         # or paris appls or pct appls
-        # todo handlue multiple instead of just first opitionally add for user
+        # todo handle multiple instead of just first optionally add for user
         # language = self.init_appl_country.available_languages.get(default=True, appl_type=self.init_appl_type)
 
         applDetails = self.init_appl_details

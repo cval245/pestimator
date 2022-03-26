@@ -633,4 +633,5 @@ def create_country_chart_using_plt(data, empty_data, label_data, pdf, chart_buff
 
     image_chart.hAlign = 'CENTER'
     pdf.append(image_chart)
+    plt.close('all')
     return pdf

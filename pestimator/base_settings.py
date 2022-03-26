@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'famform.apps.FamformConfig',
     'transform.apps.TransformConfig',
     'lawfirm.apps.LawfirmConfig',
+    'articles.apps.ArticlesConfig',
     'user.apps.UserConfig',
 ]
 

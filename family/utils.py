@@ -32,10 +32,10 @@ def getFamEstAll(user):
 
 def createFamEstDetails(id):
     bob = BaseEst.objects.filter(application__family=id).order_by('date__year', 'application__country')
-
     bill = bob.values(country=F('application__country'),
                       country_long_name=F('application__country__long_name'),
                       currency=F('official_cost_currency'),
+                      udn=F('application__family__famestformdata__unique_display_no'),
                       year=F('date__year')) \
         .annotate(
         official_cost_sum=ExpressionWrapper(
@@ -94,6 +94,7 @@ def get_total_costs(id):
     bob = BaseEst.objects.filter(application__family=id).order_by('application__family') \
         .values(year=F('application__family')) \
         .annotate(
+        family_udn=F('application__family__unique_display_no'),
         official_cost_sum=ExpressionWrapper(
             Coalesce(Sum(Round('official_cost'), filter=Q(translation_bool=False)), Value(0)),
             output_field=MoneyField()),

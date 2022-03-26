@@ -30,7 +30,13 @@ class USUtilityApplication(BaseUtilityApplication):
         allowance = self._generate_allowance(allow_date_diff, last_date)
         issue_date_diff = options.issueoptions.date_diff
         # generate issue date and estimates
-        self._generate_issue(issue_date_diff, allowance.date_allowance)
+        issue = self._generate_issue(issue_date_diff, allowance.date_allowance)
+        publ.generate_ests()
+        req.generate_ests()
+        for oa in oas_out:
+            oa.generate_ests()
+        allowance.generate_ests()
+        issue.generate_ests()
 
     def _generate_oa(self, date_request_examination, oas_in):
         ordered_oa = self._create_ordered_oa(oas_in=oas_in)

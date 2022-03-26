@@ -3,7 +3,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
-from user.accesspolicies import StaffOnlyPost, AuthenticatedGetAccess
+from user.accesspolicies import AllGetStaffOnlyPost, GetOnlyPolicy, StaffOnlyPost, AuthenticatedGetAccess
 from .models import ApplType, Country, EntitySize, Language, EPValidationTranslationRequired, DocFormat, \
     DocFormatCountry, TranslationRequiredOptions
 from .serializers import ApplTypeSerializer, CountrySerializer, EntitySerializer, \
@@ -50,7 +50,7 @@ class TranslationRequiredOptionsViewSet(viewsets.ModelViewSet):
 
 
 class CountryViewSet(viewsets.ModelViewSet):
-    permission_classes = (StaffOnlyPost,)
+    permission_classes = (AllGetStaffOnlyPost,)
     serializer_class = CountrySerializer
 
     def get_queryset(self):
@@ -58,7 +58,7 @@ class CountryViewSet(viewsets.ModelViewSet):
 
 
 class CountryAllViewSet(viewsets.ModelViewSet):
-    permission_classes = (StaffOnlyPost,)
+    permission_classes = (AllGetStaffOnlyPost,)
     serializer_class = CountryAllSerializer
 
     def get_queryset(self):

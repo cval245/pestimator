@@ -3,6 +3,21 @@ from rest_access_policy import AccessPolicy
 from account.models import UserProfile
 
 
+class AllGetStaffOnlyPost(AccessPolicy):
+    statements = [
+        {
+            "action": ["list", "retrieve"],
+            "principal": "*",
+            "effect": "allow"
+        },
+        {
+            "action": ["create", "update", "partial_update", "destroy"],
+            "principal": "staff",
+            "effect": "allow"
+        }
+    ]
+
+
 class StaffOnlyPost(AccessPolicy):
     statements = [
         {
@@ -69,7 +84,8 @@ class FamFormPostAccess(AccessPolicy):
 
 class GetOnlyPolicy(AccessPolicy):
     statements = [{
-        "action": ["list", "retrieve"],
+        "action": ["list", "retrieve", "get_open_estimates", "fam_est_detail_guest",
+                   "get_free_pdf_report_fam_est_detail", "get_free_xls_report_fam_est_detail"],
         "principal": "*",
         "effect": "allow"
     }]

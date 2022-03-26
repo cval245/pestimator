@@ -1,19 +1,13 @@
 from django.db.models import F
 from rest_framework import viewsets
-from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-
 from user.accesspolicies import FamFormPostAccess
-from user.permissions import PostFamFormPermission
 from .models import FamEstFormData
 from .serializers import FamEstFormDataNetSerializer, FamEstFormDataNetPostSerializer
 
 
-# Create your views here.
-
 class FamEstFormDataViewSet(viewsets.ViewSet):
     serializer_class = FamEstFormDataNetSerializer
-    # permission_classes = [PostFamFormPermission] # separate from normal access policies
     permission_classes = [FamFormPostAccess]  # separate from normal access policies
 
     def get_queryset(self):
@@ -33,11 +27,9 @@ class FamEstFormDataViewSet(viewsets.ViewSet):
         serializer = FamEstFormDataNetPostSerializer(data=request.data, context=context)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-        # return Response(serializer.data)
         new_object = FamEstFormData.objects.filter(id=serializer.data['id']) \
             .annotate(family_name=F('family__family_name'), family_no=F('family__family_no'))[0]
         resp_serializer = FamEstFormDataNetSerializer(new_object)
-        # serializer.data.id
         return Response(resp_serializer.data)
 
     def perform_create(self, serializer):

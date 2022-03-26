@@ -5,22 +5,35 @@ from djmoney.money import Money
 from characteristics.models import Country
 
 # Create your models here.
+from lawfirm.managers import LawFirmManager
+
+
+# class LawFirmImages(models.Model):
+#     location = models.CharField(max_length=255)
 
 
 class LawFirm(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE)
-    name = models.TextField()
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
-    hourly = MoneyField(max_digits=19,
-                        decimal_places=4,
-                        default=Money(0, 'USD'),
-                        default_currency='USD')
+    website = models.CharField(max_length=255)
+    email = models.CharField(max_length=255)
+    phone = models.CharField(max_length=255)
+    long_description = models.TextField()
+    # image_location = models.ForeignKey(LawFirmImages, on_delete=models.CASCADE)
+    image_location = models.CharField(max_length=255)
+    objects = LawFirmManager()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['name'],
+                name='LawFirmNameUniqueConstraint'),
+        ]
+
 
 class DefaultLawFirm(models.Model):
     name = models.TextField()
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
-    hourly = MoneyField(max_digits=19,
-                        decimal_places=4,
-                        default=Money(0, 'USD'),
-                        default_currency='USD')
+
+    long_description = models.TextField()
