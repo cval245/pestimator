@@ -21,7 +21,7 @@ class LawFirm(models.Model):
     phone = models.CharField(max_length=255)
     long_description = models.TextField()
     # image_location = models.ForeignKey(LawFirmImages, on_delete=models.CASCADE)
-    image_location = models.CharField(max_length=255)
+    image_location = models.CharField(max_length=255, default='default')
     objects = LawFirmManager()
 
     class Meta:
@@ -29,6 +29,9 @@ class LawFirm(models.Model):
             models.UniqueConstraint(
                 fields=['name'],
                 name='LawFirmNameUniqueConstraint'),
+            models.UniqueConstraint(
+                fields=['slug'],
+                name='LawFirmSlugUniqueConstraint'),
         ]
 
 

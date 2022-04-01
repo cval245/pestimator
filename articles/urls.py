@@ -15,10 +15,13 @@ class OptionalSlashRouter(routers.SimpleRouter):
 router = OptionalSlashRouter()
 router.register(r'article', views.ArticleViewSet,
                 basename='article')
+router.register(r'article-full', views.ArticleAdminViewSet,
+                basename='article-full')
 
 urlpatterns = router.urls
 b = [
-    path(r'get-article-image/<str:image_location>', views.get_article_image, name='getarticleimage')
+    path(r'get-article-image/<str:image_location>', views.get_article_image, name='getarticleimage'),
+    path(r'post-article-image/<int:article_id>', views.post_article_image, name='postarticleimage')
 ]
 urlpatterns += b
 urlpatterns = format_suffix_patterns(urlpatterns)

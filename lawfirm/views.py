@@ -1,15 +1,49 @@
-from os.path import exists
-
+import os
+import uuid as uuid
+from PIL import Image
 from django.conf import settings
-from rest_framework import permissions, renderers, viewsets
-# Create your views here.
+from django.db.models.functions import Substr
+from django.utils.text import slugify
+from rest_framework import permissions, renderers, status, viewsets
 from rest_framework.decorators import api_view, permission_classes, renderer_classes
-
 from rest_framework.response import Response
 from lawfirm.models import LawFirm
 from lawfirm.serializers import LawFirmSerializer
-from user.accesspolicies import GetOnlyPolicy
+from user.accesspolicies import GetOnlyPolicy, StaffOnlyAccess
 
+
+class LawFirmAdminViewSet(viewsets.ModelViewSet):
+    serializer_class = LawFirmSerializer
+    permission_classes = [StaffOnlyAccess]
+
+    def get_queryset(self):
+        slug = self.request.query_params.get('nameslug')
+        if slug is not None:
+            queryset = LawFirm.objects.filter(slug=slug)
+        else:
+            queryset = LawFirm.objects.all()
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        slug = self.request.query_params.get('nameslug')
+        if slug is not None:
+            if LawFirm.objects.filter(slug=slug).exists() is False:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+        return super().list(request)
+
+    def create(self, request, *args, **kwargs):
+        new_request = request
+        request.data['slug'] = slugify(request.data['name'])
+        context = {'request': new_request}
+        serializer = LawFirmSerializer(data=request.data, context=context)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data)
+
+    def update(self, request, *args, **kwargs):
+        # new_request = request
+        request.data['slug'] = slugify(request.data['name'])
+        return super().update(request=request, args=args, kwargs=kwargs)
 
 class LawFirmViewSet(viewsets.ModelViewSet):
     serializer_class = LawFirmSerializer
@@ -32,6 +66,28 @@ class WebpRenderer(renderers.BaseRenderer):
 
     def render(self, data, media_type=None, renderer_context=None):
         return data
+
+
+@api_view(['POST'])
+@renderer_classes([WebpRenderer])
+@permission_classes([permissions.IsAuthenticatedOrReadOnly])
+def post_lawfirm_image(request, lawfirm_id):
+    image = request.data['file']
+    uid = uuid.uuid4()
+    image_location = str(uid)
+    if LawFirm.objects.filter(id=lawfirm_id).exists():
+        lawfirm = LawFirm.objects.get(id=lawfirm_id)
+        iml = Image.open(image)
+        old_save_name = settings.STATIC_ROOT + '/law-firm-images/' + lawfirm.image_location + '.webp'
+        save_name = settings.STATIC_ROOT + '/law-firm-images/' + image_location + '.webp'
+        if os.path.exists(old_save_name):
+            os.remove(old_save_name)
+        iml.save(save_name)
+        lawfirm.image_location = uid
+        lawfirm.save()
+        return Response(image)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET'])

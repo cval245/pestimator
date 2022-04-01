@@ -15,19 +15,21 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
-    path('', include('famform.urls')),
-    path('', include('application.urls')),
-    path('', include('characteristics.urls')),
-    path('', include('estimation.urls')),
-    path('', include('family.urls')),
-    path('', include('transform.urls')),
-    path('', include('account.urls')),
-    path('', include('user.urls')),
-    path('', include('lawfirm.urls')),
-    path('', include('articles.urls')),
-    path('admin/', admin.site.urls),
-    path('auth/', include('djoser.urls')),
-    path('auth/', include('djoser.urls.jwt')),
-]
+                  path('', include('famform.urls')),
+                  path('', include('application.urls')),
+                  path('', include('characteristics.urls')),
+                  path('', include('estimation.urls')),
+                  path('', include('family.urls')),
+                  path('', include('transform.urls')),
+                  path('', include('account.urls')),
+                  path('', include('user.urls')),
+                  path('', include('lawfirm.urls')),
+                  path('', include('articles.urls')),
+                  path('admin/', admin.site.urls),
+                  path('auth/', include('djoser.urls')),
+                  path('auth/', include('djoser.urls.jwt')),
+              ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

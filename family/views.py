@@ -146,8 +146,6 @@ def fam_est_detail(request):
     if FamEstFormData.objects.filter(user=request.user, unique_display_no=udn).exists():
         famEst = FamEstFormData.objects.get(user=request.user, unique_display_no=udn)
         bob = utils.createFamEstDetails(famEst.family.id)
-        # jane = bob.aggregate(Sum('law_firm_cost_sum'))
-        # law fees canceld out
         return Response(bob)
     return Response(status=status.HTTP_404_NOT_FOUND)
 
