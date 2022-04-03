@@ -7,11 +7,6 @@ from characteristics.models import Country
 # Create your models here.
 from lawfirm.managers import LawFirmManager
 
-
-# class LawFirmImages(models.Model):
-#     location = models.CharField(max_length=255)
-
-
 class LawFirm(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255)
@@ -21,7 +16,7 @@ class LawFirm(models.Model):
     phone = models.CharField(max_length=255)
     long_description = models.TextField()
     # image_location = models.ForeignKey(LawFirmImages, on_delete=models.CASCADE)
-    image_location = models.CharField(max_length=255, default='default')
+    image_location = models.ImageField(upload_to='lawfirm')
     objects = LawFirmManager()
 
     class Meta:

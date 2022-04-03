@@ -20,7 +20,6 @@ router.register(r'article-full', views.ArticleAdminViewSet,
 
 urlpatterns = router.urls
 b = [
-    path(r'get-article-image/<str:image_location>', views.get_article_image, name='getarticleimage'),
     path(r'post-article-image/<int:article_id>', views.post_article_image, name='postarticleimage')
 ]
 urlpatterns += b

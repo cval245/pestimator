@@ -17,6 +17,8 @@
       <excludeFolder url="file://$MODULE_DIR$/pestimator-env" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
       <excludeFolder url="file://$MODULE_DIR$/venv-new" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea/dataSources" />
+      <excludeFolder url="file://$MODULE_DIR$/media" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.9 (pestimator)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

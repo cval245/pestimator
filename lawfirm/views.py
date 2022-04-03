@@ -73,29 +73,13 @@ class WebpRenderer(renderers.BaseRenderer):
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
 def post_lawfirm_image(request, lawfirm_id):
     image = request.data['file']
-    uid = uuid.uuid4()
-    image_location = str(uid)
     if LawFirm.objects.filter(id=lawfirm_id).exists():
         lawfirm = LawFirm.objects.get(id=lawfirm_id)
-        iml = Image.open(image)
-        old_save_name = settings.STATIC_ROOT + '/law-firm-images/' + lawfirm.image_location + '.webp'
-        save_name = settings.STATIC_ROOT + '/law-firm-images/' + image_location + '.webp'
+        old_save_name = lawfirm.image_location.path
         if os.path.exists(old_save_name):
             os.remove(old_save_name)
-        iml.save(save_name)
-        lawfirm.image_location = uid
+        lawfirm.image_location = image
         lawfirm.save()
         return Response(image)
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
-
-
-@api_view(['GET'])
-@renderer_classes([WebpRenderer])
-@permission_classes([permissions.IsAuthenticatedOrReadOnly])
-def get_law_firm_image(request, image_location):
-    try:
-        image = open(settings.STATIC_ROOT + '/law-firm-images/' + image_location + '.webp', "br")
-    except FileNotFoundError:
-        image = open(settings.STATIC_ROOT + '/law-firm-images/empty-image.webp', 'br')
-    return Response(image)

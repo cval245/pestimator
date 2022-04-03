@@ -25,14 +25,30 @@ class ArticleAdminViewSet(viewsets.ModelViewSet):
             queryset = Article.objects.all().annotate(content_short=Substr('content', 1, 255)).order_by('-date_created')
         return queryset
 
+    #
+    # def get_serializer(self, *args, **kwargs):
+    #     slug = self.request.query_params.get('titleslug')
+    #     queryset = self.get_queryset()
+    #     if slug is not None:
+    #         serializer = ArticleSerializer(queryset, many=True)
+    #     else:
+    #         serializer = ArticleBulkSerializer(queryset, many=True)
+    #     return serializer
+
+    def get_serializer_class(self):
+        slug = self.request.query_params.get('titleslug')
+        if slug is not None:
+            serializer = ArticleSerializer
+        else:
+            serializer = ArticleBulkSerializer
+        return serializer
+
     def list(self, request, **kwargs):
         slug = self.request.query_params.get('titleslug')
-        queryset = self.get_queryset()
         if slug is not None:
-            serializer = ArticleSerializer(queryset, many=True)
-        else:
-            serializer = ArticleBulkSerializer(queryset, many=True)
-        return Response(serializer.data)
+            if Article.objects.filter(slug=slug).exists() is False:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+        return super().list(request)
 
     def create(self, request, *args, **kwargs):
         new_request = request
@@ -44,9 +60,7 @@ class ArticleAdminViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def update(self, request, *args, **kwargs):
-        # new_request = request
         request.data['slug'] = slugify(request.data['title'])
-        instance = self.get_object()
         return super().update(request=request, args=args, kwargs=kwargs)
 
 
@@ -88,30 +102,14 @@ class WebpRenderer(renderers.BaseRenderer):
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
 def post_article_image(request, article_id):
     image = request.data['file']
-    uid = uuid.uuid4()
-    image_location = str(uid)
     if Article.objects.filter(id=article_id).exists():
         article = Article.objects.get(id=article_id)
-        iml = Image.open(image)
-        old_save_name = settings.STATIC_ROOT + '/article/' + article.image_location + '.webp'
-        save_name = settings.STATIC_ROOT + '/article/' + image_location + '.webp'
-
+        old_save_name = article.image_location.path
         if os.path.exists(old_save_name):
             os.remove(old_save_name)
-        iml.save(save_name)
-        article.image_location = uid
+        article.image_location = image
         article.save()
         return Response(image)
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-
-@api_view(['GET'])
-@renderer_classes([WebpRenderer])
-@permission_classes([permissions.IsAuthenticatedOrReadOnly])
-def get_article_image(request, image_location):
-    try:
-        image = open(settings.STATIC_ROOT + '/article/' + image_location + '.webp', "br")
-    except FileNotFoundError:
-        image = open(settings.STATIC_ROOT + '/article/empty.webp', 'br')
-    return Response(image)

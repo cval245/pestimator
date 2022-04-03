@@ -1,6 +1,7 @@
 import io
 import uuid
 
+from django.conf import settings
 from djmoney.models.fields import MoneyField
 from django.db.models import ExpressionWrapper, F, Q, Sum, Value, DateTimeField
 from django.db.models.functions import Cast, Coalesce, Round
@@ -99,6 +100,7 @@ def get_open_estimates(request):
         .annotate(
         famestformdata_udn=F('famestformdata__unique_display_no'),
         country=F('famestformdata__init_appl_country'),
+        country_country=F('famestformdata__init_appl_country__country'),
         date_created=Cast('famestformdata__date_created', output_field=DateTimeField()),
         official_cost=ExpressionWrapper(
             Coalesce(Sum(Round('baseapplication__baseest__official_cost'),
@@ -116,14 +118,19 @@ def get_open_estimates(request):
         .values(
         'id', 'official_cost', 'law_firm_cost', 'translation_cost', 'total_cost',
         'famestformdata', 'famestformdata_udn',
-        'family_name', 'family_no', 'country')
+        'family_name', 'family_no', 'country', 'country_country')
 
     country_list = []
     filtered_famEsts = []
+    base_pdf_url = settings.MEDIA_URL_DUPLICATE + 'freeestimates/pdf/'
+    base_excel_url = settings.MEDIA_URL_DUPLICATE + 'freeestimates/excel/'
     for est in famEsts:
         if est['country'] not in country_list:
             country_list.append(est['country'])
+            est['pdf_url'] = base_pdf_url + est['country_country'] + '.pdf'
+            est['excel_url'] = base_excel_url + est['country_country'] + '.xlsx'
             filtered_famEsts.append(est)
+
     return Response(filtered_famEsts)
 
 

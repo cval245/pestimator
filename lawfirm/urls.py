@@ -20,7 +20,6 @@ router.register(r'law-firms-full', views.LawFirmAdminViewSet,
 
 urlpatterns = router.urls
 b = [
-    path(r'get-law-firm-image/<str:image_location>', views.get_law_firm_image, name='getlawfirmimage'),
     path(r'post-law-firm-image/<int:lawfirm_id>', views.post_lawfirm_image, name='postlawfirmimage'),
 ]
 urlpatterns += b

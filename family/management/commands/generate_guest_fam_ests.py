@@ -1,8 +1,8 @@
 import datetime
 import io
 
+from django.conf import settings
 from django.core.management import BaseCommand
-
 from application.models import ApplDetails
 from characteristics.models import ApplType, Country, DocFormat, EntitySize, Language
 from famform.models import ApplOptions, CustomApplDetails, CustomApplOptions, EPMethodCustomization, FamEstFormData, \
@@ -23,7 +23,6 @@ class Command(BaseCommand):
         user = User.objects.get(username='guest')
         applTypeUtility = ApplType.objects.get(application_type='utility')
         applTypeEp = ApplType.objects.get(application_type='ep')
-        # countryEp = Country.objects.get(country='EP')
         for country in countries:
             fam = Family.objects.create(
                 user=user,
@@ -31,9 +30,7 @@ class Command(BaseCommand):
                 family_no='INV-001-' + country.country
             )
             fam.save()
-            # if country == countryEp:
-            #     init_appl_type = applTypeEp
-            # else:
+
             init_appl_type = applTypeUtility
 
             if EntitySize.objects.filter(country=country, default_bool=True).exists():
@@ -111,9 +108,11 @@ class Command(BaseCommand):
             famEstData.generate_family_options()
             output = io.BytesIO()
             createXLSX.create_workbook(output, fam.id)
-            with open('staticfiles/free_estimates/excel/' + str(country.country) + '.xlsx', 'wb') as file:
+            excel_save_location = settings.MEDIA_ROOT + '/freeestimates/excel/' + str(country.country) + '.xlsx'
+            with open(excel_save_location, 'wb') as file:
                 file.write(output.getbuffer())
             pdf_output = createPDF.generate_pdf_report(fam.id)
-            with open('staticfiles/free_estimates/pdf/' + str(country.country) + '.pdf', 'wb') as file:
+            pdf_save_location = settings.MEDIA_ROOT + '/freeestimates/pdf/' + str(country.country) + '.pdf'
+            with open(pdf_save_location, 'wb') as file:
                 file.write(pdf_output.getbuffer())
             file.close()
