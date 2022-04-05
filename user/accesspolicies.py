@@ -11,7 +11,7 @@ class AllGetStaffOnlyPost(AccessPolicy):
             "effect": "allow"
         },
         {
-            "action": ["create", "update", "partial_update", "destroy"],
+            "action": ["create", "update", "partial_update", "destroy", "post_article_image_image_post"],
             "principal": "staff",
             "effect": "allow"
         }

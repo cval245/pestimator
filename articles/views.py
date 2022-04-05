@@ -1,16 +1,17 @@
-from PIL import Image
-import uuid as uuid
 import os
-from django.conf import settings
+
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models.functions import Substr
 from django.utils.text import slugify
 from rest_framework.decorators import api_view, permission_classes, renderer_classes
 from rest_framework import permissions, renderers, status
 from rest_framework import viewsets
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
-from articles.models import Article
-from articles.serializers import ArticleBulkSerializer, ArticleSerializer
-from user.accesspolicies import GetOnlyPolicy, StaffOnlyAccess
+from articles.models import Article, ArticleImage, ArticleImagePosition
+from articles.serializers import ArticleBulkSerializer, ArticleImagePositionSerializer, ArticleImageSerializer, \
+    ArticleSerializer
+from user.accesspolicies import AllGetStaffOnlyPost, GetOnlyPolicy, StaffOnlyAccess
 
 
 class ArticleAdminViewSet(viewsets.ModelViewSet):
@@ -25,23 +26,14 @@ class ArticleAdminViewSet(viewsets.ModelViewSet):
             queryset = Article.objects.all().annotate(content_short=Substr('content', 1, 255)).order_by('-date_created')
         return queryset
 
-    #
-    # def get_serializer(self, *args, **kwargs):
-    #     slug = self.request.query_params.get('titleslug')
-    #     queryset = self.get_queryset()
-    #     if slug is not None:
-    #         serializer = ArticleSerializer(queryset, many=True)
-    #     else:
-    #         serializer = ArticleBulkSerializer(queryset, many=True)
-    #     return serializer
-
     def get_serializer_class(self):
         slug = self.request.query_params.get('titleslug')
+        if self.request.method == 'PUT':
+            return ArticleSerializer
         if slug is not None:
-            serializer = ArticleSerializer
+            return ArticleSerializer
         else:
-            serializer = ArticleBulkSerializer
-        return serializer
+            return ArticleBulkSerializer
 
     def list(self, request, **kwargs):
         slug = self.request.query_params.get('titleslug')
@@ -71,20 +63,46 @@ class ArticleViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         slug = self.request.query_params.get('titleslug')
         if slug is not None:
-            queryset = Article.objects.filter(slug=slug, visible=True)
+            queryset = Article.objects.filter(slug=slug, visible=True).prefetch_related('articleimage_set')
         else:
             queryset = Article.objects.filter(visible=True).annotate(content_short=Substr('content', 1, 255)).order_by(
                 '-date_created')
         return queryset
 
+    def get_serializer_class(self):
+        slug = self.request.query_params.get('titleslug')
+        if slug is not None:
+            return ArticleSerializer
+        else:
+            return ArticleBulkSerializer
+
     def list(self, request, **kwargs):
         slug = self.request.query_params.get('titleslug')
-        queryset = self.get_queryset()
         if slug is not None:
-            serializer = ArticleSerializer(queryset, many=True)
+            if Article.objects.filter(slug=slug).exists() is False:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+        return super().list(request)
+
+
+class ImageArticleViewSet(viewsets.ModelViewSet):
+    serializer_class = ArticleImageSerializer
+    permission_classes = [AllGetStaffOnlyPost]
+
+    def get_queryset(self):
+        article_id = self.request.query_params.get('articleid')
+        if article_id is not None:
+            queryset = ArticleImage.objects.filter(article=article_id)
         else:
-            serializer = ArticleBulkSerializer(queryset, many=True)
-        return Response(serializer.data)
+            queryset = ArticleImage.objects.all()
+        return queryset
+
+
+class ArticleImagePositionViewSet(viewsets.ModelViewSet):
+    serializer_class = ArticleImagePositionSerializer
+    permission_classes = [AllGetStaffOnlyPost]
+
+    def get_queryset(self):
+        return ArticleImagePosition.objects.all()
 
 
 class WebpRenderer(renderers.BaseRenderer):
@@ -99,7 +117,7 @@ class WebpRenderer(renderers.BaseRenderer):
 
 @api_view(['POST'])
 @renderer_classes([WebpRenderer])
-@permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@permission_classes([AllGetStaffOnlyPost])
 def post_article_image(request, article_id):
     image = request.data['file']
     if Article.objects.filter(id=article_id).exists():
@@ -113,3 +131,19 @@ def post_article_image(request, article_id):
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
+
+@api_view(['POST'])
+@renderer_classes([WebpRenderer])
+@permission_classes([AllGetStaffOnlyPost])
+def post_article_image_image_post(request, article_image_id):
+    image = request.data['file']
+    if ArticleImage.objects.filter(id=article_image_id).exists():
+        article_image = ArticleImage.objects.get(id=article_image_id)
+        article_image.image_location = image
+        if isinstance(image, InMemoryUploadedFile):
+            article_image.save()
+        serializer = ArticleImageSerializer(article_image)
+        json = JSONRenderer().render(serializer.data)
+        return Response(json)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
