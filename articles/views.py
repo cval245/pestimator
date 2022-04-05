@@ -122,9 +122,10 @@ def post_article_image(request, article_id):
     image = request.data['file']
     if Article.objects.filter(id=article_id).exists():
         article = Article.objects.get(id=article_id)
-        old_save_name = article.image_location.path
-        if os.path.exists(old_save_name):
-            os.remove(old_save_name)
+        if article.image_location:
+            old_save_name = article.image_location.path
+            if os.path.exists(old_save_name):
+                os.remove(old_save_name)
         article.image_location = image
         article.save()
         return Response(image)
