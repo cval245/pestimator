@@ -1,7 +1,5 @@
 from rest_access_policy import AccessPolicy
 
-from account.models import UserProfile
-
 
 class AllGetStaffOnlyPost(AccessPolicy):
     statements = [
@@ -11,7 +9,8 @@ class AllGetStaffOnlyPost(AccessPolicy):
             "effect": "allow"
         },
         {
-            "action": ["create", "update", "partial_update", "destroy", "post_article_image_image_post"],
+            "action": ["create", "update", "partial_update", "destroy",
+                       "post_article_image_image_post", "post_article_image"],
             "principal": "staff",
             "effect": "allow"
         }

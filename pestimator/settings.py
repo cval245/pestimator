@@ -67,10 +67,6 @@ DOMAIN = 'estpat.com'
 DOMAIN_FULL = 'https://estpat.com'
 SITE_NAME = 'EstPat'
 
-# DOMAIN = 'patport.cc'
-# DOMAIN_FULL = 'https://patport.cc'
-# SITE_NAME = 'PatPort'
-
 OPEN_EXCHANGE_RATES_APP_ID = env('OPEN_EXCHANGE_RATES_APP_ID')
 
 STRIPE_PRIVATE_KEY = env('STRIPE_PRIVATE_KEY')
