@@ -128,7 +128,9 @@ def post_article_image(request, article_id):
                 os.remove(old_save_name)
         article.image_location = image
         article.save()
-        return Response(image)
+        serializer = ArticleSerializer(article)
+        json = JSONRenderer().render(serializer.data)
+        return Response(json)
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
