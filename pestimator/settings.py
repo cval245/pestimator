@@ -31,7 +31,7 @@ DEBUG = env('DEBUG')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 
-ALLOWED_HOSTS = ["pestimator.herokuapp.com", "api.estpat.com"]
+ALLOWED_HOSTS = ["api.estpat.com"]
 
 
 DATABASES = {
@@ -46,8 +46,9 @@ DATABASES = {
 }
 
 CORS_ALLOWED_ORIGINS = [
-    "https://patport.cc",
-    "https://www.patport.cc",
+    # "https://patport.cc",
+    # "https://www.patport.cc",
+    "https://media.estpat.com",
     "https://www.estpat.com",
     "https://estpat.com",
 ]
