@@ -75,4 +75,4 @@ USE_RECAPTCHA_BOOL = True
 MEDIA_ROOT = env('MEDIA_ROOT')
 MEDIA_URL = env('MEDIA_URL')
 MEDIA_URL_DUPLICATE = env('MEDIA_URL')
-ADMINS = ['CV', 'support@estpat.com']
+ADMINS = [('CV', 'support@estpat.com'), ]
