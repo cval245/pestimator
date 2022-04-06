@@ -2,14 +2,16 @@ import os
 import uuid as uuid
 from PIL import Image
 from django.conf import settings
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models.functions import Substr
 from django.utils.text import slugify
 from rest_framework import permissions, renderers, status, viewsets
 from rest_framework.decorators import api_view, permission_classes, renderer_classes
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from lawfirm.models import LawFirm
 from lawfirm.serializers import LawFirmSerializer
-from user.accesspolicies import GetOnlyPolicy, StaffOnlyAccess
+from user.accesspolicies import AllGetStaffOnlyPost, GetOnlyPolicy, StaffOnlyAccess
 
 
 class LawFirmAdminViewSet(viewsets.ModelViewSet):
@@ -70,16 +72,16 @@ class WebpRenderer(renderers.BaseRenderer):
 
 @api_view(['POST'])
 @renderer_classes([WebpRenderer])
-@permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@permission_classes([AllGetStaffOnlyPost])
 def post_lawfirm_image(request, lawfirm_id):
     image = request.data['file']
     if LawFirm.objects.filter(id=lawfirm_id).exists():
         lawfirm = LawFirm.objects.get(id=lawfirm_id)
-        old_save_name = lawfirm.image_location.path
-        if os.path.exists(old_save_name):
-            os.remove(old_save_name)
         lawfirm.image_location = image
-        lawfirm.save()
-        return Response(image)
+        if isinstance(image, InMemoryUploadedFile):
+            lawfirm.save()
+        serializer = LawFirmSerializer(lawfirm)
+        json = JSONRenderer().render(serializer.data)
+        return Response(json)
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)

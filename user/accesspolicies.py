@@ -10,6 +10,7 @@ class AllGetStaffOnlyPost(AccessPolicy):
         },
         {
             "action": ["create", "update", "partial_update", "destroy",
+                       "post_lawfirm_image",
                        "post_article_image_image_post", "post_article_image"],
             "principal": "staff",
             "effect": "allow"
