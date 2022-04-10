@@ -17,8 +17,8 @@ router.register(r'article-full', views.ArticleAdminViewSet,
                 basename='article-full')
 router.register(r'article-image', views.ImageArticleViewSet,
                 basename='image-article')
-router.register(r'article-image-position', views.ArticleImagePositionViewSet,
-                basename='image-article-position')
+# router.register(r'article-image-position', views.ArticleImagePositionViewSet,
+#                 basename='image-article-position')
 
 urlpatterns = router.urls
 b = [

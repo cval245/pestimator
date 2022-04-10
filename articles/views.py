@@ -1,15 +1,14 @@
 import os
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.db.models.functions import Substr
 from django.utils.text import slugify
 from rest_framework.decorators import api_view, permission_classes, renderer_classes
-from rest_framework import permissions, renderers, status
+from rest_framework import renderers, status
 from rest_framework import viewsets
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
-from articles.models import Article, ArticleImage, ArticleImagePosition
-from articles.serializers import ArticleBulkSerializer, ArticleImagePositionSerializer, ArticleImageSerializer, \
+from articles.models import Article, ArticleImage
+from articles.serializers import ArticleBulkSerializer, ArticleImageSerializer, \
     ArticleSerializer
 from user.accesspolicies import AllGetStaffOnlyPost, GetOnlyPolicy, StaffOnlyAccess
 
@@ -21,9 +20,18 @@ class ArticleAdminViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         slug = self.request.query_params.get('titleslug')
         if slug is not None:
+            # paragraphs = ArticleParagraph.objects.filter(article=OuterRef('id'))
+            # queryset = Article.objects.filter(slug=slug)\
+            #     .annotate(paragraphs=Subquery(paragraphs))
             queryset = Article.objects.filter(slug=slug)
+            # .annotate(paragraphs=F('articleparagraph'))
+            # print('q', queryset[0].__dict__)
         else:
-            queryset = Article.objects.all().annotate(content_short=Substr('content', 1, 255)).order_by('-date_created')
+            # content = ArticleParagraph.objects.filter(article=OuterRef('id'))
+            queryset = Article.objects.all()  # \
+            # .annotate(content_short=Subquery(content.values('content')[:1])) \
+            # .order_by('-date_created')
+
         return queryset
 
     def get_serializer_class(self):
@@ -63,10 +71,13 @@ class ArticleViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         slug = self.request.query_params.get('titleslug')
         if slug is not None:
-            queryset = Article.objects.filter(slug=slug, visible=True).prefetch_related('articleimage_set')
+            queryset = Article.objects.filter(slug=slug, visible=True)
         else:
-            queryset = Article.objects.filter(visible=True).annotate(content_short=Substr('content', 1, 255)).order_by(
-                '-date_created')
+            # content = ArticleParagraph.objects.filter(article=OuterRef('id'))
+            queryset = Article.objects.filter(visible=True)  # \
+            # .annotate(content_short=Subquery(content.values('content')[:1])) \
+            # .order_by('-date_created')
+
         return queryset
 
     def get_serializer_class(self):
@@ -97,12 +108,25 @@ class ImageArticleViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class ArticleImagePositionViewSet(viewsets.ModelViewSet):
-    serializer_class = ArticleImagePositionSerializer
-    permission_classes = [AllGetStaffOnlyPost]
+# class ArticleParagraphViewSet(viewsets.ModelViewSet):
+#     serializer_class = ArticleParagraphSerializer
+#     permission_classes = [AllGetStaffOnlyPost]
+#
+#     def get_queryset(self):
+#         article_id = self.request.query_params.get('articleid')
+#         if article_id is not None:
+#             queryset = ArticleParagraph.objects.filter(article=article_id)
+#         else:
+#             queryset = ArticleImage.objects.all()
+#         return queryset
 
-    def get_queryset(self):
-        return ArticleImagePosition.objects.all()
+
+# class ArticleImagePositionViewSet(viewsets.ModelViewSet):
+#     serializer_class = ArticleImagePositionSerializer
+#     permission_classes = [AllGetStaffOnlyPost]
+#
+#     def get_queryset(self):
+#         return ArticleImagePosition.objects.all()
 
 
 class WebpRenderer(renderers.BaseRenderer):
