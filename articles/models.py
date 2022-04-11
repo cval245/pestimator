@@ -20,17 +20,6 @@ class Article(models.Model):
         ]
 
 
-# class ArticleParagraph(models.Model):
-#     article = models.ForeignKey('Article', on_delete=models.CASCADE)
-#     title = models.CharField(max_length=255)
-#     content = models.TextField()
-
-
 class ArticleImage(models.Model):
     article = models.ForeignKey('Article', on_delete=models.CASCADE)
-    # image_position = models.ForeignKey('ArticleImagePosition', on_delete=models.PROTECT)
     image_location = models.ImageField(upload_to='article')
-    # image_description = models.TextField()
-
-# class ArticleImagePosition(models.Model):
-#     name = models.CharField(max_length=255)

@@ -10,11 +10,11 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='articleimage',
-            name='paragraph',
-            field=models.ForeignKey(default=4, on_delete=django.db.models.deletion.CASCADE,
-                                    to='articles.articleparagraph'),
-            preserve_default=False,
-        ),
+        # migrations.AddField(
+        #     model_name='articleimage',
+        #     name='paragraph',
+        #     field=models.ForeignKey(default=4, on_delete=django.db.models.deletion.CASCADE,
+        #                             to='articles.articleparagraph'),
+        #     preserve_default=False,
+        # ),
     ]

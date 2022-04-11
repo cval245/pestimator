@@ -18,10 +18,10 @@ class Migration(migrations.Migration):
             model_name='articleimage',
             name='image_position',
         ),
-        migrations.RemoveField(
-            model_name='articleimage',
-            name='paragraph',
-        ),
+        # migrations.RemoveField(
+        #     model_name='articleimage',
+        #     name='paragraph',
+        # ),
         migrations.AddField(
             model_name='articleimage',
             name='article',
