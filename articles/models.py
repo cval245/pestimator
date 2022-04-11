@@ -8,6 +8,7 @@ class Article(models.Model):
     image_location = models.ImageField(upload_to='article')
     visible = models.BooleanField(default=False)
     content = models.TextField()
+    abstract = models.TextField()
 
     class Meta:
         constraints = [
