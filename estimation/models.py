@@ -1,4 +1,5 @@
 import math
+from datetime import datetime
 
 from django.db import models
 from djmoney.contrib.exchange.models import convert_money
@@ -7,8 +8,9 @@ from djmoney.money import Money
 from relativedeltafield import RelativeDeltaField
 from characteristics.enums import ApplTypes
 from characteristics.models import Country, DetailedFeeCategory, EntitySize, ApplType, Language, DocFormat, FeeCategory
-from estimation.managers import EstimateManager, OAEstimateManager, USOAEstimateManager, PublEstimateManager, \
-    AllowanceEstimateManager, IssueEstimateManager, ReqExamEstimateManager
+from estimation.managers import EstimateManager, EstimateTemplateManager, OAEstimateManager, USOAEstimateManager, \
+    PublEstimateManager, \
+    AllowanceEstimateManager, IssueEstimateManager, ReqExamEstimateManager, USOAEstimateTemplateManager
 from application import utils as applUtils
 from famform.models import ApplOptions
 
@@ -474,13 +476,16 @@ class BaseEstTemplate(models.Model):
     date_diff = RelativeDeltaField()
     country = models.ForeignKey(Country, on_delete=models.PROTECT)
     appl_type = models.ForeignKey(ApplType, on_delete=models.PROTECT)
-
     conditions = models.OneToOneField(LineEstimationTemplateConditions, on_delete=models.PROTECT)
     law_firm_template = models.OneToOneField(LawFirmEstTemplate, on_delete=models.PROTECT)
     description = models.TextField()
     fee_code = models.CharField(max_length=30)
     fee_category = models.ForeignKey(FeeCategory, on_delete=models.PROTECT)
     detailed_fee_category = models.ForeignKey(DetailedFeeCategory, on_delete=models.PROTECT)
+    date_enabled = models.DateField(default=datetime.now)
+    date_disabled = models.DateField(default=None, null=True)
+
+    objects = EstimateTemplateManager()
 
     class Meta:
         abstract = True
@@ -489,6 +494,7 @@ class BaseEstTemplate(models.Model):
 class FilingEstimateTemplate(BaseEstTemplate):
     class Meta:
         abstract = False
+
 
 
 class PublicationEstTemplate(BaseEstTemplate):
@@ -509,6 +515,8 @@ class OAEstimateTemplate(BaseEstTemplate):
 class USOAEstimateTemplate(OAEstimateTemplate):
     oa_final_bool = models.BooleanField(default=False)
     oa_first_final_bool = models.BooleanField(default=False)
+
+    objects = USOAEstimateTemplateManager()
 
     class Meta:
         abstract = False

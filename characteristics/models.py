@@ -84,8 +84,6 @@ class Country(models.Model):
     ep_validation_translation_required = models.ForeignKey(
         EPValidationTranslationRequired,
         on_delete=models.CASCADE)  # London Agreement
-    # entity_size_available = models.BooleanField(default=False)
-    # available_entity_sizes = models.ManyToManyField(EntitySize)
     utility_translation_required = models.ForeignKey(
         TranslationRequiredOptions,
         on_delete=models.PROTECT

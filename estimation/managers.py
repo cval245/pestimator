@@ -1,5 +1,37 @@
 from django.db import models
+from django.db.models import Q
+
 from application import utils as applUtils
+
+
+class EstimateTemplateManager(models.Manager):
+
+    def basic_template_filter(self, country, appl_type, date):
+        filtered = self.filter(
+            Q(date_disabled__gt=date) | Q(date_disabled=None),
+            Q(date_enabled__lte=date),
+            country=country,
+            appl_type=appl_type,
+        )
+        filtered = filtered.order_by('detailed_fee_category', '-date_enabled') \
+            .distinct('detailed_fee_category')
+        return filtered
+
+
+class USOAEstimateTemplateManager(models.Manager):
+
+    def basic_template_filter(self, country, appl_type, date, oa_final_bool, oa_first_final_bool):
+        filtered = self.filter(
+            Q(date_disabled__gt=date) | Q(date_disabled=None),
+            Q(date_enabled__lte=date),
+            country=country,
+            appl_type=appl_type,
+            oa_final_bool=oa_final_bool,
+            oa_first_final_bool=oa_first_final_bool,
+        )
+        filtered = filtered.order_by('detailed_fee_category', '-date_enabled') \
+            .distinct('detailed_fee_category')
+        return filtered
 
 
 class EstimateManager(models.Manager):
@@ -124,8 +156,6 @@ class AllowanceEstimateManager(models.Manager):
         return None
 
 
-
-
 class IssueEstimateManager(models.Manager):
 
     def create_complex_and_simple_est(self, application, est_template, law_firm_est, issuance):
@@ -156,7 +186,6 @@ class IssueEstimateManager(models.Manager):
 
             return est
         return None
-
 
 
 class OAEstimateManager(models.Manager):

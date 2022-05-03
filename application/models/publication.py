@@ -16,9 +16,10 @@ class Publication(models.Model):
 
     def generate_ests(self):
 
-        publ_templates = PublicationEstTemplate.objects.filter(
+        publ_templates = PublicationEstTemplate.objects.basic_template_filter(
             country=self.application.country,
             appl_type=convert_class_applType(self.application),
+            date=self.date_publication,
         )
         templates = utils.filter_conditions(publ_templates, self.application) \
             .select_related('law_firm_template')

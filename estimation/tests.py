@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, timedelta
 
 from dateutil.relativedelta import relativedelta
 from django.test import TestCase
@@ -6,16 +6,262 @@ from djmoney.money import Money
 
 from application.factories import AllowanceFactory, ApplDetailsFactory, BaseUtilityApplicationFactory, \
     EPApplicationFactory, IssuanceFactory, \
-    OfficeActionFactory, PCTApplicationFactory, PublicationFactory, RequestExaminationFactory
-from characteristics.factories import ApplTypeFactory, CountryFactory, DocFormatFactory, EntitySizeFactory, \
+    OfficeActionFactory, PCTApplicationFactory, PublicationFactory, RequestExaminationFactory, USOfficeActionFactory, \
+    USUtilityApplicationFactory
+from characteristics.factories import ApplTypeFactory, CountryFactory, DetailedFeeCategoryFactory, DocFormatFactory, \
+    EntitySizeFactory, \
     LanguageFactory
 from famform.factories import AllowOptionsFactory, ApplOptionsFactory, ApplOptionsParticularsFactory, \
     IssueOptionsFactory, OAOptionsFactory, \
     PublOptionFactory, RequestExaminationOptionFactory
 from . import factories
 from . import utils
-from .factories import ComplexConditionsFactory, ComplexTimeConditionsFactory
-from .models import FilingEstimateTemplate, LineEstimationTemplateConditions
+from .factories import ComplexConditionsFactory, ComplexTimeConditionsFactory, PublicationEstTemplateFactory, \
+    USOAEstimateTemplateFactory
+from .managers import EstimateTemplateManager
+from .models import FilingEstimateTemplate, LineEstimationTemplateConditions, PublicationEstTemplate, \
+    USOAEstimateTemplate
+
+
+class EstimateTemplateManagerTest(TestCase):
+
+    def test_basic_template_filter_filters_country(self):
+        country_us = CountryFactory(US=True)
+        country_cn = CountryFactory(CN=True)
+        appl_type = ApplTypeFactory()
+        publ_temp_us = PublicationEstTemplateFactory(country=country_us, appl_type=appl_type)
+        publ_temp_cn = PublicationEstTemplateFactory(country=country_cn, appl_type=appl_type)
+        application = BaseUtilityApplicationFactory()
+        publication = PublicationFactory(application=application, date_publication=datetime.now().date())
+        publ_temps = PublicationEstTemplate.objects.basic_template_filter(
+            country=country_us, appl_type=appl_type, date=publication.date_publication)
+        self.assertEquals(len(publ_temps), 1)
+        self.assertEquals(publ_temp_us, publ_temps[0])
+
+    def test_basic_template_filter_filters_appl_type(self):
+        country = CountryFactory()
+        appl_type_utility = ApplTypeFactory(utility=True)
+        appl_type_pct = ApplTypeFactory(pct=True)
+        publ_temp_utility = PublicationEstTemplateFactory(country=country, appl_type=appl_type_utility)
+        publ_temp_pct = PublicationEstTemplateFactory(country=country, appl_type=appl_type_pct)
+        application = BaseUtilityApplicationFactory()
+        publication = PublicationFactory(application=application, date_publication=datetime.now().date())
+        publ_temps = PublicationEstTemplate.objects.basic_template_filter(
+            country=country, appl_type=appl_type_utility, date=publication.date_publication)
+        self.assertEquals(len(publ_temps), 1)
+        self.assertEquals(publ_temp_utility, publ_temps[0])
+
+    def test_basic_template_filter_filters_disabled_date(self):
+        country = CountryFactory()
+        appl_type_utility = ApplTypeFactory(utility=True)
+        publ_temp_disabled = PublicationEstTemplateFactory(country=country,
+                                                           appl_type=appl_type_utility,
+                                                           date_disabled=datetime.now().date())
+        publ_temp_disabled_in_future = PublicationEstTemplateFactory(country=country,
+                                                                     appl_type=appl_type_utility,
+                                                                     date_disabled=datetime.now().date() + timedelta(
+                                                                         days=1))
+        publ_temp_disabled_null = PublicationEstTemplateFactory(country=country,
+                                                                appl_type=appl_type_utility,
+                                                                date_disabled=None)
+        application = BaseUtilityApplicationFactory()
+        publication = PublicationFactory(application=application, date_publication=datetime.now().date())
+        publ_temps = PublicationEstTemplate.objects.basic_template_filter(
+            country=country, appl_type=appl_type_utility, date=publication.date_publication)
+        self.assertEquals(len(publ_temps), 2)
+        self.assertIn(publ_temp_disabled_null, publ_temps)
+        self.assertIn(publ_temp_disabled_in_future, publ_temps)
+
+    def test_basic_template_filter_filters_enabled_date(self):
+        country = CountryFactory()
+        appl_type_utility = ApplTypeFactory(utility=True)
+        detailed_fee_category_one = DetailedFeeCategoryFactory()
+        detailed_fee_category_two = DetailedFeeCategoryFactory()
+        publ_temp_enabled = PublicationEstTemplateFactory(country=country,
+                                                          appl_type=appl_type_utility,
+                                                          detailed_fee_category=detailed_fee_category_one,
+                                                          date_enabled=datetime.now().date())
+        publ_temp_enabled_2nd_fee_category = PublicationEstTemplateFactory(country=country,
+                                                                           appl_type=appl_type_utility,
+                                                                           detailed_fee_category=detailed_fee_category_two,
+                                                                           date_enabled=datetime.now().date())
+        publ_temp_enabled_in_future = PublicationEstTemplateFactory(country=country,
+                                                                    appl_type=appl_type_utility,
+                                                                    detailed_fee_category=detailed_fee_category_one,
+                                                                    date_enabled=datetime.now().date() + timedelta(
+                                                                        days=1))
+        publ_temp_enabled_in_past_replaced = PublicationEstTemplateFactory(country=country,
+                                                                           appl_type=appl_type_utility,
+                                                                           detailed_fee_category=detailed_fee_category_one,
+                                                                           date_enabled=datetime.now().date() - timedelta(
+                                                                               days=1))
+        application = BaseUtilityApplicationFactory()
+        publication = PublicationFactory(application=application, date_publication=datetime.now().date())
+        publ_temps = PublicationEstTemplate.objects.basic_template_filter(
+            country=country, appl_type=appl_type_utility, date=publication.date_publication)
+        self.assertEquals(len(publ_temps), 2)
+        self.assertIn(publ_temp_enabled_2nd_fee_category, publ_temps)
+        self.assertIn(publ_temp_enabled, publ_temps)
+
+
+class USOAEstimateTemplateManagerTest(TestCase):
+
+    def test_basic_template_filter_filters_country(self):
+        country_us = CountryFactory(US=True)
+        country_cn = CountryFactory(CN=True)
+        appl_type = ApplTypeFactory()
+        oa_final_bool = False
+        oa_first_final_bool = False
+        oa_temp_us = USOAEstimateTemplateFactory(country=country_us, appl_type=appl_type)
+        oa_temp_cn = USOAEstimateTemplateFactory(country=country_cn, appl_type=appl_type)
+        application = USUtilityApplicationFactory()
+        office_action = USOfficeActionFactory(application=application, date_office_action=datetime.now().date())
+        oa_temps = USOAEstimateTemplate.objects.basic_template_filter(
+            country=country_us,
+            appl_type=appl_type,
+            date=office_action.date_office_action,
+            oa_final_bool=oa_final_bool,
+            oa_first_final_bool=oa_first_final_bool,
+        )
+        self.assertEquals(len(oa_temps), 1)
+        self.assertEquals(oa_temp_us, oa_temps[0])
+
+    def test_basic_template_filter_filters_appl_type(self):
+        country = CountryFactory()
+        appl_type_utility = ApplTypeFactory(utility=True)
+        appl_type_pct = ApplTypeFactory(pct=True)
+        oa_final_bool = False
+        oa_first_final_bool = False
+        oa_temp_utility = USOAEstimateTemplateFactory(country=country, appl_type=appl_type_utility)
+        oa_temp_pct = USOAEstimateTemplateFactory(country=country, appl_type=appl_type_pct)
+        application = USUtilityApplicationFactory()
+        office_action = USOfficeActionFactory(application=application, date_office_action=datetime.now().date())
+        oa_temps = USOAEstimateTemplate.objects.basic_template_filter(
+            country=country, appl_type=appl_type_utility, date=office_action.date_office_action,
+            oa_final_bool=oa_final_bool,
+            oa_first_final_bool=oa_first_final_bool,
+        )
+        self.assertEquals(len(oa_temps), 1)
+        self.assertEquals(oa_temp_utility, oa_temps[0])
+
+    def test_basic_template_filter_filters_disabled_date(self):
+        country = CountryFactory()
+        appl_type_utility = ApplTypeFactory(utility=True)
+        oa_final_bool = False
+        oa_first_final_bool = False
+        oa_temp_disabled = USOAEstimateTemplateFactory(country=country,
+                                                       appl_type=appl_type_utility,
+                                                       date_disabled=datetime.now().date())
+        oa_temp_disabled_in_future = USOAEstimateTemplateFactory(country=country,
+                                                                 appl_type=appl_type_utility,
+                                                                 date_disabled=datetime.now().date() + timedelta(
+                                                                     days=1))
+        oa_temp_disabled_null = USOAEstimateTemplateFactory(country=country,
+                                                            appl_type=appl_type_utility,
+                                                            date_disabled=None)
+        application = USUtilityApplicationFactory()
+        office_action = USOfficeActionFactory(application=application, date_office_action=datetime.now().date())
+        oa_temps = USOAEstimateTemplate.objects.basic_template_filter(
+            country=country, appl_type=appl_type_utility, date=office_action.date_office_action,
+            oa_final_bool=oa_final_bool,
+            oa_first_final_bool=oa_first_final_bool,
+        )
+        self.assertEquals(len(oa_temps), 2)
+        self.assertIn(oa_temp_disabled_null, oa_temps)
+        self.assertIn(oa_temp_disabled_in_future, oa_temps)
+
+    def test_basic_template_filter_filters_enabled_date(self):
+        country = CountryFactory()
+        appl_type_utility = ApplTypeFactory(utility=True)
+        detailed_fee_category_one = DetailedFeeCategoryFactory()
+        detailed_fee_category_two = DetailedFeeCategoryFactory()
+        oa_final_bool = False
+        oa_first_final_bool = False
+        oa_temp_enabled = USOAEstimateTemplateFactory(country=country,
+                                                      appl_type=appl_type_utility,
+                                                      detailed_fee_category=detailed_fee_category_one,
+                                                      date_enabled=datetime.now().date())
+        oa_temp_enabled_2nd_fee_category = USOAEstimateTemplateFactory(country=country,
+                                                                       appl_type=appl_type_utility,
+                                                                       detailed_fee_category=detailed_fee_category_two,
+                                                                       date_enabled=datetime.now().date())
+        oa_temp_enabled_in_future = USOAEstimateTemplateFactory(country=country,
+                                                                appl_type=appl_type_utility,
+                                                                detailed_fee_category=detailed_fee_category_one,
+                                                                date_enabled=datetime.now().date() + timedelta(
+                                                                    days=1))
+        oa_temp_enabled_in_past_replaced = USOAEstimateTemplateFactory(country=country,
+                                                                       appl_type=appl_type_utility,
+                                                                       detailed_fee_category=detailed_fee_category_one,
+                                                                       date_enabled=datetime.now().date() - timedelta(
+                                                                           days=1))
+        application = USUtilityApplicationFactory()
+        office_action = USOfficeActionFactory(application=application, date_office_action=datetime.now().date())
+        oa_temps = USOAEstimateTemplate.objects.basic_template_filter(
+            country=country, appl_type=appl_type_utility, date=office_action.date_office_action,
+            oa_final_bool=oa_final_bool,
+            oa_first_final_bool=oa_first_final_bool,
+        )
+        self.assertEquals(len(oa_temps), 2)
+        self.assertIn(oa_temp_enabled_2nd_fee_category, oa_temps)
+        self.assertIn(oa_temp_enabled, oa_temps)
+
+    def test_basic_template_filter_filters_oa_final_bool(self):
+        country = CountryFactory()
+        appl_type_utility = ApplTypeFactory(utility=True)
+        detailed_fee_category_one = DetailedFeeCategoryFactory()
+        detailed_fee_category_two = DetailedFeeCategoryFactory()
+        oa_final_bool = True
+        oa_first_final_bool = True
+        oa_temp_final_bool_both_true = USOAEstimateTemplateFactory(
+            country=country,
+            appl_type=appl_type_utility,
+            detailed_fee_category=detailed_fee_category_one,
+            oa_final_bool=True,
+            oa_first_final_bool=True,
+            date_enabled=datetime.now().date())
+        oa_temp_final_bool_true = USOAEstimateTemplateFactory(
+            country=country,
+            appl_type=appl_type_utility,
+            detailed_fee_category=detailed_fee_category_one,
+            oa_final_bool=True,
+            oa_first_final_bool=False,
+            date_enabled=datetime.now().date())
+        oa_temp_final_bool_first_true = USOAEstimateTemplateFactory(
+            country=country,
+            appl_type=appl_type_utility,
+            detailed_fee_category=detailed_fee_category_one,
+            oa_final_bool=False,
+            oa_first_final_bool=True,
+            date_enabled=datetime.now().date())
+        oa_temp_final_bool_both_false = USOAEstimateTemplateFactory(
+            country=country,
+            appl_type=appl_type_utility,
+            detailed_fee_category=detailed_fee_category_one,
+            oa_final_bool=False,
+            oa_first_final_bool=False,
+            date_enabled=datetime.now().date())
+        oa_temp_enabled_in_future = USOAEstimateTemplateFactory(
+            country=country,
+            appl_type=appl_type_utility,
+            detailed_fee_category=detailed_fee_category_one,
+            date_enabled=datetime.now().date() + timedelta(
+                days=1))
+        oa_temp_enabled_in_past_replaced = USOAEstimateTemplateFactory(
+            country=country,
+            appl_type=appl_type_utility,
+            detailed_fee_category=detailed_fee_category_one,
+            date_enabled=datetime.now().date() - timedelta(
+                days=1))
+        application = USUtilityApplicationFactory()
+        office_action = USOfficeActionFactory(application=application, date_office_action=datetime.now().date())
+        oa_temps = USOAEstimateTemplate.objects.basic_template_filter(
+            country=country, appl_type=appl_type_utility, date=office_action.date_office_action,
+            oa_final_bool=oa_final_bool,
+            oa_first_final_bool=oa_first_final_bool,
+        )
+        self.assertEquals(len(oa_temps), 1)
+        self.assertIn(oa_temp_final_bool_both_true, oa_temps)
 
 
 class ComplexTimeConditionsTest(TestCase):

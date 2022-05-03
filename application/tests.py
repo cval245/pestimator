@@ -836,7 +836,7 @@ class PublicationTest(TestCase):
         self.entity_size = EntitySizeFactory(us_small=True)
         self.details = ApplDetailsFactory(entity_size=self.entity_size)
         self.application = USUtilityApplicationFactory(country=self.country_us, details=self.details,
-                                                       date_filing=datetime(2020, 10, 1).date())
+                                                       date_filing=datetime.now().date())
         self.usPublication = PublicationFactory(application=self.application)
         self.conditions_one = LineEstimationTemplateConditionsFactory(
             condition_entity_size=EntitySizeFactory(us_small=True))
@@ -844,7 +844,6 @@ class PublicationTest(TestCase):
             condition_entity_size=EntitySizeFactory(us_small=True))
         self.conditions_three = LineEstimationTemplateConditionsFactory(
             condition_entity_size=EntitySizeFactory(us_small=True))
-
         self.publEstTemplate_one = PublicationEstTemplateFactory(country=self.country_us,
                                                                  conditions=self.conditions_one,
                                                                  appl_type=self.applType_utility)
@@ -854,6 +853,8 @@ class PublicationTest(TestCase):
         self.publEstTemplate_three = PublicationEstTemplateFactory(country=self.country_us,
                                                                    conditions=self.conditions_three,
                                                                    appl_type=self.applType_utility)
+
+    # def test_all(self):
 
     def test_generate_ests_creates_three_ests(self):
         self.usPublication.generate_ests()
@@ -887,14 +888,6 @@ class PublicationTest(TestCase):
         self.assertEquals(PublicationEst.objects.all().count(), 3)
 
     def test_generate_ests_creates_correct_date(self):
-        # conditions = LineEstimationTemplateConditionsFactory(condition_entity_size=EntitySizeFactory(small=True))
-        # publEstTemp = PublicationEstTemplateFactory.create(country=self.country_us,
-        #                                      appl_type=self.applType_utility,
-        #                                      conditions=conditions)
-        # entitySize = EntitySizeFactory(small=True)
-        # application = USUtilityApplicationFactory(country=self.country_us,
-        #                             details=ApplDetailsFactory(entity_size=entitySize))
-        # usPublication = PublicationFactory(application=application)
         self.usPublication.generate_ests()
         self.assertEquals(PublicationEst.objects.all().first().date,
                           self.publEstTemplate_one.date_diff + self.usPublication.date_publication)

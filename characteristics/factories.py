@@ -83,6 +83,14 @@ class EPValidationTranslationRequiredFactory(factory.django.DjangoModelFactory):
         Full = factory.Trait(name='full translation required')
 
 
+class TranslationRequiredOptionsFactory(factory.django.DjangoModelFactory):
+    name = 'name_one'
+
+    class Meta:
+        model = models.TranslationRequiredOptions
+        django_get_or_create = ('name',)
+
+
 class CountryFactory(factory.django.DjangoModelFactory):
     country = 'US'
     active_bool = True
@@ -93,6 +101,7 @@ class CountryFactory(factory.django.DjangoModelFactory):
     long_name = 'United States of America'
     color = '#25560'
     ep_validation_translation_required = factory.SubFactory(EPValidationTranslationRequiredFactory)
+    utility_translation_required = factory.SubFactory(TranslationRequiredOptionsFactory)
 
     class Meta:
         model = models.Country
@@ -523,7 +532,7 @@ class TotalCountryFactoryUS(CountryFactory):
 
 
 class DetailedFeeCategoryFactory(factory.django.DjangoModelFactory):
-    name = 'default fee category name'
+    name = factory.Sequence(lambda n: 'fee-category-%04d' % n)
     country = factory.SubFactory(CountryFactory)
 
     class Meta:

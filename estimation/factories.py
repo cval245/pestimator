@@ -1,4 +1,5 @@
 import random
+from datetime import datetime
 
 import factory
 from dateutil.relativedelta import relativedelta
@@ -125,6 +126,8 @@ class BaseEstTemplateFactory(factory.django.DjangoModelFactory):
     fee_code = 'ddd'
     fee_category = factory.SubFactory(FeeCategoryFactory)
     detailed_fee_category = factory.SubFactory(DetailedFeeCategoryFactory)
+    date_enabled = datetime.now()
+    date_disabled = None
 
     class Meta:
         abstract = True

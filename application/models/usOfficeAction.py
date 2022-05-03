@@ -24,15 +24,12 @@ class USOfficeAction(BaseOfficeAction):
         else:
             oa_first_final_bool = False
 
-        # check for the pct examining authority
-        # prior_pct_same_country = self._check_prior_appl_pct_same_country()
-
-        oa_templates = USOAEstimateTemplate.objects.filter(
+        oa_templates = USOAEstimateTemplate.objects.basic_template_filter(
             country=self.application.country,
             appl_type=convert_class_applType(self.application),
+            date=self.date_office_action,
             oa_final_bool=self.oa_final_bool,
             oa_first_final_bool=oa_first_final_bool,
-            # prior_pct_same_country=prior_pct_same_country,
         )
         templates = utils.filter_conditions(oa_templates, self.application)
 

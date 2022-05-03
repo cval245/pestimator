@@ -16,9 +16,10 @@ class BaseIssue(models.Model):
 
     def generate_ests(self):
 
-        issue_templates = IssueEstTemplate.objects.filter(
+        issue_templates = IssueEstTemplate.objects.basic_template_filter(
             country=self.application.country,
             appl_type=convert_class_applType(self.application),
+            date=self.date_issuance,
         )
         templates = utils.filter_conditions(issue_templates, self.application)
         templates = templates.select_related('law_firm_template')

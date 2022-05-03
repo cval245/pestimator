@@ -17,9 +17,10 @@ class BaseOfficeAction(models.Model):
 
     def generate_ests(self):
 
-        oa_templates = OAEstimateTemplate.objects.filter(
+        oa_templates = OAEstimateTemplate.objects.basic_template_filter(
             country=self.application.country,
             appl_type=convert_class_applType(self.application),
+            date=self.date_office_action,
         )
         templates = utils.filter_conditions(oa_templates, self.application)
         templates = templates.select_related('law_firm_template')

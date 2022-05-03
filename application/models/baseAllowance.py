@@ -15,9 +15,10 @@ class BaseAllowance(models.Model):
 
     def generate_ests(self):
 
-        allow_templates = AllowanceEstTemplate.objects.filter(
+        allow_templates = AllowanceEstTemplate.objects.basic_template_filter(
             country=self.application.country,
             appl_type=convert_class_applType(self.application),
+            date=self.date_allowance,
         )
         templates = utils.filter_conditions(allow_templates, self.application)
         templates = templates.select_related('law_firm_template')
