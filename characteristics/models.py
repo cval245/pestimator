@@ -198,6 +198,7 @@ class FeeCategory(models.Model):
 class DetailedFeeCategory(models.Model):
     name = models.CharField(max_length=200)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
+    # country = models.ManyToManyField(Country)
     appl_types = models.ManyToManyField(ApplType)
 
     class Meta:
@@ -206,3 +207,36 @@ class DetailedFeeCategory(models.Model):
                 fields=['name', 'country'],
                 name='UniqueNameCountryConstraint')
         ]
+
+
+class LawFirmFeeType(models.Model):
+    fee_name = models.CharField(max_length=255)
+    fee_description = models.CharField(max_length=255)
+    detailed_fee_categories = models.ManyToManyField(DetailedFeeCategory)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['detailed_fee_category'],
+                name='lawFirmTypesUniqueConstraint'
+            )
+        ]
+
+    # how to ensure proper fees.  Need to be 100% certain that each lawfirm enters
+    # the fees appropriate to the country they are party to.
+    # (many to many field with country) will I need thru table? are they all gonna be 'required' fields?
+    # (many to many field with applType)
+    # (mapping of fee to trans_est estimation calculators)
+
+    # how to do mapping?  I don't know.  Perhaps we could make a bunch of mapping functions.
+    # so this function would accept the lawfirmfees and combine with lawfirmfeetypes and produce
+    # a desired dollar figure estimate.  maybe a script that runs irregularly.  But still I need this model
+    # to relate to the ests models.  We need to map to the regular fees.  DetailedFeeCategory.  In order to make it work
+    # I will need to rework the Detailed Fee Catagory so that there is a many-to-many field with the country.
+    # then I will need a many-to-many field relating the lawfirmfeetypes with detailedfeecatgory.
+    # but the constraints need to match country with country and appltype with appltype.
+    # this is perfectly achievable. Constraints are not achievable (i think).  I will just have to restrict
+    # modifications in the python itself.
+
+    # we could put it in the manager for LawFirmFeeTypes.  should we base it off the fee_name?
+    # I guess.

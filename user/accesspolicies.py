@@ -49,6 +49,7 @@ class AuthenticatedAllAccess(AccessPolicy):
         "effect": "allow"
     }]
 
+
 class StaffOnlyAccess(AccessPolicy):
     statements = [{
         "action": ["list", "retrieve", "create", "update", "partial_update",
@@ -65,6 +66,7 @@ class AllAccess(AccessPolicy):
         "effect": "allow"
     }]
 
+
 class FamFormPostAccess(AccessPolicy):
     statements = [{
         "action": ["list", "retrieve", "create", "update", "partial_update",
@@ -73,13 +75,6 @@ class FamFormPostAccess(AccessPolicy):
         "effect": "allow",
         # "condition": ["has_estimates_remaining"]
     }]
-    # def has_estimates_remaining(self, request, view, action):
-    #     userProfile = UserProfile.objects.get(user=request.user)
-    #     est_remaining = userProfile.estimates_remaining
-    #     if est_remaining > 0:
-    #         return True
-    #     else:
-    #         return False
 
 
 class GetOnlyPolicy(AccessPolicy):
@@ -89,3 +84,16 @@ class GetOnlyPolicy(AccessPolicy):
         "principal": "*",
         "effect": "allow"
     }]
+
+
+class LawFirmPostAndGetAccess(AccessPolicy):
+    statements = [{
+        "action": ["list", "retrieve", "update", "partial_update",
+                   "destroy", "create_checkout_session"],
+        "principal": "authenticated",
+        "effect": "allow",
+        "condition": ["has_lawfirm_submit_data_access"]
+    }]
+
+    def has_lawfirm_submit_data_access(self, request, view, action, field):
+        return request.user.lawfirm_submit_data_access

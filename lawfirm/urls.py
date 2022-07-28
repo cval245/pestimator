@@ -17,6 +17,8 @@ router.register(r'law-firms', views.LawFirmViewSet,
                 basename='law-firms')
 router.register(r'law-firms-full', views.LawFirmAdminViewSet,
                 basename='law-firms-full')
+router.register(r'law-firm-fees-full', views.LawFirmFeesViewSet, basename='lawfirmfeefull')
+router.register(r'law-firm-fees', views.LawFirmFeesForLawyerViewSet, basename='lawfirmfeefull')
 
 urlpatterns = router.urls
 b = [

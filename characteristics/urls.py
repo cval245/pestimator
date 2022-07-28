@@ -27,6 +27,7 @@ router.register(r'epvalidation-translation-required',
 router.register(r'translation-required-options',
                 views.TranslationRequiredOptionsViewSet,
                 basename='translationrequiredoptions')
+router.register(r'lawfirm-fee-types', views.LawFirmFeeTypeViewSet, basename='lawfirmfeetype')
 
 b = [
     path(r'entity-size/', views.getEntitySize, name='entity-size'),

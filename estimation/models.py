@@ -586,8 +586,6 @@ class BaseEst(models.Model):
         abstract = False
 
     def save(self, **kwargs):
-        # official_cost
-        # print(self.__dict__)
         self.official_cost = convert_money(self.official_cost, 'USD')
         super().save(kwargs)
 

@@ -5,10 +5,11 @@ from rest_framework.response import Response
 
 from user.accesspolicies import AllGetStaffOnlyPost, GetOnlyPolicy, StaffOnlyPost, AuthenticatedGetAccess
 from .models import ApplType, Country, EntitySize, Language, EPValidationTranslationRequired, DocFormat, \
-    DocFormatCountry, TranslationRequiredOptions
+    DocFormatCountry, LawFirmFeeType, TranslationRequiredOptions
 from .serializers import ApplTypeSerializer, CountrySerializer, EntitySerializer, \
     CountryAllSerializer, LanguageSerializer, EPValidationTranslationRequiredSerializer, DocFormatSerializer, \
-    PostDocFormatCountrySerializer, CountryAllPostSerializer, TranslationRequiredOptionsSerializer
+    LawFirmFeeTypesSerializer, PostDocFormatCountrySerializer, CountryAllPostSerializer, \
+    TranslationRequiredOptionsSerializer
 
 
 # Create your views here.
@@ -94,6 +95,14 @@ class DocFormatCountryViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return DocFormatCountry.objects.all()
+
+
+class LawFirmFeeTypeViewSet(viewsets.ModelViewSet):
+    permission_classes = (StaffOnlyPost,)
+    serializer_class = LawFirmFeeTypesSerializer
+
+    def get_queryset(self):
+        return LawFirmFeeType.objects.all()
 
 
 @api_view(['GET'])

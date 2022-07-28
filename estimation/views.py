@@ -6,12 +6,13 @@ from .models import BaseEstTemplate, FilingEstimateTemplate, LawFirmEstTemplate,
     LineEstimationTemplateConditions, USOAEstimateTemplate, ComplexConditions, ComplexTimeConditions, \
     RequestExamEstTemplate
 from characteristics.models import DetailedFeeCategory, FeeCategory
-from .serializers import BaseEstTemplateSerializer, DetailedFeeCategorySerializer, FilingEstimateTemplateSerializer, \
+from .serializers import BaseEstTemplateSerializer, FilingEstimateTemplateSerializer, \
     LawFirmEstTemplateSerializer, \
     PublicationEstTemplateSerializer, OAEstimateTemplateSerializer, \
     AllowanceEstTemplateSerializer, IssueEstTemplateSerializer, \
     ConditionsSerializer, USOAEstimateTemplateSerializer, ComplexConditionsSerializer, ComplexTimeConditionsSerializer, \
     RequestExamEstTemplateSerializer, FeeCategorySerializer
+from characteristics.serializers import DetailedFeeCategorySerializer
 
 
 # Create your views here.

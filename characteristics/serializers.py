@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
-from .models import ApplType, Country, EntitySize, Language, EPValidationTranslationRequired, DocFormat, \
-    DocFormatCountry, LanguageCountry, TranslationRequiredOptions
+from .models import ApplType, Country, DetailedFeeCategory, EntitySize, Language, EPValidationTranslationRequired, \
+    DocFormat, \
+    DocFormatCountry, LanguageCountry, LawFirmFeeType, TranslationRequiredOptions
 
 
 class GetLanguageCountrySerializer(serializers.Serializer):
@@ -185,3 +186,20 @@ class DocFormatSerializer(serializers.ModelSerializer):
     class Meta:
         model = DocFormat
         fields = ('id', 'name')
+
+
+class LawFirmFeeTypesSerializer(serializers.ModelSerializer):
+    detailed_fee_category = serializers.PrimaryKeyRelatedField(queryset=DetailedFeeCategory.objects.all(),
+                                                               many=True)
+
+    class Meta:
+        model = LawFirmFeeType
+        fields = ('id', 'fee_name', 'fee_description', 'detailed_fee_categories')
+
+
+class DetailedFeeCategorySerializer(serializers.ModelSerializer):
+    appl_types = serializers.PrimaryKeyRelatedField(many=True, queryset=ApplType.objects.all())
+
+    class Meta:
+        model = DetailedFeeCategory
+        fields = ('id', 'name', 'country', 'appl_types')

@@ -4,14 +4,34 @@ from PIL import Image
 from django.conf import settings
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models.functions import Substr
+from django.http import HttpResponseForbidden
 from django.utils.text import slugify
 from rest_framework import permissions, renderers, status, viewsets
 from rest_framework.decorators import api_view, permission_classes, renderer_classes
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
-from lawfirm.models import LawFirm
-from lawfirm.serializers import LawFirmSerializer
-from user.accesspolicies import AllGetStaffOnlyPost, GetOnlyPolicy, StaffOnlyAccess
+from lawfirm.models import LawFirm, LawFirmFees
+from lawfirm.serializers import LawFirmFeesSerializer, LawFirmSerializer
+from user.accesspolicies import AllGetStaffOnlyPost, GetOnlyPolicy, LawFirmPostAndGetAccess, StaffOnlyAccess
+
+
+class LawFirmLawyerEditorViewSet(viewsets.ModelViewSet):
+    serializer_class = LawFirmSerializer
+    permission_classes = [LawFirmPostAndGetAccess]
+
+    def get_queryset(self):
+        try:
+            queryset = LawFirm.objects.get(id=self.request.user.lawfirm)
+        except:
+            queryset = LawFirm.objects.none()
+
+        return queryset
+
+    def update(self, request, *args, **kwargs):
+        if LawFirm.objects.filter(user__in=request.user.id).exists():
+            return super().update(request=request, args=args, kwargs=kwargs)
+        else:
+            return HttpResponseForbidden()
 
 
 class LawFirmAdminViewSet(viewsets.ModelViewSet):
@@ -47,6 +67,7 @@ class LawFirmAdminViewSet(viewsets.ModelViewSet):
         request.data['slug'] = slugify(request.data['name'])
         return super().update(request=request, args=args, kwargs=kwargs)
 
+
 class LawFirmViewSet(viewsets.ModelViewSet):
     serializer_class = LawFirmSerializer
     permission_classes = [GetOnlyPolicy]
@@ -58,6 +79,23 @@ class LawFirmViewSet(viewsets.ModelViewSet):
             queryset = LawFirm.objects.filter(slug=slug)
 
         return queryset
+
+
+class LawFirmFeesViewSet(viewsets.ModelViewSet):
+    serializer_class = LawFirmFeesSerializer
+    permission_classes = [StaffOnlyAccess]
+
+    def get_queryset(self):
+        return LawFirmFees.objects.all()
+
+
+class LawFirmFeesForLawyerViewSet(viewsets.ModelViewSet):
+    serializer_class = LawFirmFeesSerializer
+    permission_classes = [LawFirmPostAndGetAccess]
+
+    def get_queryset(self):
+        user = self.request.user
+        return LawFirmFees.objects.filter(lawfirm__user=user)
 
 
 class WebpRenderer(renderers.BaseRenderer):
@@ -72,7 +110,7 @@ class WebpRenderer(renderers.BaseRenderer):
 
 @api_view(['POST'])
 @renderer_classes([WebpRenderer])
-@permission_classes([AllGetStaffOnlyPost])
+@permission_classes([AllGetStaffOnlyPost, LawFirmPostAndGetAccess])
 def post_lawfirm_image(request, lawfirm_id):
     image = request.data['file']
     if LawFirm.objects.filter(id=lawfirm_id).exists():

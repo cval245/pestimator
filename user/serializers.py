@@ -13,4 +13,5 @@ class UserAllSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'email', 'username', 'is_staff', 'is_active', 'date_joined',
+                  'lawfirm_submit_data_permissions',
                   'is_superuser', 'last_login', 'admin_data', 'terms_agreed')
